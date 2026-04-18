@@ -136,7 +136,6 @@ jobs:
               body += `### ✅ No risk changes\nThis PR does not introduce or resolve any threat model risks.\n`;
             }
 
-            const runUrl = `${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}`;
             body += `\n---\n📎 [Full report, DFD and risk register in artifacts](${runUrl})`;
 
             const { data: comments } = await github.rest.issues.listComments({
