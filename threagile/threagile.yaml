@@ -419,52 +419,52 @@ technical_assets:
     data_formats_accepted: []
     communication_links: {}
   Webhook Endpoint:
-      id: webhook-endpoint
-      description: >
-        External webhook receiver — inbound HTTP callbacks from third-party
-        integrations (e.g. payment provider, CI notifications).
-      type: external-entity
-      usage: business
-      used_as_client_by_human: false
-      out_of_scope: false
-      justification_out_of_scope: ""
-      size: component
-      technology: web-service-rest
-      tags: []
-      internet: true
-      machine: virtual
-      encryption: none
-      owner: VaultNote Team
-      confidentiality: confidential
-      integrity: important
-      availability: important
-      multi_tenant: false
-      redundant: false
-      custom_developed_parts: true
-      data_assets_processed:
-        - note-content
-      data_assets_stored: []
-      data_formats_accepted:
-        - json
-      communication_links:
-        Inbound Webhook:
-          target: api-server
-          description: >
-            Unauthenticated inbound HTTP webhook — no shared secret,
-            no signature verification.
-          protocol: http
-          authentication: none
-          authorization: none
-          tags: []
-          vpn: false
-          ip_filtered: false
-          readonly: false
-          usage: business
-          data_assets_sent:
-            - note-content
-          data_assets_received: []
-          diagram_tweak_weight: 1
-          diagram_tweak_constraint: false
+    id: webhook-endpoint
+    description: >
+      External webhook receiver — inbound HTTP callbacks from third-party
+      integrations (e.g. payment provider, CI notifications).
+    type: external-entity
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: component
+    technology: web-service-rest
+    tags: []
+    internet: true
+    machine: virtual
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: important
+    availability: important
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: true
+    data_assets_processed:
+      - note-content
+    data_assets_stored: []
+    data_formats_accepted:
+      - json
+    communication_links:
+      Inbound Webhook:
+        target: api-server
+        description: >
+          Unauthenticated inbound HTTP webhook — no shared secret,
+          no signature verification.
+        protocol: http
+        authentication: none
+        authorization: none
+        tags: []
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: business
+        data_assets_sent:
+          - note-content
+        data_assets_received: []
+        diagram_tweak_weight: 1
+        diagram_tweak_constraint: false
   MinIO Object Storage:
     id: minio-storage
     description: >
