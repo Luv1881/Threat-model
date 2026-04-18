@@ -21,65 +21,57 @@
         "cells": [
 
           {
-            "position": { "x": 30, "y": 60 },
-            "size": { "width": 200, "height": 460 },
-            "attrs": {
-              "label": { "text": "Internet" }
-            },
+            "position": { "x": 20, "y": 40 },
+            "size":     { "width": 270, "height": 540 },
+            "attrs": { "label": { "text": "Internet" } },
             "visible": true,
             "shape": "trust-boundary-box",
             "id": "tb-internet",
             "zIndex": -1,
             "data": {
               "type": "tm.BoundaryBox",
-              "description": "Untrusted external network. All traffic from this zone must cross the Nginx TLS termination point.",
+              "description": "Untrusted external network. All traffic crosses the Nginx TLS termination point before entering the DMZ.",
               "isTrustBoundary": true,
               "hasOpenThreats": false
             }
           },
 
           {
-            "position": { "x": 260, "y": 60 },
-            "size": { "width": 200, "height": 460 },
-            "attrs": {
-              "label": { "text": "DMZ" }
-            },
+            "position": { "x": 310, "y": 40 },
+            "size":     { "width": 270, "height": 540 },
+            "attrs": { "label": { "text": "DMZ" } },
             "visible": true,
             "shape": "trust-boundary-box",
             "id": "tb-dmz",
             "zIndex": -1,
             "data": {
               "type": "tm.BoundaryBox",
-              "description": "Demilitarised zone. Contains Nginx reverse proxy. Accessible from the internet but isolated from the application and data tiers.",
+              "description": "Demilitarised zone. Contains Nginx reverse proxy. Accessible from internet but isolated from application and data tiers.",
               "isTrustBoundary": true,
               "hasOpenThreats": false
             }
           },
 
           {
-            "position": { "x": 490, "y": 60 },
-            "size": { "width": 200, "height": 460 },
-            "attrs": {
-              "label": { "text": "Application Network" }
-            },
+            "position": { "x": 600, "y": 40 },
+            "size":     { "width": 270, "height": 540 },
+            "attrs": { "label": { "text": "Application Network" } },
             "visible": true,
             "shape": "trust-boundary-box",
             "id": "tb-app",
             "zIndex": -1,
             "data": {
               "type": "tm.BoundaryBox",
-              "description": "Internal Docker bridge network (frontend-net). Contains the API server bridging into the data tier.",
+              "description": "Internal Docker bridge network (frontend-net). Contains the API server which bridges into the data tier.",
               "isTrustBoundary": true,
               "hasOpenThreats": false
             }
           },
 
           {
-            "position": { "x": 720, "y": 60 },
-            "size": { "width": 250, "height": 460 },
-            "attrs": {
-              "label": { "text": "Data Tier" }
-            },
+            "position": { "x": 890, "y": 40 },
+            "size":     { "width": 310, "height": 540 },
+            "attrs": { "label": { "text": "Data Tier" } },
             "visible": true,
             "shape": "trust-boundary-box",
             "id": "tb-data",
@@ -93,8 +85,8 @@
           },
 
           {
-            "position": { "x": 65, "y": 250 },
-            "size": { "width": 130, "height": 60 },
+            "position": { "x": 60, "y": 270 },
+            "size":     { "width": 160, "height": 60 },
             "attrs": {
               "text": { "text": "Browser\n(React SPA)" },
               "body": { "stroke": "#333333", "strokeWidth": 1.5, "strokeDasharray": null }
@@ -145,8 +137,8 @@
                   "status": "Open",
                   "severity": "Medium",
                   "type": "Information Disclosure",
-                  "description": "If the JWT is stored in localStorage (rather than an HttpOnly cookie) it is accessible to any JavaScript running on the page, including XSS payloads or malicious browser extensions.",
-                  "mitigation": "Store the JWT in an HttpOnly, Secure, SameSite=Strict cookie. If localStorage is required for UX reasons, implement a short TTL and token rotation on every request.",
+                  "description": "If the JWT is stored in localStorage it is accessible to any JavaScript on the page, including XSS payloads or malicious browser extensions.",
+                  "mitigation": "Store the JWT in an HttpOnly, Secure, SameSite=Strict cookie. If localStorage is required, implement a short TTL and token rotation on every request.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 2,
@@ -157,8 +149,8 @@
           },
 
           {
-            "position": { "x": 295, "y": 230 },
-            "size": { "width": 130, "height": 100 },
+            "position": { "x": 350, "y": 260 },
+            "size":     { "width": 160, "height": 80 },
             "attrs": {
               "text": { "text": "Nginx\nReverse Proxy" },
               "body": { "stroke": "#333333", "strokeWidth": 1.5, "strokeDasharray": null }
@@ -184,7 +176,7 @@
             "data": {
               "type": "tm.Process",
               "name": "Nginx Reverse Proxy",
-              "description": "Nginx terminates TLS on port 443 and reverse-proxies all API traffic to Express over plain HTTP on port 3000. Also serves the static React build. Single external entry point.",
+              "description": "Terminates TLS on port 443 and reverse-proxies all API traffic to Express over plain HTTP on port 3000. Also serves the static React build. Single external entry point.",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -199,8 +191,8 @@
                   "status": "Open",
                   "severity": "Medium",
                   "type": "Tampering",
-                  "description": "A self-signed certificate with a weak configuration (TLS 1.0/1.1 or weak ciphers) allows an attacker on the network to downgrade or intercept the HTTPS session between the browser and Nginx.",
-                  "mitigation": "Enforce TLS 1.2+ with strong cipher suites (ECDHE-ECDSA-AES256-GCM-SHA384). Use ssl_prefer_server_ciphers on. Rotate to a CA-signed certificate for production. Add HSTS header.",
+                  "description": "A self-signed certificate with weak configuration (TLS 1.0/1.1 or weak ciphers) allows a network attacker to downgrade or intercept the HTTPS session.",
+                  "mitigation": "Enforce TLS 1.2+ with strong cipher suites (ECDHE-ECDSA-AES256-GCM-SHA384). Set ssl_prefer_server_ciphers on. Use a CA-signed certificate for production. Add HSTS header.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 6,
@@ -212,8 +204,8 @@
                   "status": "Open",
                   "severity": "Medium",
                   "type": "Elevation of Privilege",
-                  "description": "Nginx proxies all requests to the API without inspecting payloads. Common attack patterns (SQLi, XSS, path traversal) reach the API unfiltered, reducing defence depth.",
-                  "mitigation": "Deploy ModSecurity with the OWASP Core Rule Set (CRS) as a Nginx WAF module. At minimum, enforce request size limits and rate limiting at the Nginx layer.",
+                  "description": "Nginx proxies all requests to the API without inspecting payloads. Common attack patterns (SQLi, XSS, path traversal) reach the API unfiltered.",
+                  "mitigation": "Deploy ModSecurity with the OWASP Core Rule Set (CRS) as a Nginx WAF module. Enforce request size limits and rate limiting at the Nginx layer.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 7,
@@ -224,8 +216,8 @@
           },
 
           {
-            "position": { "x": 525, "y": 230 },
-            "size": { "width": 130, "height": 100 },
+            "position": { "x": 640, "y": 260 },
+            "size":     { "width": 160, "height": 80 },
             "attrs": {
               "text": { "text": "API Server\n(Node.js/Express)" },
               "body": { "stroke": "#333333", "strokeWidth": 1.5, "strokeDasharray": null }
@@ -251,7 +243,7 @@
             "data": {
               "type": "tm.Process",
               "name": "API Server (Node.js/Express)",
-              "description": "REST API handling JWT authentication (bcrypt), notes CRUD, and file upload/download via MinIO. Bridges frontend-net and backend-net Docker networks — highest-risk pivot point.",
+              "description": "REST API handling JWT authentication (bcrypt), notes CRUD, and file upload/download via MinIO. Bridges frontend-net and backend-net — highest-risk pivot point.",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -266,8 +258,8 @@
                   "status": "Open",
                   "severity": "High",
                   "type": "Tampering",
-                  "description": "If any SQL query constructs user input by string concatenation rather than parameterised queries, an attacker can dump the users table, bypass authentication, or delete data.",
-                  "mitigation": "Use parameterised queries exclusively via the pg library ($1 placeholders). Verify this consistently across all routes including search. Create a least-privilege DB user with no DDL permissions.",
+                  "description": "If any SQL query constructs user input by string concatenation, an attacker can dump the users table, bypass authentication, or delete data.",
+                  "mitigation": "Use parameterised queries exclusively via the pg library ($1 placeholders). Verify consistently across all routes including search. Create a least-privilege DB user with no DDL permissions.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 8,
@@ -292,8 +284,8 @@
                   "status": "Open",
                   "severity": "High",
                   "type": "Tampering",
-                  "description": "If the file upload endpoint accepts a URL parameter without validating the destination, an attacker can cause the server to make requests to internal services including the MinIO admin API, Redis, PostgreSQL, or the cloud metadata endpoint (169.254.169.254).",
-                  "mitigation": "Never accept user-controlled URLs for server-side fetch. Generate presigned MinIO URLs server-side with a fixed bucket path. Block access to 169.254.169.254 and RFC1918 ranges at the network level.",
+                  "description": "If the file upload endpoint accepts a user-controlled URL without validating the destination, an attacker can target internal services including MinIO admin API, Redis, PostgreSQL, or the cloud metadata endpoint.",
+                  "mitigation": "Never accept user-controlled URLs for server-side fetch. Generate presigned MinIO URLs server-side with a fixed bucket path. Block 169.254.169.254 and RFC1918 ranges at the network level.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 10,
@@ -305,8 +297,8 @@
                   "status": "Open",
                   "severity": "Medium",
                   "type": "Denial of Service",
-                  "description": "The login endpoint does not enforce per-IP or per-account rate limiting. An attacker can attempt millions of password combinations without triggering any lock-out, enabling credential stuffing.",
-                  "mitigation": "Apply express-rate-limit to /auth/login: max 5 attempts per 15 minutes per IP. Implement account-level lock-out after 10 consecutive failures. Store counters in Redis so they survive API restarts.",
+                  "description": "The login endpoint has no per-IP or per-account rate limiting. An attacker can attempt millions of password combinations without triggering any lock-out, enabling credential stuffing.",
+                  "mitigation": "Apply express-rate-limit to /auth/login: max 5 attempts per 15 minutes per IP. Implement account lock-out after 10 consecutive failures with counters stored in Redis.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 11,
@@ -317,8 +309,8 @@
           },
 
           {
-            "position": { "x": 755, "y": 135 },
-            "size": { "width": 160, "height": 60 },
+            "position": { "x": 930, "y": 140 },
+            "size":     { "width": 210, "height": 60 },
             "attrs": {
               "text": { "text": "PostgreSQL" },
               "topLine":    { "strokeWidth": 1.5, "strokeDasharray": null },
@@ -345,7 +337,7 @@
             "data": {
               "type": "tm.Store",
               "name": "PostgreSQL",
-              "description": "Primary relational datastore: users table (email, bcrypt hash), notes table, attachments metadata. On backend-net with no direct external exposure.",
+              "description": "Primary relational datastore: users table (email, bcrypt hash), notes, attachments metadata. On backend-net with no direct external exposure.",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -361,8 +353,8 @@
                   "status": "Open",
                   "severity": "High",
                   "type": "Information Disclosure",
-                  "description": "PostgreSQL stores all user PII (email), bcrypt password hashes, and note content without encryption at rest. If the Docker volume is exfiltrated, all data is immediately readable.",
-                  "mitigation": "Enable filesystem-level encryption (LUKS) on the host volume backing pgdata. Use pgcrypto for column-level encryption of sensitive fields. Ensure backups are encrypted in transit and at rest.",
+                  "description": "PostgreSQL stores all user PII, bcrypt password hashes, and note content without encryption at rest. If the Docker volume is exfiltrated, all data is immediately readable.",
+                  "mitigation": "Enable filesystem-level encryption (LUKS) on the host volume. Use pgcrypto for column-level encryption of sensitive fields. Ensure backups are encrypted in transit and at rest.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 12,
@@ -374,8 +366,8 @@
                   "status": "Open",
                   "severity": "Medium",
                   "type": "Elevation of Privilege",
-                  "description": "The API connects as the vaultnote superuser. A compromised API grants full PostgreSQL privileges including CREATE/DROP TABLE, pg_read_file, and COPY TO — enabling arbitrary file reads from the host.",
-                  "mitigation": "Create a least-privilege application role with SELECT/INSERT/UPDATE/DELETE on specific tables only. Run schema migrations as a separate migration user not accessible to the running API.",
+                  "description": "The API connects as the vaultnote superuser. A compromised API grants full PostgreSQL privileges including pg_read_file and COPY TO — enabling arbitrary file reads from the host.",
+                  "mitigation": "Create a least-privilege application role with SELECT/INSERT/UPDATE/DELETE on specific tables only. Run schema migrations as a separate migration user.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 13,
@@ -386,8 +378,8 @@
           },
 
           {
-            "position": { "x": 755, "y": 280 },
-            "size": { "width": 160, "height": 60 },
+            "position": { "x": 930, "y": 280 },
+            "size":     { "width": 210, "height": 60 },
             "attrs": {
               "text": { "text": "Redis (Session Store)" },
               "topLine":    { "strokeWidth": 1.5, "strokeDasharray": null },
@@ -414,7 +406,7 @@
             "data": {
               "type": "tm.Store",
               "name": "Redis (Session Store)",
-              "description": "In-memory store for active JWT session tokens and JWT revocation list. Password-protected (requirepass) but no TLS. Non-persistent by default.",
+              "description": "In-memory store for active JWT session tokens and revocation list. Password-protected (requirepass) but no TLS. Non-persistent by default.",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -430,8 +422,8 @@
                   "status": "Open",
                   "severity": "Medium",
                   "type": "Elevation of Privilege",
-                  "description": "If Redis becomes network-accessible outside backend-net, an attacker can extract all active session tokens and replay them without knowing user passwords. The revocation list can also be flushed, re-enabling previously revoked tokens.",
-                  "mitigation": "Bind Redis exclusively to backend-net. Enforce requirepass (already configured). Enable Redis ACLs to restrict the API user to only GET, SET, DEL, EXPIRE. Consider enabling Redis TLS for the API-to-Redis connection.",
+                  "description": "If Redis becomes accessible outside backend-net, an attacker can extract all active session tokens and replay them. The revocation list can also be flushed, re-enabling revoked tokens.",
+                  "mitigation": "Bind Redis exclusively to backend-net. Enforce requirepass (already configured). Enable Redis ACLs restricting the API user to GET/SET/DEL/EXPIRE only. Consider enabling Redis TLS.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 14,
@@ -442,8 +434,8 @@
           },
 
           {
-            "position": { "x": 755, "y": 430 },
-            "size": { "width": 160, "height": 60 },
+            "position": { "x": 930, "y": 420 },
+            "size":     { "width": 210, "height": 60 },
             "attrs": {
               "text": { "text": "MinIO (Object Storage)" },
               "topLine":    { "strokeWidth": 1.5, "strokeDasharray": null },
@@ -470,7 +462,7 @@
             "data": {
               "type": "tm.Store",
               "name": "MinIO (Object Storage)",
-              "description": "S3-compatible object store for user file attachments. Configured with default minioadmin/minioadmin credentials. No encryption at rest or in transit within the Docker network.",
+              "description": "S3-compatible object store for user file attachments. Configured with default minioadmin/minioadmin credentials. No encryption at rest or in transit within Docker.",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -486,8 +478,8 @@
                   "status": "Open",
                   "severity": "High",
                   "type": "Information Disclosure",
-                  "description": "MinIO is configured with default credentials minioadmin/minioadmin visible in docker-compose.yml and committed to source control. Any process on backend-net can authenticate, enumerate all buckets, and download every stored file.",
-                  "mitigation": "Rotate the MinIO root credentials via a secrets manager. Create a dedicated service account for the API with a scoped bucket policy. Never commit credentials to source control.",
+                  "description": "MinIO uses default credentials minioadmin/minioadmin committed to source control. Any process on backend-net can authenticate, enumerate all buckets, and download every stored file.",
+                  "mitigation": "Rotate MinIO root credentials via a secrets manager. Create a dedicated service account for the API with a scoped bucket policy. Never commit credentials to source control.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 15,
@@ -499,8 +491,8 @@
                   "status": "Open",
                   "severity": "High",
                   "type": "Tampering",
-                  "description": "If the download endpoint constructs the MinIO object key directly from user-provided input without normalisation, an attacker can traverse to another user's objects or system paths.",
-                  "mitigation": "Store files under a UUID-based key ({userId}/{uuid}.{ext}) rather than the original filename. Validate the requested key belongs to the authenticated user before issuing a presigned URL.",
+                  "description": "If the download endpoint constructs the MinIO object key directly from user input without normalisation, an attacker can traverse to another user's objects.",
+                  "mitigation": "Store files under a UUID-based key ({userId}/{uuid}.{ext}). Validate the requested key belongs to the authenticated user before issuing a presigned URL.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 16,
@@ -520,8 +512,7 @@
                 "strokeDasharray": null
               }
             },
-            "width": 200,
-            "height": 100,
+            "width": 200, "height": 100,
             "zIndex": 10,
             "labels": [
               {
@@ -555,8 +546,8 @@
                   "status": "Open",
                   "severity": "Medium",
                   "type": "Information Disclosure",
-                  "description": "The self-signed certificate causes browser warnings. Users who click through train themselves to accept warnings. A network attacker can substitute their own self-signed certificate to perform MitM without detection.",
-                  "mitigation": "Use a CA-signed certificate (Let's Encrypt) for production. Import the self-signed CA into the browser's trust store for demos. Enforce HSTS with a long max-age once on a CA-signed cert.",
+                  "description": "The self-signed certificate causes browser warnings. Users who click through train themselves to accept warnings. A network attacker can substitute their own certificate to perform MitM undetected.",
+                  "mitigation": "Use a CA-signed certificate (Let's Encrypt) for production. Import the self-signed CA into the browser trust store for demos. Enforce HSTS with a long max-age.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 3,
@@ -577,11 +568,10 @@
                 "stroke": "#cc0000",
                 "targetMarker": { "name": "block" },
                 "sourceMarker": { "name": "" },
-                "strokeDasharray": "5 3"
+                "strokeDasharray": "6 3"
               }
             },
-            "width": 200,
-            "height": 100,
+            "width": 200, "height": 100,
             "zIndex": 10,
             "labels": [
               {
@@ -590,7 +580,7 @@
                   { "tagName": "text",    "selector": "labelText" }
                 ],
                 "attrs": {
-                  "labelText": { "text": "HTTP (3000)\n⚠ Unencrypted", "textAnchor": "middle", "textVerticalAnchor": "middle" },
+                  "labelText": { "text": "HTTP (3000) ⚠ Unencrypted", "textAnchor": "middle", "textVerticalAnchor": "middle" },
                   "labelBody": { "ref": "labelText", "refRx": "50%", "refRy": "60%", "fill": "#fff", "strokeWidth": 0 }
                 },
                 "position": { "distance": 0.5, "args": { "keepGradient": true, "ensureLegibility": true } }
@@ -600,7 +590,7 @@
             "data": {
               "type": "tm.Flow",
               "name": "HTTP (3000) ⚠ Unencrypted",
-              "description": "INTENTIONAL MISCONFIGURATION: Nginx forwards all API traffic to Express over plain HTTP. All request data including credentials and session tokens is in clear text within the Docker network.",
+              "description": "INTENTIONAL MISCONFIGURATION: Nginx forwards all API traffic to Express over plain HTTP. All request data including credentials and session tokens is cleartext within the Docker network.",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -615,8 +605,8 @@
                   "status": "Open",
                   "severity": "High",
                   "type": "Information Disclosure",
-                  "description": "INTENTIONAL MISCONFIGURATION: Traffic from Nginx to the API uses plain HTTP. Any process on frontend-net — a compromised sidecar, a container escape — can intercept credentials, session tokens, and note content in clear text using tcpdump.",
-                  "mitigation": "Implement mTLS between Nginx and the API server. Provision a private CA inside Docker, issue certificates for both services, and configure Nginx to proxy_pass over https:// to the API.",
+                  "description": "INTENTIONAL MISCONFIGURATION: Traffic from Nginx to the API uses plain HTTP. Any process on frontend-net can intercept credentials, session tokens, and note content in clear text using tcpdump.",
+                  "mitigation": "Implement mTLS between Nginx and the API server. Provision a private CA inside Docker, issue certificates for both services, configure Nginx to proxy_pass over https://.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 4,
@@ -628,8 +618,8 @@
                   "status": "Open",
                   "severity": "High",
                   "type": "Spoofing",
-                  "description": "Nginx proxies to the API by container name with no certificate verification. A rogue container on frontend-net that registers the name 'api' can intercept all API traffic without Nginx detecting the substitution.",
-                  "mitigation": "Enforce mTLS so Nginx verifies the API server's certificate. Combine with Docker network policies restricting which containers can join frontend-net. Remove API port 3000 from docker-compose.yml external binding.",
+                  "description": "Nginx proxies to the API by container name with no certificate verification. A rogue container on frontend-net can intercept all API traffic without Nginx detecting the substitution.",
+                  "mitigation": "Enforce mTLS so Nginx verifies the API server's certificate. Restrict which containers can join frontend-net. Remove external binding of API port 3000.",
                   "modelType": "STRIDE",
                   "new": false,
                   "number": 5,
@@ -653,8 +643,7 @@
                 "strokeDasharray": null
               }
             },
-            "width": 200,
-            "height": 100,
+            "width": 200, "height": 100,
             "zIndex": 10,
             "labels": [
               {
@@ -673,7 +662,7 @@
             "data": {
               "type": "tm.Flow",
               "name": "SQL / TCP (5432)",
-              "description": "Application SQL queries for auth (SELECT users), notes CRUD, and attachment metadata. Uses parameterised queries via the pg library. No TLS on the connection.",
+              "description": "Application SQL queries for auth and notes CRUD. Uses parameterised queries. No TLS on the connection — plaintext within backend-net.",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": true,
@@ -688,7 +677,7 @@
                   "status": "Open",
                   "severity": "Medium",
                   "type": "Information Disclosure",
-                  "description": "The pg wire protocol connection does not use TLS. Any process on backend-net can intercept SQL queries, result sets, and the database authentication exchange which includes the password hash.",
+                  "description": "The pg wire protocol connection does not use TLS. Any process on backend-net can intercept SQL queries, result sets, and the database authentication exchange.",
                   "mitigation": "Enable ssl=on in postgresql.conf and configure the pg client with ssl: true. For mutual auth, use client certificates with sslmode=verify-full.",
                   "modelType": "STRIDE",
                   "new": false,
@@ -698,9 +687,9 @@
               ]
             },
             "id": "flow-api-postgres",
-            "source": { "cell": "api",      "port": "api-port-right" },
+            "source": { "cell": "api",      "port": "api-port-top" },
             "target": { "cell": "postgres", "port": "pg-port-left" },
-            "vertices": [{ "x": 700, "y": 200 }]
+            "vertices": [{ "x": 860, "y": 160 }]
           },
 
           {
@@ -713,8 +702,7 @@
                 "strokeDasharray": null
               }
             },
-            "width": 200,
-            "height": 100,
+            "width": 200, "height": 100,
             "zIndex": 10,
             "labels": [
               {
@@ -746,7 +734,7 @@
             "id": "flow-api-redis",
             "source": { "cell": "api",   "port": "api-port-right" },
             "target": { "cell": "redis", "port": "redis-port-left" },
-            "vertices": [{ "x": 700, "y": 310 }]
+            "vertices": []
           },
 
           {
@@ -759,8 +747,7 @@
                 "strokeDasharray": null
               }
             },
-            "width": 200,
-            "height": 100,
+            "width": 200, "height": 100,
             "zIndex": 10,
             "labels": [
               {
@@ -769,7 +756,7 @@
                   { "tagName": "text",    "selector": "labelText" }
                 ],
                 "attrs": {
-                  "labelText": { "text": "HTTP S3 API (9000)\n⚠ Unencrypted", "textAnchor": "middle", "textVerticalAnchor": "middle" },
+                  "labelText": { "text": "HTTP S3 (9000) ⚠", "textAnchor": "middle", "textVerticalAnchor": "middle" },
                   "labelBody": { "ref": "labelText", "refRx": "50%", "refRy": "60%", "fill": "#fff", "strokeWidth": 0 }
                 },
                 "position": { "distance": 0.5, "args": { "keepGradient": true, "ensureLegibility": true } }
@@ -778,8 +765,8 @@
             "connector": "smooth",
             "data": {
               "type": "tm.Flow",
-              "name": "HTTP S3 API (9000) ⚠ Unencrypted",
-              "description": "INTENTIONAL MISCONFIGURATION: S3 API calls (PutObject, GetObject, ListBuckets) over plain HTTP using hardcoded minioadmin credentials. Any container on backend-net can intercept file content and the authentication token.",
+              "name": "HTTP S3 (9000) ⚠ Unencrypted",
+              "description": "INTENTIONAL MISCONFIGURATION: S3 API calls over plain HTTP using hardcoded minioadmin credentials. Any container on backend-net can intercept file content and auth tokens.",
               "outOfScope": false,
               "reasonOutOfScope": "",
               "hasOpenThreats": false,
@@ -792,7 +779,7 @@
             "id": "flow-api-minio",
             "source": { "cell": "api",   "port": "api-port-bottom" },
             "target": { "cell": "minio", "port": "minio-port-left" },
-            "vertices": [{ "x": 590, "y": 460 }]
+            "vertices": [{ "x": 860, "y": 450 }]
           }
 
         ]
