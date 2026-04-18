@@ -1,0 +1,111 @@
+name: Continuous Threat Modeling
+
+on:
+  push:
+    paths:
+      - 'threagile/threagile.yaml'
+      - 'docker-compose.yml'
+      - 'api/src/routes/**'
+      - 'api/src/middleware/**'
+      - 'nginx/nginx.conf'
+  pull_request:
+    paths:
+      - 'threagile/threagile.yaml'
+
+jobs:
+  threat-model-analysis:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Copy current risks as baseline
+        run: |
+          mkdir -p threagile/output
+          if [ -f threagile/output/risks.json ]; then
+            cp threagile/output/risks.json threagile/output/risks-previous.json
+          else
+            echo "[]" > threagile/output/risks-previous.json
+          fi
+
+      - name: Run Threagile analysis
+        run: |
+          docker run --rm \
+            -v ${{ github.workspace }}/threagile:/app/work \
+            threagile/threagile \
+            analyze \
+            -model /app/work/threagile.yaml \
+            -output /app/work/output
+
+      - name: Diff threat models
+        id: diff
+        run: |
+          python3 scripts/threat-model-diff.py \
+            --previous threagile/output/risks-previous.json \
+            --current  threagile/output/risks.json \
+            --output   threagile/output/diff-report.json
+
+      - name: Comment on PR with new threats
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let diff;
+            try { diff = JSON.parse(fs.readFileSync('threagile/output/diff-report.json', 'utf8')); }
+            catch { diff = { new_risks: [] }; }
+            if (diff.new_risks.length === 0) {
+              console.log('No new risks — skipping PR comment');
+              return;
+            }
+            let body = `## 🔒 Threat Model Update\n\n`;
+            body += `**${diff.new_risks.length} new risk(s)** detected by this change:\n\n`;
+            for (const risk of diff.new_risks) {
+              const icon = risk.severity === 'critical' ? '🔴' :
+                           risk.severity === 'elevated' ? '🟠' : '🟡';
+              body += `${icon} **${risk.title || risk.synthetic_id}**\n`;
+              body += `   - Severity: ${risk.severity}\n`;
+              body += `   - Category: ${risk.category}\n`;
+              body += `   - Affected: ${risk.most_relevant_technical_asset}\n\n`;
+            }
+            body += `\n> Full report in [workflow artifacts](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}).`;
+            github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+      - name: Create issues for critical/elevated risks
+        if: steps.diff.outputs.has_critical == 'true'
+        run: |
+          python3 scripts/create-tickets.py \
+            --diff threagile/output/diff-report.json \
+            --min-severity elevated \
+            --repo ${{ github.repository }} \
+            --token ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fail if untracked critical risks
+        if: steps.diff.outputs.has_untracked_critical == 'true'
+        run: |
+          echo "::error::New critical risks detected without risk_tracking entries."
+          echo "Add risk_tracking entries to threagile.yaml before merging."
+          exit 1
+
+      - name: Upload threat model artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: threat-model-report
+          path: |
+            threagile/output/report.pdf
+            threagile/output/data-flow-diagram.png
+            threagile/output/risks.xlsx
+            threagile/output/risks.json
+            threagile/output/diff-report.json

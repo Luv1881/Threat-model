@@ -1,0 +1,575 @@
+threagile_version: 1.0.0
+
+title: VaultNote Threat Model
+date: 2026-04-18
+
+tags_available:
+  - react
+  - spa
+  - nginx
+  - tls-termination
+  - nodejs
+  - express
+  - jwt
+  - postgresql
+  - relational
+  - redis
+  - cache
+  - session-store
+  - minio
+  - s3
+  - object-storage
+  - intentional-misconfiguration
+  - docker
+  - container-runtime
+
+author:
+  name: "VaultNote Security Team"
+  homepage: "https://github.com/vaultnote"
+
+management_summary_comment: >
+  VaultNote is a containerized note-taking application comprised of a React SPA,
+  Nginx reverse proxy, Node.js/Express REST API, PostgreSQL database, Redis session
+  store, and MinIO object storage. The architecture deliberately contains several
+  intentional misconfigurations (unencrypted internal HTTP, no encryption at rest,
+  hardcoded credentials) to demonstrate automated threat detection via Threagile.
+  All findings below are expected and serve as demonstration targets.
+
+business_overview:
+  description: >
+    VaultNote allows authenticated users to create, edit, and share encrypted notes
+    with file attachments. The application stores sensitive user data and note
+    content that must be protected against unauthorized disclosure.
+  images: []
+
+technical_overview:
+  description: >
+    Multi-tier containerized deployment: Nginx terminates TLS and proxies requests
+    to the API over unencrypted HTTP. The API accesses PostgreSQL, Redis, and MinIO
+    over plaintext TCP/HTTP within an internal Docker network.
+  images: []
+
+business_criticality: important
+
+################################################################################
+# DATA ASSETS
+################################################################################
+data_assets:
+
+  User Credentials:
+    id: user-credentials
+    description: >
+      Email addresses and bcrypt-hashed passwords used for authentication.
+      Compromise allows full account takeover.
+    usage: business
+    tags: []
+    origin: customer
+    owner: VaultNote Team
+    quantity: many
+    confidentiality: strictly-confidential
+    integrity: critical
+    availability: operational
+    justification_cia_rating: >
+      Credentials grant full account access. A breach leaks all users' identities
+      and enables account takeover across every note and attachment.
+
+  Note Content:
+    id: note-content
+    description: >
+      User-authored note text — may include personal, financial, or health
+      information depending on how users employ the application.
+    usage: business
+    tags: []
+    origin: customer
+    owner: VaultNote Team
+    quantity: many
+    confidentiality: confidential
+    integrity: critical
+    availability: operational
+    justification_cia_rating: >
+      Notes may contain highly sensitive personal information. Integrity is
+      critical because corrupted notes lose user trust.
+
+  Session Tokens:
+    id: session-tokens
+    description: >
+      JWT tokens and Redis session keys used to maintain authenticated state.
+      Theft allows session hijacking without knowing the user's password.
+    usage: business
+    tags: []
+    origin: internal
+    owner: VaultNote Team
+    quantity: many
+    confidentiality: confidential
+    integrity: critical
+    availability: operational
+    justification_cia_rating: >
+      Session token compromise enables full session hijacking. Short TTLs and
+      revocation lists mitigate but do not eliminate the risk.
+
+  File Attachments:
+    id: file-attachments
+    description: >
+      Binary file uploads attached to notes. May include documents, images,
+      or other sensitive files depending on note usage.
+    usage: business
+    tags: []
+    origin: customer
+    owner: VaultNote Team
+    quantity: many
+    confidentiality: confidential
+    integrity: important
+    availability: operational
+    justification_cia_rating: >
+      Files may contain confidential content. MinIO's default credentials
+      (minioadmin) make all stored files accessible to anyone on the network.
+
+################################################################################
+# TECHNICAL ASSETS
+################################################################################
+technical_assets:
+
+  Browser SPA:
+    id: browser-spa
+    description: >
+      React Single Page Application served from Nginx. Users authenticate,
+      manage notes, and upload files through this interface.
+    type: external-entity
+    usage: business
+    used_as_client_by_human: true
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: application
+    technology: browser
+    tags: ["react", "spa"]
+    internet: true
+    machine: physical
+    encryption: none
+    owner: End Users
+    confidentiality: public
+    integrity: operational
+    availability: operational
+    justification_cia_rating: >
+      Client-side code is public; the trust boundary here is user data entered
+      into the browser. XSS would allow an attacker to exfiltrate session tokens.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: true
+    data_assets_processed:
+      - user-credentials
+      - note-content
+      - file-attachments
+    data_assets_stored: []
+    data_formats_accepted:
+      - json
+    communication_links:
+
+      HTTPS to Nginx:
+        target: nginx-proxy
+        description: >
+          User-initiated HTTPS requests carrying credentials (login) and note
+          content (create/edit). This is the only encrypted link in the chain.
+        protocol: https
+        authentication: credentials
+        authorization: enduser-identity-propagation
+        tags: []
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: business
+        data_assets_sent:
+          - user-credentials
+          - note-content
+          - file-attachments
+        data_assets_received:
+          - note-content
+          - file-attachments
+        diagram_tweak_weight: 1
+        diagram_tweak_constraint: false
+
+  Nginx Reverse Proxy:
+    id: nginx-proxy
+    description: >
+      Nginx terminates TLS and forwards all API traffic to the Express server
+      over plain HTTP (port 3000). This is the DMZ entry point.
+    type: process
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: reverse-proxy
+    tags: ["nginx", "tls-termination"]
+    internet: false
+    machine: container
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: internal
+    integrity: critical
+    availability: critical
+    justification_cia_rating: >
+      Nginx is the single external entry point. Its compromise exposes all
+      downstream services. Availability is critical — outage = full service outage.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    data_assets_processed:
+      - user-credentials
+      - note-content
+      - file-attachments
+    data_assets_stored: []
+    data_formats_accepted:
+      - json
+    communication_links:
+
+      HTTP to API Server:
+        target: api-server
+        description: >
+          INTENTIONAL MISCONFIGURATION: Traffic between Nginx and the API server
+          uses plaintext HTTP. An attacker with access to the Docker network
+          (container escape, compromised sidecar) can intercept credentials,
+          session tokens, and note content in transit.
+        protocol: http
+        authentication: none
+        authorization: none
+        tags: ["intentional-misconfiguration"]
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: business
+        data_assets_sent:
+          - user-credentials
+          - note-content
+          - file-attachments
+        data_assets_received:
+          - note-content
+          - file-attachments
+        diagram_tweak_weight: 2
+        diagram_tweak_constraint: false
+
+  API Server:
+    id: api-server
+    description: >
+      Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD
+      on notes, file uploads to MinIO. Bridges the frontend and backend networks.
+      Single most security-critical component — compromise equals full data access.
+    type: process
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: web-service-rest
+    tags: ["nodejs", "express", "jwt"]
+    internet: false
+    machine: container
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: critical
+    availability: critical
+    justification_cia_rating: >
+      The API processes all user data. It bridges both Docker networks — a
+      compromised API container can pivot into the internal data tier.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: true
+    data_assets_processed:
+      - user-credentials
+      - note-content
+      - session-tokens
+      - file-attachments
+    data_assets_stored: []
+    data_formats_accepted:
+      - json
+    communication_links:
+
+      PostgreSQL Connection:
+        target: postgresql-db
+        description: >
+          Application-level SQL queries for user auth, notes CRUD.
+          Uses parameterized queries (pg library) to prevent SQL injection.
+          No TLS on the connection — traffic is plaintext within backend-net.
+        protocol: sql-access-protocol
+        authentication: credentials
+        authorization: technical-user
+        tags: []
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: business
+        data_assets_sent:
+          - user-credentials
+          - note-content
+        data_assets_received:
+          - user-credentials
+          - note-content
+        diagram_tweak_weight: 1
+        diagram_tweak_constraint: false
+
+      Redis Session Store:
+        target: redis-cache
+        description: >
+          Session token storage and JWT revocation list.
+          Password-protected (requirepass) but no TLS.
+        protocol: nosql-access-protocol
+        authentication: credentials
+        authorization: technical-user
+        tags: []
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: business
+        data_assets_sent:
+          - session-tokens
+        data_assets_received:
+          - session-tokens
+        diagram_tweak_weight: 1
+        diagram_tweak_constraint: false
+
+      MinIO File Storage:
+        target: minio-storage
+        description: >
+          INTENTIONAL MISCONFIGURATION: S3 API calls to MinIO over plain HTTP.
+          Default minioadmin/minioadmin credentials are hardcoded in compose.
+          Any container on backend-net can read all stored files.
+        protocol: http
+        authentication: credentials
+        authorization: technical-user
+        tags: ["intentional-misconfiguration"]
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: business
+        data_assets_sent:
+          - file-attachments
+        data_assets_received:
+          - file-attachments
+        diagram_tweak_weight: 1
+        diagram_tweak_constraint: false
+
+  PostgreSQL Database:
+    id: postgresql-db
+    description: >
+      Primary relational datastore. Contains users table (email + bcrypt password
+      hash), notes table (title + content), and attachments metadata.
+      INTENTIONAL MISCONFIGURATION: No encryption at rest (encryption: none).
+    type: datastore
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: database
+    tags: ["postgresql", "relational"]
+    internet: false
+    machine: container
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: strictly-confidential
+    integrity: critical
+    availability: critical
+    justification_cia_rating: >
+      Holds all user PII (email, hashed passwords) and all note content.
+      Strictly confidential — unencrypted disk access exposes all data.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    data_assets_processed:
+      - user-credentials
+      - note-content
+    data_assets_stored:
+      - user-credentials
+      - note-content
+    data_formats_accepted:
+      - json
+    communication_links: {}
+
+  Redis Cache:
+    id: redis-cache
+    description: >
+      In-memory store used as session store and JWT revocation list.
+      INTENTIONAL MISCONFIGURATION: No encryption at rest. If Redis persistence
+      is enabled and the RDB file is exfiltrated, session tokens are exposed.
+    type: datastore
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: component
+    technology: database
+    tags: ["redis", "cache", "session-store"]
+    internet: false
+    machine: container
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: operational
+    availability: important
+    justification_cia_rating: >
+      Session token exposure enables account takeover. Non-persistent by default
+      but the container volume could persist RDB snapshots.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    data_assets_processed:
+      - session-tokens
+    data_assets_stored:
+      - session-tokens
+    data_formats_accepted: []
+    communication_links: {}
+
+  MinIO Object Storage:
+    id: minio-storage
+    description: >
+      S3-compatible object store for file attachments.
+      INTENTIONAL MISCONFIGURATION: Uses default minioadmin/minioadmin credentials
+      (visible in docker-compose.yml) and stores files without encryption at rest.
+      HTTP-only (no TLS) within the Docker network.
+    type: datastore
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: file-server
+    tags: ["minio", "s3", "object-storage"]
+    internet: false
+    machine: container
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: important
+    availability: operational
+    justification_cia_rating: >
+      Stores user file uploads which may contain sensitive documents.
+      Default credentials + no encryption = trivial exfiltration by any
+      process on backend-net.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    data_assets_processed:
+      - file-attachments
+    data_assets_stored:
+      - file-attachments
+    data_formats_accepted:
+      - file
+    communication_links: {}
+
+################################################################################
+# TRUST BOUNDARIES
+################################################################################
+trust_boundaries:
+
+  Internet:
+    id: internet
+    description: >
+      Untrusted external network. All traffic from this zone must cross the Nginx
+      TLS termination point before entering the DMZ.
+    type: network-on-prem
+    tags: []
+    technical_assets_inside:
+      - browser-spa
+    trust_boundaries_nested: []
+
+  DMZ:
+    id: dmz
+    description: >
+      Demilitarized zone containing the Nginx reverse proxy. Accessible from the
+      internet but isolated from the application and data tiers.
+    type: network-on-prem
+    tags: []
+    technical_assets_inside:
+      - nginx-proxy
+    trust_boundaries_nested: []
+
+  Application Network:
+    id: application-network
+    description: >
+      Internal Docker bridge network (frontend-net). Contains the API server
+      which is reachable from Nginx but also bridges into backend-net.
+    type: network-on-prem
+    tags: []
+    technical_assets_inside:
+      - api-server
+    trust_boundaries_nested: []
+
+  Data Tier:
+    id: data-tier
+    description: >
+      Internal Docker bridge network (backend-net, marked internal: true).
+      No external routing. Contains all datastores. The API server has
+      a NIC on this network and acts as the sole legitimate access path.
+    type: network-on-prem
+    tags: []
+    technical_assets_inside:
+      - postgresql-db
+      - redis-cache
+      - minio-storage
+    trust_boundaries_nested: []
+
+################################################################################
+# SHARED RUNTIMES
+################################################################################
+shared_runtimes:
+
+  Docker Host:
+    id: docker-host
+    description: >
+      All containers run on the same Docker host. A container escape or privileged
+      container could access the host filesystem including Docker socket and
+      database volumes.
+    tags: ["docker", "container-runtime"]
+    technical_assets_running:
+      - nginx-proxy
+      - api-server
+      - postgresql-db
+      - redis-cache
+      - minio-storage
+
+################################################################################
+# RISK TRACKING
+# (Demonstrating how findings are tracked in-repo alongside the model)
+################################################################################
+risk_tracking:
+
+  unencrypted-communication@nginx-proxy>http-to-api-server@nginx-proxy@api-server:
+    status: in-progress
+    justification: >
+      Migrating Nginx-to-API communication to mTLS. A separate CA will be
+      provisioned inside the Docker network. PR #47 is in review; target
+      completion sprint 22.
+    ticket: VAULT-102
+    date: 2026-04-18
+    checked_by: Security Team
+
+  unencrypted-asset@postgresql-db:
+    status: accepted
+    justification: >
+      The PostgreSQL volume runs on a host-level LUKS-encrypted partition
+      in all production deployments. The Threagile finding is acknowledged
+      as informational for this demo environment which uses unencrypted storage.
+      Production database TDE via pgcrypto will be evaluated in Q3.
+    ticket: VAULT-89
+    date: 2026-04-15
+    checked_by: Infrastructure Team
+
+  unencrypted-asset@minio-storage:
+    status: in-progress
+    justification: >
+      MinIO server-side encryption (SSE-S3) is being evaluated. Default
+      minioadmin credentials will be rotated before production deployment.
+      This finding is a CRITICAL blocker for launch. Tracked in VAULT-110.
+    ticket: VAULT-110
+    date: 2026-04-18
+    checked_by: Security Team
+
+  mixed-targets-on-shared-runtime@docker-host:
+    status: accepted
+    justification: >
+      Docker containers run without privileged mode and with no host path
+      mounts except the named volumes. The Docker socket is not mounted
+      into any container. Risk is accepted for this demo environment.
+    ticket: VAULT-95
+    date: 2026-04-10
+    checked_by: Infrastructure Team
