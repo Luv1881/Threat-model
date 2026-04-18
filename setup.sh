@@ -69,6 +69,8 @@ echo ""
 echo "▶ Pulling Docker images..."
 $DOCKER_CMD pull threagile/threagile --quiet
 echo "  ✓ Threagile image ready"
+$DOCKER_CMD pull owasp/threat-dragon:stable --quiet
+echo "  ✓ Threat Dragon image ready"
 
 # ── 4. Start the stack ────────────────────────────────────────────────────────
 echo ""
@@ -111,6 +113,28 @@ $DOCKER_CMD run --rm \
   -model /app/work/threagile.yaml \
   -output /app/work/output
 
+# ── 7. Launch Threat Dragon (Approach 2) ─────────────────────────────────────
+echo ""
+echo "═══════════════════════════════════════════════════════"
+echo "  APPROACH 2 — OWASP Threat Dragon (Visual STRIDE)"
+echo "═══════════════════════════════════════════════════════"
+
+# Stop any existing Threat Dragon container
+$DOCKER_CMD rm -f threat-dragon 2>/dev/null || true
+
+echo ""
+echo "▶ Starting Threat Dragon on http://localhost:8080 ..."
+$DOCKER_CMD run -d \
+  --name threat-dragon \
+  -p 8080:3000 \
+  -e "ENCRYPTION_KEYS=[{\"isPrimary\":true,\"id\":0,\"value\":\"vaultnote-demo-key-1234567890ab\"}]" \
+  -e "ENCRYPTION_JWT_SIGNING_KEY=vaultnote-threat-dragon-demo-signing-key" \
+  -e "ENCRYPTION_JWT_REFRESH_SIGNING_KEY=vaultnote-threat-dragon-demo-refresh-key" \
+  -e "SERVER_API_PROTOCOL=http" \
+  -e "NODE_ENV=production" \
+  owasp/threat-dragon:stable
+echo "  ✓ Threat Dragon running"
+
 echo ""
 echo "═══════════════════════════════════════════════════════"
 echo "  ✅ SETUP COMPLETE"
@@ -119,15 +143,21 @@ echo ""
 echo "  Application:     https://localhost"
 echo "  Demo login:      demo@vaultnote.local / demo1234"
 echo ""
-echo "  Threagile output:"
+echo "  APPROACH 1 — Threagile output:"
 echo "    📊 DFD:           threagile/output/data-flow-diagram.png"
 echo "    📄 Report:        threagile/output/report.pdf"
 echo "    📋 Risk register: threagile/output/risks.xlsx"
 echo "    🔧 JSON:          threagile/output/risks.json"
 echo ""
+echo "  APPROACH 2 — Threat Dragon:"
+echo "    🌐 GUI:           http://localhost:8080"
+echo "    📁 Model file:    threat-dragon/vaultnote-model.json"
+echo "    → Open the GUI, choose 'Open Existing' and load the model file"
+echo "    → Stop when done: docker rm -f threat-dragon"
+echo ""
 echo "  Stack management:"
 echo "    Logs:   $COMPOSE_CMD logs -f"
-echo "    Stop:   $COMPOSE_CMD down"
+echo "    Stop:   $COMPOSE_CMD down && docker rm -f threat-dragon"
 echo "    Status: $DOCKER_CMD ps"
 echo ""
 echo "  Quick API test:"

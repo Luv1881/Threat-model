@@ -1,0 +1,495 @@
+{
+  "version": "2.3.0",
+  "summary": {
+    "title": "VaultNote Threat Model",
+    "owner": "VaultNote Security Team",
+    "description": "Threat model for VaultNote — a containerised note-taking application comprising a React SPA, Nginx reverse proxy, Node.js/Express REST API, PostgreSQL database, Redis session store, and MinIO object storage. The architecture deliberately contains several intentional misconfigurations (unencrypted internal HTTP, no encryption at rest, hardcoded credentials) to demonstrate STRIDE-based threat identification.",
+    "id": 0
+  },
+  "detail": {
+    "contributors": [
+      { "name": "VaultNote Security Team" }
+    ],
+    "diagrams": [
+      {
+        "title": "VaultNote — Main Data Flow",
+        "description": "Full architecture data flow diagram covering all trust boundaries, components, and data flows. STRIDE threats are documented per element and per flow.",
+        "diagramType": "STRIDE",
+        "id": 0,
+        "thumbnail": "./public/content/images/thumbnail.stride.jpg",
+        "version": "2.3.0",
+        "cells": [
+
+          {
+            "type": "tm.Boundary",
+            "source": { "x": 280, "y": 50 },
+            "target": { "x": 280, "y": 540 },
+            "vertices": [],
+            "id": "boundary-internet-dmz",
+            "z": 0,
+            "attrs": {
+              "text": { "text": "Internet / DMZ" }
+            },
+            "labels": [
+              { "position": 0.1, "attrs": { "text": { "text": "Internet / DMZ" } } }
+            ]
+          },
+
+          {
+            "type": "tm.Boundary",
+            "source": { "x": 550, "y": 50 },
+            "target": { "x": 550, "y": 540 },
+            "vertices": [],
+            "id": "boundary-dmz-app",
+            "z": 0,
+            "attrs": {
+              "text": { "text": "DMZ / Application Network" }
+            },
+            "labels": [
+              { "position": 0.1, "attrs": { "text": { "text": "DMZ / Application Network" } } }
+            ]
+          },
+
+          {
+            "type": "tm.Boundary",
+            "source": { "x": 820, "y": 50 },
+            "target": { "x": 820, "y": 540 },
+            "vertices": [],
+            "id": "boundary-app-data",
+            "z": 0,
+            "attrs": {
+              "text": { "text": "Application / Data Tier" }
+            },
+            "labels": [
+              { "position": 0.1, "attrs": { "text": { "text": "Application / Data Tier" } } }
+            ]
+          },
+
+          {
+            "type": "tm.Actor",
+            "size": { "width": 160, "height": 80 },
+            "position": { "x": 80, "y": 220 },
+            "angle": 0,
+            "id": "actor-browser",
+            "z": 2,
+            "hasOpenThreats": true,
+            "attrs": {
+              "text": { "text": "Browser (User)" }
+            },
+            "threats": [
+              {
+                "id": "threat-001",
+                "title": "Stored Cross-Site Scripting (XSS)",
+                "status": "Open",
+                "severity": "High",
+                "type": "Tampering",
+                "description": "An attacker creates a note containing malicious JavaScript. When another user views that note, the script executes in their browser context, enabling session token exfiltration, credential harvesting, or account takeover via forged API requests.",
+                "mitigation": "Enforce a strict Content Security Policy (CSP) header from Nginx. Use React's default HTML escaping and never bypass it with dangerouslySetInnerHTML. Sanitise user-provided note content server-side with a library such as DOMPurify before storage.",
+                "modelType": "STRIDE"
+              },
+              {
+                "id": "threat-002",
+                "title": "Session Token Theft via Browser Storage",
+                "status": "Open",
+                "severity": "Medium",
+                "type": "Information Disclosure",
+                "description": "If the JWT is stored in localStorage (rather than an HttpOnly cookie) it is accessible to any JavaScript running on the page, including XSS payloads or malicious browser extensions.",
+                "mitigation": "Store the JWT in an HttpOnly, Secure, SameSite=Strict cookie. If localStorage is required for UX reasons, implement a short TTL and token rotation on every request.",
+                "modelType": "STRIDE"
+              }
+            ],
+            "outOfScope": false,
+            "reasonOutOfScope": "",
+            "description": "React Single Page Application running in the end-user's browser. Handles authentication, note management, and file uploads through the Nginx-fronted API.",
+            "providesAuthentication": false
+          },
+
+          {
+            "type": "tm.Process",
+            "size": { "width": 160, "height": 80 },
+            "position": { "x": 350, "y": 220 },
+            "angle": 0,
+            "id": "process-nginx",
+            "z": 2,
+            "hasOpenThreats": true,
+            "attrs": {
+              "text": { "text": "Nginx\nReverse Proxy" }
+            },
+            "threats": [
+              {
+                "id": "threat-006",
+                "title": "TLS Downgrade / Weak Cipher Suite",
+                "status": "Open",
+                "severity": "Medium",
+                "type": "Tampering",
+                "description": "A self-signed certificate with a weak configuration (e.g. TLS 1.0/1.1 or weak ciphers) allows an attacker positioned on the network to downgrade or intercept the HTTPS session between the browser and Nginx.",
+                "mitigation": "Configure Nginx to enforce TLS 1.2+ with strong cipher suites (ECDHE-ECDSA-AES256-GCM-SHA384 or equivalent). Use `ssl_prefer_server_ciphers on`. Rotate to a CA-signed certificate for production. Add HSTS header.",
+                "modelType": "STRIDE"
+              },
+              {
+                "id": "threat-007",
+                "title": "No Web Application Firewall — Unfiltered Requests",
+                "status": "Open",
+                "severity": "Medium",
+                "type": "Elevation of Privilege",
+                "description": "Nginx proxies all requests to the API without inspecting payloads. Common attack patterns (SQLi, XSS, path traversal in query strings) reach the API unfiltered, reducing the defence depth.",
+                "mitigation": "Deploy ModSecurity with the OWASP Core Rule Set (CRS) as a Nginx WAF module. Alternatively, place a cloud WAF (AWS WAF, Cloudflare) in front of the origin. At minimum, enforce request size limits and rate limiting at the Nginx layer.",
+                "modelType": "STRIDE"
+              }
+            ],
+            "outOfScope": false,
+            "reasonOutOfScope": "",
+            "description": "Nginx terminates TLS on port 443 and reverse-proxies all API traffic to the Express server over plain HTTP on port 3000. Also serves the static React build. Single external entry point — its compromise equals full downstream access.",
+            "handlesCardPayment": false,
+            "handlesGoodsOrServices": false,
+            "isWebApplication": false,
+            "privilegeLevel": ""
+          },
+
+          {
+            "type": "tm.Process",
+            "size": { "width": 160, "height": 80 },
+            "position": { "x": 620, "y": 220 },
+            "angle": 0,
+            "id": "process-api",
+            "z": 2,
+            "hasOpenThreats": true,
+            "attrs": {
+              "text": { "text": "API Server\n(Node.js/Express)" }
+            },
+            "threats": [
+              {
+                "id": "threat-008",
+                "title": "SQL Injection via Note CRUD Endpoints",
+                "status": "Open",
+                "severity": "High",
+                "type": "Tampering",
+                "description": "If any SQL query constructs user input by string concatenation rather than parameterised queries, an attacker can manipulate the query to dump the users table, bypass authentication, or delete data.",
+                "mitigation": "Use parameterised queries exclusively via the `pg` library (all current queries use `$1` placeholders — verify this is consistently applied in all routes including search). Add a separate database user with minimal privileges (SELECT/INSERT/UPDATE on specific tables only — no DDL).",
+                "modelType": "STRIDE"
+              },
+              {
+                "id": "threat-009",
+                "title": "Broken Authentication — Hardcoded JWT Secret",
+                "status": "Open",
+                "severity": "High",
+                "type": "Elevation of Privilege",
+                "description": "The JWT signing secret is hardcoded as `change-me-in-production` in docker-compose.yml and likely in the API source. Anyone with repository access can forge valid JWT tokens for any user, granting full account access without a password.",
+                "mitigation": "Inject the JWT secret via environment variable from a secrets manager (HashiCorp Vault, AWS Secrets Manager, or at minimum a `.env` file excluded from Git). Enforce minimum 256-bit entropy for the secret. Rotate the secret and invalidate all active sessions as part of the production deployment checklist.",
+                "modelType": "STRIDE"
+              },
+              {
+                "id": "threat-010",
+                "title": "Server-Side Request Forgery (SSRF) via File Upload",
+                "status": "Open",
+                "severity": "High",
+                "type": "Tampering",
+                "description": "If the file upload endpoint accepts a URL parameter (for remote file import or presigned URL generation) and does not validate the destination, an attacker can cause the server to make requests to internal services — including the MinIO admin API, Redis, PostgreSQL, or the cloud metadata endpoint (169.254.169.254).",
+                "mitigation": "Never accept user-controlled URLs for server-side fetch. For presigned MinIO URLs, generate them server-side with a fixed bucket path. Implement an allow-list of permitted outbound destinations. Block access to 169.254.169.254 and RFC1918 ranges at the network level.",
+                "modelType": "STRIDE"
+              },
+              {
+                "id": "threat-011",
+                "title": "Brute Force Login — No Rate Limiting",
+                "status": "Open",
+                "severity": "Medium",
+                "type": "Denial of Service",
+                "description": "The login endpoint does not enforce per-IP or per-account rate limiting. An attacker can attempt millions of password combinations without triggering any lock-out or delay, enabling credential stuffing and brute-force attacks.",
+                "mitigation": "Apply express-rate-limit middleware to the `/auth/login` route: maximum 5 attempts per 15 minutes per IP. Also implement account-level lock-out after 10 consecutive failures with an exponential back-off. Use Redis to store rate-limit counters so they survive API restarts.",
+                "modelType": "STRIDE"
+              }
+            ],
+            "outOfScope": false,
+            "reasonOutOfScope": "",
+            "description": "Node.js/Express REST API. Handles JWT authentication (bcrypt password verification, token issuance/revocation), notes CRUD, and file upload/download via MinIO. Bridges the frontend-net and backend-net Docker networks — the highest-risk pivot point in the architecture.",
+            "handlesCardPayment": false,
+            "handlesGoodsOrServices": false,
+            "isWebApplication": true,
+            "privilegeLevel": ""
+          },
+
+          {
+            "type": "tm.Store",
+            "size": { "width": 160, "height": 80 },
+            "position": { "x": 880, "y": 100 },
+            "angle": 0,
+            "id": "store-postgres",
+            "z": 2,
+            "hasOpenThreats": true,
+            "attrs": {
+              "text": { "text": "PostgreSQL\nDatabase" }
+            },
+            "threats": [
+              {
+                "id": "threat-012",
+                "title": "No Encryption at Rest — PII and Credentials Exposed",
+                "status": "Open",
+                "severity": "High",
+                "type": "Information Disclosure",
+                "description": "PostgreSQL stores all user PII (email addresses), bcrypt password hashes, and note content without encryption at rest. If the Docker volume is exfiltrated (via a misconfigured volume mount, host compromise, or cloud snapshot access), all data is immediately readable.",
+                "mitigation": "Enable filesystem-level encryption (LUKS) on the host volume backing pgdata. For column-level protection, use pgcrypto to encrypt sensitive columns (note content). Ensure database backups are encrypted in transit and at rest. For production, evaluate PostgreSQL TDE extensions.",
+                "modelType": "STRIDE"
+              },
+              {
+                "id": "threat-013",
+                "title": "Database Privilege Escalation — Overprivileged DB User",
+                "status": "Open",
+                "severity": "Medium",
+                "type": "Elevation of Privilege",
+                "description": "The API connects to PostgreSQL as the `vaultnote` superuser (created via POSTGRES_USER). If the API is compromised, the attacker has full PostgreSQL privileges including CREATE/DROP TABLE, pg_read_file, and COPY TO — enabling arbitrary file reads from the host.",
+                "mitigation": "Create a least-privilege application role with SELECT/INSERT/UPDATE/DELETE on specific tables only. Remove DDL permissions from the application user. Run schema migrations as a separate, higher-privileged migration user that is not accessible to the running API.",
+                "modelType": "STRIDE"
+              }
+            ],
+            "outOfScope": false,
+            "reasonOutOfScope": "",
+            "description": "Primary relational datastore. Contains the users table (email, bcrypt password hash), notes table (title, content), and attachments metadata table. Runs on the internal backend-net Docker network with no direct external exposure.",
+            "isALog": false,
+            "isEncrypted": false,
+            "isSigned": false,
+            "storesCredentials": true,
+            "storesInventory": false
+          },
+
+          {
+            "type": "tm.Store",
+            "size": { "width": 160, "height": 80 },
+            "position": { "x": 880, "y": 260 },
+            "angle": 0,
+            "id": "store-redis",
+            "z": 2,
+            "hasOpenThreats": true,
+            "attrs": {
+              "text": { "text": "Redis\n(Session Store)" }
+            },
+            "threats": [
+              {
+                "id": "threat-014",
+                "title": "Session Hijacking via Redis Exposure",
+                "status": "Open",
+                "severity": "Medium",
+                "type": "Elevation of Privilege",
+                "description": "Redis stores active JWT session tokens and the revocation list. If Redis becomes network-accessible outside the backend-net (e.g. through a misconfigured port binding or container escape), an attacker can extract all active session tokens and replay them without knowing user passwords. The revocation list can also be flushed, allowing previously revoked tokens to be reused.",
+                "mitigation": "Bind Redis exclusively to the backend-net Docker network (current config). Enforce the `requirepass` directive (already configured). Enable Redis ACLs to restrict the API user to only the commands it needs (GET, SET, DEL, EXPIRE). Consider enabling Redis TLS for the connection from the API server.",
+                "modelType": "STRIDE"
+              }
+            ],
+            "outOfScope": false,
+            "reasonOutOfScope": "",
+            "description": "In-memory key-value store used as the session store (active JWT tokens) and JWT revocation list. Password-protected via requirepass directive but no TLS. Non-persistent by default — session loss on container restart is an availability consideration.",
+            "isALog": false,
+            "isEncrypted": false,
+            "isSigned": false,
+            "storesCredentials": false,
+            "storesInventory": false
+          },
+
+          {
+            "type": "tm.Store",
+            "size": { "width": 160, "height": 80 },
+            "position": { "x": 880, "y": 420 },
+            "angle": 0,
+            "id": "store-minio",
+            "z": 2,
+            "hasOpenThreats": true,
+            "attrs": {
+              "text": { "text": "MinIO\n(Object Storage)" }
+            },
+            "threats": [
+              {
+                "id": "threat-015",
+                "title": "Unauthorized File Access via Default Credentials",
+                "status": "Open",
+                "severity": "High",
+                "type": "Information Disclosure",
+                "description": "MinIO is configured with the default credentials minioadmin/minioadmin (visible in docker-compose.yml and committed to source control). Any process on the backend-net — including a compromised API container — can authenticate to MinIO, enumerate all buckets, and download every stored file attachment without restriction.",
+                "mitigation": "Rotate the MinIO root credentials immediately. Generate unique MINIO_ROOT_USER and MINIO_ROOT_PASSWORD values via a secrets manager. Create a dedicated service account for the API with a scoped bucket policy granting access only to the vaultnote-attachments bucket. Never commit credentials to source control.",
+                "modelType": "STRIDE"
+              },
+              {
+                "id": "threat-016",
+                "title": "Path Traversal via File Download Endpoint",
+                "status": "Open",
+                "severity": "High",
+                "type": "Tampering",
+                "description": "If the file download endpoint constructs the MinIO object key directly from user-provided input (e.g. `GET /files/:filename`) without normalisation, an attacker can request `../../etc/passwd` or traverse to another user's objects by manipulating the object key path.",
+                "mitigation": "Store files under a UUID-based key (e.g. `{userId}/{uuid}.{ext}`) rather than preserving the original filename. Validate that the requested object key belongs to the authenticated user before issuing a presigned URL. Never pass raw user input as the MinIO object key.",
+                "modelType": "STRIDE"
+              }
+            ],
+            "outOfScope": false,
+            "reasonOutOfScope": "",
+            "description": "S3-compatible object store for user file attachments. Accessed by the API over plain HTTP on port 9000 using the S3 API. Configured with default minioadmin credentials. No encryption at rest or in transit within the Docker network.",
+            "isALog": false,
+            "isEncrypted": false,
+            "isSigned": false,
+            "storesCredentials": false,
+            "storesInventory": false
+          },
+
+          {
+            "type": "tm.Flow",
+            "source": { "id": "actor-browser" },
+            "target": { "id": "process-nginx" },
+            "vertices": [],
+            "id": "flow-browser-nginx",
+            "z": 1,
+            "hasOpenThreats": true,
+            "attrs": {
+              "text": { "text": "HTTPS (443)" }
+            },
+            "labels": [
+              { "position": 0.5, "attrs": { "text": { "text": "HTTPS (443)" } } }
+            ],
+            "threats": [
+              {
+                "id": "threat-003",
+                "title": "Credential Interception via TLS Misconfiguration",
+                "status": "Open",
+                "severity": "Medium",
+                "type": "Information Disclosure",
+                "description": "The self-signed certificate is issued for `vaultnote.local` / `localhost`. Browsers will display a certificate warning, and users who click through train themselves to accept security warnings. A network attacker can substitute a self-signed certificate of their own to perform MitM without the user noticing.",
+                "mitigation": "For production, use a CA-signed certificate (Let's Encrypt / ACME). Pin the certificate if using a private CA. For demos, import the self-signed CA into the browser's trust store rather than relying on click-through. Enforce HSTS with a long max-age once on a CA-signed cert.",
+                "modelType": "STRIDE"
+              }
+            ],
+            "outOfScope": false,
+            "isEncrypted": true,
+            "isPublicNetwork": true,
+            "protocol": "HTTPS",
+            "description": "User-initiated HTTPS requests carrying credentials (login), note content (create/edit), and file uploads. Only encrypted link in the full chain — TLS terminates at Nginx."
+          },
+
+          {
+            "type": "tm.Flow",
+            "source": { "id": "process-nginx" },
+            "target": { "id": "process-api" },
+            "vertices": [],
+            "id": "flow-nginx-api",
+            "z": 1,
+            "hasOpenThreats": true,
+            "attrs": {
+              "text": { "text": "HTTP (3000)\n⚠ Unencrypted" }
+            },
+            "labels": [
+              { "position": 0.5, "attrs": { "text": { "text": "HTTP (3000) ⚠ Unencrypted" } } }
+            ],
+            "threats": [
+              {
+                "id": "threat-004",
+                "title": "Eavesdropping on Unencrypted Internal Traffic",
+                "status": "Open",
+                "severity": "High",
+                "type": "Information Disclosure",
+                "description": "INTENTIONAL MISCONFIGURATION: Traffic from Nginx to the API server uses plaintext HTTP. Any process on the frontend-net Docker network — including a compromised sidecar, a container that has escaped to the host, or an attacker who has pivoted through any container — can intercept credentials, session tokens, and note content in clear text using tools like tcpdump.",
+                "mitigation": "Implement mTLS between Nginx and the API server. Provision a private CA inside the Docker network, issue certificates for both services, and configure Nginx to proxy_pass over https:// to the API. Alternatively, use a service mesh with automatic mTLS (Envoy, Linkerd).",
+                "modelType": "STRIDE"
+              },
+              {
+                "id": "threat-005",
+                "title": "Spoofing the API Server — No Mutual Authentication",
+                "status": "Open",
+                "severity": "High",
+                "type": "Spoofing",
+                "description": "Nginx proxies to the API by container name (`api:3000`) with no certificate verification. A rogue container on frontend-net that registers the name `api` (possible via Docker API access or container escape) can intercept all API traffic without Nginx detecting the substitution.",
+                "mitigation": "Enforce mTLS so that Nginx verifies the API server's certificate before forwarding traffic. Combine with Docker network policies that restrict which containers can join frontend-net. Remove API port exposure (3000) from docker-compose.yml so it is only accessible within the Docker network.",
+                "modelType": "STRIDE"
+              }
+            ],
+            "outOfScope": false,
+            "isEncrypted": false,
+            "isPublicNetwork": false,
+            "protocol": "HTTP",
+            "description": "INTENTIONAL MISCONFIGURATION: Nginx forwards all API traffic to Express over plain HTTP on port 3000. Post-TLS termination, all request data — including credentials and session tokens — is in clear text within the Docker network."
+          },
+
+          {
+            "type": "tm.Flow",
+            "source": { "id": "process-api" },
+            "target": { "id": "store-postgres" },
+            "vertices": [
+              { "x": 780, "y": 180 }
+            ],
+            "id": "flow-api-postgres",
+            "z": 1,
+            "hasOpenThreats": true,
+            "attrs": {
+              "text": { "text": "SQL / TCP (5432)" }
+            },
+            "labels": [
+              { "position": 0.5, "attrs": { "text": { "text": "SQL / TCP (5432)" } } }
+            ],
+            "threats": [
+              {
+                "id": "threat-017",
+                "title": "Unencrypted Database Traffic — Credentials in Transit",
+                "status": "Open",
+                "severity": "Medium",
+                "type": "Information Disclosure",
+                "description": "The pg wire protocol connection from the API to PostgreSQL does not use TLS. Any process on the backend-net can intercept SQL queries, result sets, and the database handshake — which includes the `vaultnote` user password hash transmitted during the authentication exchange.",
+                "mitigation": "Enable `ssl = on` in postgresql.conf and configure the pg client with `ssl: true`. For mutual authentication, use client certificates (`sslmode=verify-full` with `sslcert`/`sslkey`). Within a Docker bridge network the risk is lower, but enabling TLS adds negligible overhead and eliminates the exposure entirely.",
+                "modelType": "STRIDE"
+              }
+            ],
+            "outOfScope": false,
+            "isEncrypted": false,
+            "isPublicNetwork": false,
+            "protocol": "PostgreSQL",
+            "description": "Application SQL queries for user authentication (SELECT on users), notes CRUD (SELECT/INSERT/UPDATE/DELETE on notes), and attachment metadata. Uses parameterised queries via the pg library."
+          },
+
+          {
+            "type": "tm.Flow",
+            "source": { "id": "process-api" },
+            "target": { "id": "store-redis" },
+            "vertices": [
+              { "x": 780, "y": 300 }
+            ],
+            "id": "flow-api-redis",
+            "z": 1,
+            "hasOpenThreats": false,
+            "attrs": {
+              "text": { "text": "Redis / TCP (6379)" }
+            },
+            "labels": [
+              { "position": 0.5, "attrs": { "text": { "text": "Redis / TCP (6379)" } } }
+            ],
+            "threats": [],
+            "outOfScope": false,
+            "isEncrypted": false,
+            "isPublicNetwork": false,
+            "protocol": "Redis",
+            "description": "Session token read/write and JWT revocation list management. Password-protected via requirepass but no TLS. Traffic is cleartext within backend-net."
+          },
+
+          {
+            "type": "tm.Flow",
+            "source": { "id": "process-api" },
+            "target": { "id": "store-minio" },
+            "vertices": [
+              { "x": 780, "y": 450 }
+            ],
+            "id": "flow-api-minio",
+            "z": 1,
+            "hasOpenThreats": false,
+            "attrs": {
+              "text": { "text": "HTTP S3 API (9000)\n⚠ Unencrypted" }
+            },
+            "labels": [
+              { "position": 0.5, "attrs": { "text": { "text": "HTTP S3 (9000) ⚠" } } }
+            ],
+            "threats": [],
+            "outOfScope": false,
+            "isEncrypted": false,
+            "isPublicNetwork": false,
+            "protocol": "HTTP",
+            "description": "INTENTIONAL MISCONFIGURATION: S3 API calls (PutObject, GetObject, ListBuckets) over plain HTTP using hardcoded minioadmin credentials. Any container on backend-net can intercept file content and the authentication token."
+          }
+        ]
+      }
+    ],
+    "diagramTop": 1,
+    "reviewer": "VaultNote Security Team",
+    "threatTop": 17
+  }
+}
