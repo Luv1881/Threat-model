@@ -78,17 +78,29 @@ jobs:
 
       # ── 5. PR Comment ─────────────────────────────────────────────────────────
       - name: Comment on PR with risk diff
-        if: github.event_name == 'pull_request'
+        if: always() && github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
             const fs   = require('fs');
             const path = 'threagile/output/diff-report.json';
-            if (!fs.existsSync(path)) { console.log('No diff report — skipping comment.'); return; }
+            const MARKER = '<!-- threat-model-bot -->';
+            const runUrl = process.env.GITHUB_SERVER_URL + '/' + process.env.GITHUB_REPOSITORY + '/actions/runs/' + process.env.GITHUB_RUN_ID;
+            if (!fs.existsSync(path)) {
+              const errBody = MARKER + '\n## Threat Model Analysis\n\n' +
+                '> Analysis failed - Threagile could not parse the model or the diff step did not complete.\n\n' +
+                'Check the [workflow logs](' + runUrl + ') for details. Common causes:\n' +
+                '- Invalid YAML indentation in `threagile/threagile.yaml`\n' +
+                '- Unknown field value (run `docker run --rm threagile/threagile -list-types` locally)\n';
+              const { data: ec } = await github.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number });
+              const pe = ec.find(c => c.body && c.body.includes(MARKER));
+              if (pe) { await github.rest.issues.updateComment({ owner: context.repo.owner, repo: context.repo.repo, comment_id: pe.id, body: errBody }); }
+              else    { await github.rest.issues.createComment({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number, body: errBody }); }
+              return;
+            }
 
             const diff   = JSON.parse(fs.readFileSync(path, 'utf8'));
             const icon   = s => ({ critical:'🔴', elevated:'🟠', high:'🟡', medium:'🔵', low:'⚪' }[s] || '⚪');
-            const MARKER = '<!-- threat-model-bot -->';
 
             let body = `${MARKER}\n## 🔒 Threat Model Analysis\n\n`;
             body += `| | |\n|---|---|\n`;
