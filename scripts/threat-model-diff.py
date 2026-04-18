@@ -1,8 +1,15 @@
 #!/usr/bin/env python3
 """
 scripts/threat-model-diff.py
+
 Compares two Threagile risks.json outputs and surfaces new/removed risks.
-Sets GitHub Actions outputs for downstream step conditions.
+Optionally reads threagile.yaml to check whether new critical/elevated risks
+already have a risk_tracking entry (used to drive the pipeline gate).
+
+Sets GitHub Actions step outputs:
+  new_risks_count        — number of new risks introduced
+  has_critical           — 'true' if any new risk is critical or elevated
+  has_untracked_critical — 'true' if any critical/elevated new risk lacks tracking
 """
 import json
 import argparse
@@ -10,8 +17,10 @@ import os
 import sys
 
 
+# ── Risk loading ──────────────────────────────────────────────────────────────
+
 def load_risks(filepath):
-    """Load a Threagile risks.json file. Handles both dict and list formats."""
+    """Load a Threagile risks.json. Handles both list and dict formats."""
     with open(filepath) as f:
         data = json.load(f)
     if isinstance(data, dict):
@@ -22,6 +31,31 @@ def load_risks(filepath):
         return risks
     return data
 
+
+# ── YAML risk_tracking loader ─────────────────────────────────────────────────
+
+def load_tracked_ids(model_path):
+    """
+    Return the set of risk IDs that already have a risk_tracking entry in the
+    Threagile model YAML. Returns an empty set if the file is unavailable or
+    PyYAML is not installed.
+    """
+    if not model_path or not os.path.exists(model_path):
+        return set()
+    try:
+        import yaml
+    except ImportError:
+        print("Warning: PyYAML not installed — skipping risk_tracking check.", file=sys.stderr)
+        return set()
+
+    with open(model_path) as f:
+        model = yaml.safe_load(f)
+
+    tracking = model.get('risk_tracking') or {}
+    return set(tracking.keys())
+
+
+# ── Diff ──────────────────────────────────────────────────────────────────────
 
 def diff_risks(previous, current):
     prev_ids = {r.get('synthetic_id', r.get('id', '')) for r in previous}
@@ -34,30 +68,33 @@ def diff_risks(previous, current):
     prev_map = {r.get('synthetic_id', r.get('id', '')): r for r in previous}
 
     return {
-        'new_risks':     [curr_map[rid] for rid in new_ids],
-        'removed_risks': [prev_map[rid] for rid in removed_ids],
+        'new_risks':      [curr_map[rid] for rid in sorted(new_ids)],
+        'removed_risks':  [prev_map[rid] for rid in sorted(removed_ids)],
         'total_current':  len(current),
         'total_previous': len(previous),
         'delta':          len(current) - len(previous),
     }
 
 
+# ── GitHub Actions output ─────────────────────────────────────────────────────
+
 def set_output(name, value):
-    """Write a GitHub Actions step output."""
     github_output = os.environ.get('GITHUB_OUTPUT')
     if github_output:
         with open(github_output, 'a') as f:
             f.write(f"{name}={value}\n")
     else:
-        # Fallback for local testing
-        print(f"::set-output name={name}::{value}")
+        print(f"[output] {name}={value}")
 
+
+# ── Main ──────────────────────────────────────────────────────────────────────
 
 def main():
     parser = argparse.ArgumentParser(description='Diff two Threagile risk outputs')
     parser.add_argument('--previous', required=True, help='Path to previous risks.json')
     parser.add_argument('--current',  required=True, help='Path to current risks.json')
     parser.add_argument('--output',   required=True, help='Path for diff-report.json')
+    parser.add_argument('--model',    default=None,  help='Path to threagile.yaml (for risk_tracking check)')
     args = parser.parse_args()
 
     previous = load_risks(args.previous)
@@ -67,28 +104,57 @@ def main():
     with open(args.output, 'w') as f:
         json.dump(result, f, indent=2)
 
-    has_critical = any(
-        r.get('severity', '') in ('critical', 'elevated')
-        for r in result['new_risks']
-    )
+    # ── Severity flags ────────────────────────────────────────────────────────
+    critical_severities = {'critical', 'elevated'}
+    new_critical = [
+        r for r in result['new_risks']
+        if r.get('severity', '').lower() in critical_severities
+    ]
+    has_critical = len(new_critical) > 0
 
-    # Determine untracked: new critical risks that have no risk_tracking in the model
-    # (heuristic: check if synthetic_id appears as a key in the diff output)
-    has_untracked_critical = has_critical  # conservative: assume untracked until proven otherwise
+    # ── Tracking check ────────────────────────────────────────────────────────
+    # A new critical risk is "untracked" if it has no matching entry in the
+    # risk_tracking section of threagile.yaml. We match on synthetic_id prefix
+    # because Threagile's IDs can be long and the tracking key is often shorter.
+    tracked_ids = load_tracked_ids(args.model)
+    untracked = []
+    for risk in new_critical:
+        rid = risk.get('synthetic_id', risk.get('id', ''))
+        # Check exact match or prefix match (tracking keys are often prefixed)
+        is_tracked = any(
+            rid == tid or rid.startswith(tid) or tid.startswith(rid.split('@')[0])
+            for tid in tracked_ids
+        )
+        if not is_tracked:
+            untracked.append(risk)
 
-    set_output('new_risks_count',       str(len(result['new_risks'])))
-    set_output('has_critical',          'true' if has_critical else 'false')
-    set_output('has_untracked_critical','true' if has_untracked_critical else 'false')
+    has_untracked_critical = len(untracked) > 0
 
-    print(f"\nDiff summary:")
-    print(f"  New risks:     {len(result['new_risks'])}")
-    print(f"  Removed risks: {len(result['removed_risks'])}")
-    print(f"  Total current: {result['total_current']}")
+    # ── Set outputs ───────────────────────────────────────────────────────────
+    set_output('new_risks_count',        str(len(result['new_risks'])))
+    set_output('has_critical',           'true' if has_critical else 'false')
+    set_output('has_untracked_critical', 'true' if has_untracked_critical else 'false')
+
+    # ── Human-readable summary ────────────────────────────────────────────────
+    print(f"\nDiff summary")
+    print(f"  New risks:      {len(result['new_risks'])}")
+    print(f"  Removed risks:  {len(result['removed_risks'])}")
+    print(f"  Total current:  {result['total_current']}")
+    print(f"  Has critical:   {has_critical}")
+    print(f"  Untracked crit: {has_untracked_critical}")
 
     if result['new_risks']:
-        print(f"\nNew risks:")
+        print("\nNew risks:")
         for r in result['new_risks']:
-            print(f"  [{r.get('severity','?').upper()}] {r.get('synthetic_id', r.get('id','unknown'))}")
+            sev = r.get('severity', '?').upper()
+            rid = r.get('synthetic_id', r.get('id', 'unknown'))
+            tracked_marker = '' if rid not in [u.get('synthetic_id','') for u in untracked] else ' ⚠ UNTRACKED'
+            print(f"  [{sev}] {rid}{tracked_marker}")
+
+    if result['removed_risks']:
+        print("\nRemoved risks:")
+        for r in result['removed_risks']:
+            print(f"  {r.get('synthetic_id', r.get('id', 'unknown'))}")
 
 
 if __name__ == '__main__':
