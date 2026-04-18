@@ -85,7 +85,7 @@ jobs:
         with:
           script: |
             const fs   = require('fs');
-            const path = 'threagile/output/diff-report.json';
+            const path = require('path').join(process.env.GITHUB_WORKSPACE, 'threagile/output/diff-report.json');
             const MARKER = '<!-- threat-model-bot -->';
             const runUrl = process.env.GITHUB_SERVER_URL + '/' + process.env.GITHUB_REPOSITORY + '/actions/runs/' + process.env.GITHUB_RUN_ID;
             if (!fs.existsSync(path)) {
