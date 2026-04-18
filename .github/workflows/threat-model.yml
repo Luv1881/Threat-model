@@ -59,6 +59,8 @@ jobs:
 
       - name: Run Threagile analysis
         run: |
+          mkdir -p threagile/output
+          chmod 777 threagile/output
           docker run --rm \
             -v "${{ github.workspace }}/threagile:/app/work" \
             threagile/threagile \
