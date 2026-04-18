@@ -619,3 +619,24 @@ risk_tracking:
     ticket: VAULT-95
     date: 2026-04-10
     checked_by: Infrastructure Team
+
+  missing-authentication@webhook-endpoint>inbound-webhook@webhook-endpoint@api-server:                                                    
+      status: in-progress                                                                                                                   
+      justification: "Webhook HMAC signature verification in progress. PR #52 in review."                                                   
+      ticket: VAULT-120                                                                                                                     
+      date: 2026-04-18                                                                                                                      
+      checked_by: Security Team                                                                                                             
+                                                                    
+    server-side-request-forgery@webhook-endpoint@api-server@webhook-endpoint>inbound-webhook:                                               
+      status: accepted                                              
+      justification: "Webhook origin is allow-listed by IP. SSRF surface is internal-only."                                                 
+      ticket: VAULT-121                                                                                                                     
+      date: 2026-04-18
+      checked_by: Security Team                                                                                                             
+                                                                    
+    unguarded-access-from-internet@api-server@webhook-endpoint@webhook-endpoint>inbound-webhook:                                            
+      status: in-progress
+      justification: "Rate limiting and IP filtering being added to the webhook route."                                                     
+      ticket: VAULT-122                                                                                                                     
+      date: 2026-04-18
+      checked_by: Security Team      
