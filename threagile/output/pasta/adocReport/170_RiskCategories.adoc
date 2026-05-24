@@ -1,0 +1,202 @@
+= Identified Risks by Vulnerability category
+In total *5 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *3 as elevated*, *2 as medium*, and *0 as low*. 
+
+These risks are distributed across *3 vulnerability categories*. 
+The following sub-chapters of this section describe each identified risk category.
+
+[[per-operation-rate-limiting-missing]]
+== [.ElevatedRisk]#Stage V - Custom-Developed Service Without Per-Operation Rate Limiting: 2/2 unmitigated Risks#
+
+*Description* (Denial of Service): https://cwe.mitre.org/data/definitions/770.html[CWE 770]::
+PASTA Stage V identifies vulnerabilities in the attack surface. Custom-developed services that process authentication credentials or session tokens and have outgoing communication links without rate limiting are vulnerable to credential stuffing, brute-force, bulk data exfiltration, and resource exhaustion. Global API rate limits are too coarse to prevent targeted abuse of individual high-value operations such as login, password reset, or bulk data exports.
+
+
+*Impact*::
+Attackers can enumerate users, brute-force credentials, bulk-download sensitive data, or exhaust backend resources by sending unlimited requests to unthrottled operations. Business process integrity degrades when operations can be repeated without throttling.
+
+
+*Detection Logic*::
+In-scope custom-developed process-type technical assets that process authentication data (user-credentials or session-tokens) and have at least one outgoing communication link where rate_limited is false and usage is not devops.
+
+
+*Risk Rating*::
+Medium baseline. Elevated for assets with internet-exposed entry points or those processing strictly-confidential authentication credentials.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Internal service-to-service links that are not reachable from untrusted callers, or where rate limiting is enforced by an upstream proxy (e.g., Nginx limit_req). Set rate_limited: true on the link or change usage to devops to suppress.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Add per-operation rate limiting to all communication links in the authentication and data flow paths::
+Apply rate limiting at the operation level using token-bucket or sliding-window algorithms, enforced per-user for authenticated requests and per-IP for unauthenticated requests. Set rate_limited: true on every communication link once per-operation limits are implemented and verified.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V4 - Access Control Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html[Denial_of_Service_Cheat_Sheet]
+
+
+*Check*
+
+Is rate_limited set to true on every communication link that participates in authentication or sensitive data processing? Are per-user limits enforced in addition to any global API limits?
+
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Stage V - Custom-Developed Service Without Per-Operation Rate Limiting* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Missing Per-Operation Rate Limiting*: custom service *API Server* processes auth data with unthrottled outgoing communication links: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#per-operation-rate-limiting-missing@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Missing Per-Operation Rate Limiting*: custom service *Browser SPA* processes auth data with unthrottled outgoing communication links: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<browser-spa,[SmallGrey]#per-operation-rate-limiting-missing@browser-spa#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[no-rate-limiting-public-api]]
+== [.ElevatedRisk]#Stage V - No Rate Limiting on Internet-Exposed API: 1/1 unmitigated Risk#
+
+*Description* (Denial of Service): https://cwe.mitre.org/data/definitions/770.html[CWE 770]::
+PASTA Stage V identifies weaknesses that enable exploitation. An internet-accessible API endpoint without rate limiting is vulnerable to brute-force credential attacks, credential stuffing, API abuse, and denial-of-service amplification. Rate limiting is a fundamental control for any internet-exposed API.
+
+
+*Impact*::
+Brute-force attacks against authentication endpoints, mass data harvesting via enumeration, DDoS amplification, and billing abuse on pay-per-use endpoints.
+
+
+*Detection Logic*::
+In-scope technical assets with entry_point_type of api or web_ui that receive communication links from internet-exposed assets where rate_limited is false.
+
+
+*Risk Rating*::
+Elevated for authentication endpoints; medium for general data APIs. High when the API has no authentication at all.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Internal APIs behind a WAF or API gateway that provides rate limiting at the infrastructure layer; document and mark rate_limited as true on the comm links.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Implement rate limiting on all internet-exposed API entry points::
+Add rate limiting at the API gateway or application layer (token bucket, sliding window). Apply stricter limits on authentication endpoints. Set rate_limited to true on the corresponding communication links after implementation.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V4 - Access Control Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html[Denial_of_Service_Cheat_Sheet]
+
+
+*Check*
+
+Are all internet-exposed API communication links rate-limited?
+
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Stage V - No Rate Limiting on Internet-Exposed API* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*No Rate Limiting*: internet-exposed API *Nginx Reverse Proxy* has communication links without rate limiting: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<nginx-proxy,[SmallGrey]#no-rate-limiting-public-api@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-120#
+
+4+|[.small]#Rate limiting via nginx limit_req_zone is planned for sprint 21. Current mitigation: account lockout after 10 failed login attempts implemented in the API layer. Full IP-level rate limiting is a VAULT-120 blocker before production launch.
+#
+|===
+
+[[custom-development-no-sast]]
+== [.MediumRisk]#Stage II - Custom-Developed Asset With No Build Pipeline Security: 2/2 unmitigated Risks#
+
+*Description* (Tampering): https://cwe.mitre.org/data/definitions/693.html[CWE 693]::
+PASTA Stage II defines the technical scope and identifies custom-developed components that require code-level security analysis. A custom-developed technical asset without a build pipeline performing Static Application Security Testing (SAST) means that code vulnerabilities are not caught before deployment, increasing the probability that known vulnerability classes survive to production.
+
+
+*Impact*::
+Injection vulnerabilities, insecure dependencies, hardcoded secrets, and other code-level weaknesses reach production without detection, widening the attack surface.
+
+
+*Detection Logic*::
+In-scope custom-developed technical assets where no sourcecode repository or build-pipeline asset exists in the model to provide build security controls.
+
+
+*Risk Rating*::
+Medium baseline; elevated for internet-exposed custom-developed assets processing sensitive data.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Assets where the build pipeline is managed outside this model; document with a reference to the external CI/CD system.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Development): Add SAST and dependency scanning to the CI/CD pipeline::
+Integrate static analysis (e.g., Semgrep, SonarQube, CodeQL) and dependency scanning (e.g., Dependabot, OWASP Dependency-Check) into the build pipeline for every custom-developed asset. Fail builds on high-severity findings.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V14 - Configuration Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html[Vulnerable_Dependency_Management_Cheat_Sheet]
+
+
+*Check*
+
+Does every custom-developed technical asset have a build pipeline with SAST and dependency scanning?
+
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Stage II - Custom-Developed Asset With No Build Pipeline Security* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*No Build Pipeline Security*: custom-developed asset *API Server* has no SAST or dependency scanning: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#custom-development-no-sast@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-121#
+
+4+|[.small]#SAST tooling (Semgrep with Node.js ruleset) is integrated into the GitHub Actions pipeline but the full security rule set is not yet enabled. Remaining rule categories (injection, secrets, SSRF) are being evaluated for false-positive rates. Target: sprint 21.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*No Build Pipeline Security*: custom-developed asset *Browser SPA* has no SAST or dependency scanning: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<browser-spa,[SmallGrey]#custom-development-no-sast@browser-spa#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-121#
+
+4+|[.small]#Same Semgrep pipeline as api-server covers the React SPA source. ESLint security plugin (eslint-plugin-security) is configured but not yet enforced as a blocking check. Planned for sprint 21.
+#
+|===
+

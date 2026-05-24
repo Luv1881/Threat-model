@@ -1,0 +1,570 @@
+= Identified Risks by Technical Asset
+In total *11 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *11 as elevated*, *0 as medium*, and *0 as low*. 
+
+These risks are distributed across *6 in-scope technical assets*. 
+The following sub-chapters of this section describe each identified risk grouped by technical asset. 
+The RAA value of a technical asset is the calculated "Relative Attacker Attractiveness" value in percent.
+[[api-server]]
+== [.ElevatedRisk]#API Server: 4/4 unmitigated Risks#
+=== Description
+Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD on notes, file uploads to MinIO. Bridges the frontend and backend networks. Single most security-critical component — compromise equals full data access.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Redundancy for Critical Process*: *API Server* supports a critical business process without redundancy: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<operational-critical-process-no-redundancy,[SmallGrey]#operational-critical-process-no-redundancy@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-122#
+
+4+|[.small]#API server runs as a single container. Horizontal scaling via docker-compose --scale is tested but not enabled in demo. Load balancer (Nginx upstream pool) will be configured for production.
+#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Shared Runtime - Critical Process*: *API Server* supports a critical business process on a shared runtime: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<operational-shared-runtime-critical-process,[SmallGrey]#operational-shared-runtime-critical-process@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-10#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-95#
+
+4+|[.small]#See VAULT-95. API server shares the Docker host with datastores. No privileged containers or host mounts beyond named volumes.
+#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Cross-Process Credential Exposure*: *API Server* bridges business process contexts while handling strictly-confidential data: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<application-secrets-across-processes,[SmallGrey]#application-secrets-across-processes@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-124#
+
+4+|[.small]#The JWT_SECRET environment variable is shared across API server instances for stateless JWT verification. MinIO and PostgreSQL credentials are also shared via compose env vars. Migration to a secrets manager (HashiCorp Vault or AWS Secrets Manager) is planned for production deployment.
+#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unmonitored Critical Process*: *API Server* supports a critical business process but has no audit-logged ingress: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<operational-unmonitored-critical-process,[SmallGrey]#operational-unmonitored-critical-process@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-123#
+
+4+|[.small]#Application-level metrics (request rate, error rate, p99 latency) are exposed via /metrics endpoint but Prometheus scraping is not configured in the demo environment. Production monitoring stack is tracked in VAULT-123.
+#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| api-server
+| Type:             | process| Usage: | business
+| RAA:              | 82 %| Size: | service
+| Technology:       | web-service-rest| Tags: | express, jwt, nodejs
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| File Attachments, Note Content, Session Tokens, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | The API processes all user data. It bridges both Docker networks — a compromised API container can pivot into the internal data tier.
+
+|===
+
+=== Outgoing Communication Links: 3
+==== Redis Session Store (outgoing)
+Session token storage and JWT revocation list. Password-protected (requirepass) but no TLS.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<redis-cache,Redis Cache>>| Protocol:       | nosql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Session Tokens| Data Received:  | Session Tokens
+|===
+
+==== PostgreSQL Connection (outgoing)
+Application-level SQL queries for user auth, notes CRUD. Uses parameterized queries (pg library) to prevent SQL injection. No TLS on the connection — traffic is plaintext within backend-net.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<postgresql-db,PostgreSQL Database>>| Protocol:       | sql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Note Content, User Credentials| Data Received:  | Note Content, User Credentials
+|===
+
+==== MinIO File Storage (outgoing)
+INTENTIONAL MISCONFIGURATION: S3 API calls to MinIO over plain HTTP. Default minioadmin/minioadmin credentials are hardcoded in compose. Any container on backend-net can read all stored files.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<minio-storage,MinIO Object Storage>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments| Data Received:  | File Attachments
+|===
+
+=== Incoming Communication Links: 1
+==== HTTP to API Server (incoming)
+INTENTIONAL MISCONFIGURATION: Traffic between Nginx and the API server uses plaintext HTTP. An attacker with access to the Docker network (container escape, compromised sidecar) can intercept credentials, session tokens, and note content in transit.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<nginx-proxy,Nginx Reverse Proxy>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | none
+| Authorization:  | none| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+[[postgresql-db]]
+== [.ElevatedRisk]#PostgreSQL Database: 4/4 unmitigated Risks#
+=== Description
+Primary relational datastore. Contains users table (email + bcrypt password hash), notes table (title + content), and attachments metadata. INTENTIONAL MISCONFIGURATION: No encryption at rest (encryption: none).
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Redundancy for Critical Process*: *PostgreSQL Database* supports a critical business process without redundancy: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<operational-critical-process-no-redundancy,[SmallGrey]#operational-critical-process-no-redundancy@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-122#
+
+4+|[.small]#Single-instance PostgreSQL is appropriate for the demo environment. Production deployment will use a primary + hot-standby configuration (Patroni). Accepted for demo; tracked as pre-launch requirement.
+#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Shared Runtime - Critical Process*: *PostgreSQL Database* supports a critical business process on a shared runtime: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<operational-shared-runtime-critical-process,[SmallGrey]#operational-shared-runtime-critical-process@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-10#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-95#
+
+4+|[.small]#All services share the Docker host as accepted per VAULT-95. No privileged containers; Docker socket not mounted. This is a demo environment constraint.
+#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Cross-Process Credential Exposure*: *PostgreSQL Database* bridges business process contexts while handling strictly-confidential data: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<application-secrets-across-processes,[SmallGrey]#application-secrets-across-processes@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-124#
+
+4+|[.small]#PostgreSQL POSTGRES_PASSWORD is set via compose environment variable and shared with the API server. Vault-managed dynamic credentials are planned for production.
+#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unmonitored Critical Process*: *PostgreSQL Database* supports a critical business process but has no audit-logged ingress: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<operational-unmonitored-critical-process,[SmallGrey]#operational-unmonitored-critical-process@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-123#
+
+4+|[.small]#PostgreSQL slow-query log and pg_stat_statements are enabled in the demo config. Full APM integration (Prometheus postgres_exporter + Grafana) is planned for production. Alert thresholds are being defined.
+#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| postgresql-db
+| Type:             | datastore| Usage: | business
+| RAA:              | 100 %| Size: | service
+| Technology:       | database| Tags: | postgresql, relational
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Note Content, User Credentials
+| Data Stored:    3+| Note Content, User Credentials
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | Holds all user PII (email, hashed passwords) and all note content. Strictly confidential — unencrypted disk access exposes all data.
+
+|===
+
+=== Incoming Communication Links: 1
+==== PostgreSQL Connection (incoming)
+Application-level SQL queries for user auth, notes CRUD. Uses parameterized queries (pg library) to prevent SQL injection. No TLS on the connection — traffic is plaintext within backend-net.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<api-server,API Server>>| Protocol:       | sql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Note Content, User Credentials| Data Received:  | Note Content, User Credentials
+|===
+
+[[redis-cache]]
+== [.ElevatedRisk]#Redis Cache: 3/3 unmitigated Risks#
+=== Description
+In-memory store used as session store and JWT revocation list. INTENTIONAL MISCONFIGURATION: No encryption at rest. If Redis persistence is enabled and the RDB file is exfiltrated, session tokens are exposed.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Redundancy for Critical Process*: *Redis Cache* supports a critical business process without redundancy: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<operational-critical-process-no-redundancy,[SmallGrey]#operational-critical-process-no-redundancy@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-122#
+
+4+|[.small]#Redis Sentinel or Redis Cluster is planned for production. For the demo environment, a single Redis instance with AOF persistence is accepted.
+#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Shared Runtime - Critical Process*: *Redis Cache* supports a critical business process on a shared runtime: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<operational-shared-runtime-critical-process,[SmallGrey]#operational-shared-runtime-critical-process@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-10#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-95#
+
+4+|[.small]#See VAULT-95. Shared Docker host is accepted for demo; production deployment targets separate VM/node for stateful services.
+#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unmonitored Critical Process*: *Redis Cache* supports a critical business process but has no audit-logged ingress: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<operational-unmonitored-critical-process,[SmallGrey]#operational-unmonitored-critical-process@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-123#
+
+4+|[.small]#Redis INFO metrics are scraped by the Prometheus redis_exporter sidecar in production config but not in the demo compose file. Tracked in VAULT-123.
+#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| redis-cache
+| Type:             | datastore| Usage: | business
+| RAA:              | 40 %| Size: | component
+| Technology:       | database| Tags: | cache, redis, session-store
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | [GrayText]#none of the special data formats accepted#
+| Data Processed: 3+| Session Tokens
+| Data Stored:    3+| Session Tokens
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | important<<ref-criticality-values,*>>
+| CIA-Justification: | Session token exposure enables account takeover. Non-persistent by default but the container volume could persist RDB snapshots.
+
+|===
+
+=== Incoming Communication Links: 1
+==== Redis Session Store (incoming)
+Session token storage and JWT revocation list. Password-protected (requirepass) but no TLS.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<api-server,API Server>>| Protocol:       | nosql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Session Tokens| Data Received:  | Session Tokens
+|===
+
+[[browser-spa]]
+== Browser SPA: 0 mitigated Risks
+=== Description
+React Single Page Application served from Nginx. Users authenticate, manage notes, and upload files through this interface.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| browser-spa
+| Type:             | external-entity| Usage: | business
+| RAA:              | 54 %| Size: | application
+| Technology:       | browser| Tags: | react, spa
+| Internet:         | true| Machine: | physical
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | true| Formats Accepted: | JSON
+| Data Processed: 3+| File Attachments, Note Content, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | End Users
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Client-side code is public; the trust boundary here is user data entered into the browser. XSS would allow an attacker to exfiltrate session tokens.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== HTTPS to Nginx (outgoing)
+User-initiated HTTPS requests carrying credentials (login) and note content (create/edit). This is the only encrypted link in the chain.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<nginx-proxy,Nginx Reverse Proxy>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | end-user-identity-propagation| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+[[minio-storage]]
+== MinIO Object Storage: 0 mitigated Risks
+=== Description
+S3-compatible object store for file attachments. INTENTIONAL MISCONFIGURATION: Uses default minioadmin/minioadmin credentials (visible in docker-compose.yml) and stores files without encryption at rest. HTTP-only (no TLS) within the Docker network.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| minio-storage
+| Type:             | datastore| Usage: | business
+| RAA:              | 39 %| Size: | service
+| Technology:       | file-server| Tags: | intentional-misconfiguration, minio, object-storage, s3
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | File
+| Data Processed: 3+| File Attachments
+| Data Stored:    3+| File Attachments
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Stores user file uploads which may contain sensitive documents. Default credentials + no encryption = trivial exfiltration by any process on backend-net.
+
+|===
+
+=== Incoming Communication Links: 1
+==== MinIO File Storage (incoming)
+INTENTIONAL MISCONFIGURATION: S3 API calls to MinIO over plain HTTP. Default minioadmin/minioadmin credentials are hardcoded in compose. Any container on backend-net can read all stored files.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<api-server,API Server>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments| Data Received:  | File Attachments
+|===
+
+[[nginx-proxy]]
+== Nginx Reverse Proxy: 0 mitigated Risks
+=== Description
+Nginx terminates TLS and forwards all API traffic to the Express server over plain HTTP (port 3000). This is the DMZ entry point.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| nginx-proxy
+| Type:             | process| Usage: | business
+| RAA:              | 2 %| Size: | service
+| Technology:       | reverse-proxy| Tags: | nginx, tls-termination
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| File Attachments, Note Content, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | Nginx is the single external entry point. Its compromise exposes all downstream services. Availability is critical — outage = full service outage.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== HTTP to API Server (outgoing)
+INTENTIONAL MISCONFIGURATION: Traffic between Nginx and the API server uses plaintext HTTP. An attacker with access to the Docker network (container escape, compromised sidecar) can intercept credentials, session tokens, and note content in transit.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<api-server,API Server>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | none
+| Authorization:  | none| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+=== Incoming Communication Links: 1
+==== HTTPS to Nginx (incoming)
+User-initiated HTTPS requests carrying credentials (login) and note content (create/edit). This is the only encrypted link in the chain.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<browser-spa,Browser SPA>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | end-user-identity-propagation| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+

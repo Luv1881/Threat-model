@@ -1,0 +1,97 @@
+= Risk Mitigation
+The following chart gives a high-level overview of the risk tracking status (including mitigated risks):
+
+[vegalite]
+....
+{
+  "width": 400,
+  "$schema": "https://vega.github.io/schema/vega-lite/v4.json",
+  "data": {
+    "values": [
+      {"risk": "Low (0)", "value": 0, "status": "Unchecked", "color": "#FF0000"},
+      {"risk": "Low (0)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
+      {"risk": "Low (0)", "value": 0, "status": "Accepted", "color": "#FF40FF"},
+      {"risk": "Low (0)", "value": 0, "status": "InProgress", "color": "#0000FF"},
+      {"risk": "Low (0)", "value": 0, "status": "Mitigated", "color": "#008F00"},
+      {"risk": "Low (0)", "value": 0, "status": "FalsePositive", "color": "#666666"},
+
+      {"risk": "Medium (2)", "value": 0, "status": "Unchecked", "color": "#FF0000"},
+      {"risk": "Medium (2)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
+      {"risk": "Medium (2)", "value": 0, "status": "Accepted", "color": "#FF40FF"},
+      {"risk": "Medium (2)", "value": 2, "status": "InProgress", "color": "#0000FF"},
+      {"risk": "Medium (2)", "value": 0, "status": "Mitigated", "color": "#008F00"},
+      {"risk": "Medium (2)", "value": 0, "status": "FalsePositive", "color": "#666666"},
+
+      {"risk": "Elevated (3)", "value": 2, "status": "Unchecked", "color": "#FF0000"},
+      {"risk": "Elevated (3)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
+      {"risk": "Elevated (3)", "value": 0, "status": "Accepted", "color": "#FF40FF"},
+      {"risk": "Elevated (3)", "value": 1, "status": "InProgress", "color": "#0000FF"},
+      {"risk": "Elevated (3)", "value": 0, "status": "Mitigated", "color": "#008F00"},
+      {"risk": "Elevated (3)", "value": 0, "status": "FalsePositive", "color": "#666666"},
+
+      {"risk": "High (0)", "value": 0, "status": "Unchecked", "color": "#FF0000"},
+      {"risk": "High (0)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
+      {"risk": "High (0)", "value": 0, "status": "Accepted", "color": "#FF40FF"},
+      {"risk": "High (0)", "value": 0, "status": "InProgress", "color": "#0000FF"},
+      {"risk": "High (0)", "value": 0, "status": "Mitigated", "color": "#008F00"},
+      {"risk": "High (0)", "value": 0, "status": "FalsePositive", "color": "#666666"},
+
+      {"risk": "Critical (0)", "value": 0, "status": "Unchecked", "color": "#FF0000"},
+      {"risk": "Critical (0)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
+      {"risk": "Critical (0)", "value": 0, "status": "Accepted", "color": "#FF40FF"},
+      {"risk": "Critical (0)", "value": 0, "status": "InProgress", "color": "#0000FF"},
+      {"risk": "Critical (0)", "value": 0, "status": "Mitigated", "color": "#008F00"},
+      {"risk": "Critical (0)", "value": 0, "status": "FalsePositive", "color": "#666666"}
+    ]
+  },
+  "mark": {"type": "bar", "cornerRadiusTopLeft": 3, "cornerRadiusTopRight": 3},
+  "encoding": {
+    "x": {"field": "risk", "type": "ordinal", "title": "", "sort": [], "axis": {
+        "labelAngle": 0
+    }},
+    "y": {"field": "value", "type": "quantitative", "title": "", "axis": {
+      "orient": "right"
+    }},
+    "color": {
+      "field": "status",
+      "scale": {
+        "domain": ["Unchecked", "InDiscussion", "Accepted", "InProgress", "Mitigated", "FalsePositive"],
+        "range": ["#FF0000", "#FF9300", "#FF40FF", "#0000FF", "#008F00", "#666666"]
+      },
+      "legend" : {
+        "title": "",
+        "labelExpr": "datum.label == \"Unchecked\" ? \"2 unchecked\" : datum.label == \"InDiscussion\" ? \"0 in discussion\" : datum.label == \"Accepted\" ? \"0 accepted\" : datum.label == \"InProgress\" ? \"3 in progress\" : datum.label == \"Mitigated\" ? \"0 mitigated\" : datum.label == \"FalsePositive\" ? \"0 false positive\" : \"\""
+      }
+    }
+  }
+}
+....
+
+
+After removal of risks with status _mitigated_ and _false positive_ the following *5 remain unmitigated*:
+[cols="a,a",frame=none,grid=none]
+|===
+|
+[mermaid]
+....
+%%{init: {'pie' : {'textPosition' : 0.5}, 'theme': 'base', 'themeVariables': { 'pie1': '#FF2600', 'pie2': '#A0281E', 'pie3': '#FF8E00', 'pie4': '#C87832', 'pie5': '#23465F'}}}%%
+pie showData
+  "unmitigated critical risk" : 0
+  "unmitigated high risk" : 0
+  "unmitigated elevated risk" : 3
+  "unmitigated medium risk" : 2
+  "unmitigated low risk" : 0
+....
+
+|
+[mermaid]
+....
+%%{init: {'pie' : {'textPosition' : 0.5}, 'theme': 'base', 'themeVariables': { 'pie1': '#531B93', 'pie2': '#005493', 'pie3': '#DE9223', 'pie4': '#947F50'}}}%%
+pie showData
+  "business side related" : 0
+  "architecture related" : 0
+  "development related" : 2
+  "operations related" : 3
+....
+|===
+

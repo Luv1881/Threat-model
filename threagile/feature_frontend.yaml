@@ -1,0 +1,255 @@
+# ============================================================
+# Feature: Frontend / Edge Layer
+# Components: Browser SPA, Nginx Reverse Proxy
+# Networks:   Internet, DMZ
+# ============================================================
+
+technical_assets:
+
+  Browser SPA:
+    id: browser-spa
+    description: >
+      React Single Page Application served from Nginx. Users authenticate,
+      manage notes, and upload files through this interface.
+    type: external-entity
+    usage: business
+    used_as_client_by_human: true
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: application
+    technology: browser
+    tags: ["react", "spa"]
+    internet: true
+    machine: physical
+    encryption: none
+    owner: End Users
+    confidentiality: public
+    integrity: operational
+    availability: operational
+    justification_cia_rating: >
+      Client-side code is public; the trust boundary here is user data entered
+      into the browser. XSS would allow an attacker to exfiltrate session tokens.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: true
+    # PASTA — entry-point classification
+    entry_point_type: web_ui
+    attack_surface_exposure: internet
+    requires_authentication_strength: mfa
+    # LINDDUN — browser processes PII on behalf of the user (not a GDPR controller)
+    is_pii_processor: false
+    is_pii_controller: false
+    data_assets_processed:
+      - user-credentials
+      - note-content
+      - file-attachments
+    data_assets_stored: []
+    data_formats_accepted:
+      - json
+    communication_links:
+
+      HTTPS to Nginx:
+        target: nginx-proxy
+        description: >
+          User-initiated HTTPS requests carrying credentials (login) and note
+          content (create/edit). This is the only encrypted link in the chain.
+        protocol: https
+        authentication: credentials
+        authorization: end-user-identity-propagation
+        tags: []
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: business
+        # PASTA
+        rate_limited: false   # no rate limiting configured — triggers no-rate-limiting-public-api
+        tls_version: "1.3"
+        api_style: rest
+        # LINDDUN — Nginx access.log captures all requests; link is encrypted
+        audit_logged: true
+        cross_border: false
+        data_assets_sent:
+          - user-credentials
+          - note-content
+          - file-attachments
+        data_assets_received:
+          - note-content
+          - file-attachments
+        diagram_tweak_weight: 1
+        diagram_tweak_constraint: false
+
+  Nginx Reverse Proxy:
+    id: nginx-proxy
+    description: >
+      Nginx terminates TLS and forwards all API traffic to the Express server
+      over plain HTTP (port 3000). This is the DMZ entry point.
+    type: process
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: reverse-proxy
+    tags: ["nginx", "tls-termination"]
+    internet: false
+    machine: container
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: internal
+    integrity: critical
+    availability: critical
+    justification_cia_rating: >
+      Nginx is the single external entry point. Its compromise exposes all
+      downstream services. Availability is critical — outage = full service outage.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    # PASTA — Nginx is the API gateway; pre-auth termination point (no app-level auth here)
+    entry_point_type: api
+    attack_surface_exposure: internet
+    requires_authentication_strength: none  # TLS terminator only; auth is done in the API
+    # LINDDUN — Nginx is a data processor acting on behalf of VaultNote
+    is_pii_processor: true
+    is_pii_controller: false
+    data_assets_processed:
+      - user-credentials
+      - note-content
+      - file-attachments
+    data_assets_stored: []
+    data_formats_accepted:
+      - json
+    communication_links:
+
+      HTTP to API Server:
+        target: api-server
+        description: >
+          INTENTIONAL MISCONFIGURATION: Traffic between Nginx and the API server
+          uses plaintext HTTP. An attacker with access to the Docker network
+          (container escape, compromised sidecar) can intercept credentials,
+          session tokens, and note content in transit.
+        protocol: http
+        authentication: none
+        authorization: none
+        tags: ["intentional-misconfiguration"]
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: business
+        # PASTA
+        rate_limited: false
+        api_style: rest
+        # LINDDUN — plaintext link; no audit logging at the proxy→API hop
+        audit_logged: false
+        cross_border: false
+        data_assets_sent:
+          - user-credentials
+          - note-content
+          - file-attachments
+        data_assets_received:
+          - note-content
+          - file-attachments
+        diagram_tweak_weight: 2
+        diagram_tweak_constraint: false
+
+trust_boundaries:
+
+  Internet:
+    id: internet
+    description: >
+      Untrusted external network. All traffic from this zone must cross the Nginx
+      TLS termination point before entering the DMZ.
+    type: network-on-prem
+    tags: []
+    technical_assets_inside:
+      - browser-spa
+    trust_boundaries_nested: []
+
+  DMZ:
+    id: dmz
+    description: >
+      Demilitarized zone containing the Nginx reverse proxy. Accessible from the
+      internet but isolated from the application and data tiers.
+    type: network-on-prem
+    tags: []
+    technical_assets_inside:
+      - nginx-proxy
+    trust_boundaries_nested: []
+
+risk_tracking:
+
+  unencrypted-communication@nginx-proxy>http-to-api-server@nginx-proxy@api-server:
+    status: in-progress
+    justification: >
+      Migrating Nginx-to-API communication to mTLS. A separate CA will be
+      provisioned inside the Docker network. PR #47 is in review; target
+      completion sprint 22.
+    ticket: VAULT-102
+    date: 2026-04-18
+    checked_by: Security Team
+
+  # LINDDUN findings
+  detecting-no-audit-logging@nginx-proxy:
+    status: accepted
+    justification: >
+      Nginx access.log captures all incoming requests (IP, URL, status code,
+      response size). Individual API-level audit events are handled by the API
+      server. The Nginx→API internal hop has no separate audit log; this is
+      accepted as the TLS-termination boundary log is sufficient for DMZ-level
+      audit requirements.
+    ticket: VAULT-115
+    date: 2026-04-25
+    checked_by: Security Team
+
+  data-disclosure-pii-unencrypted-link@nginx-proxy:
+    status: in-progress
+    justification: >
+      Duplicate of VAULT-102 (Nginx→API plaintext link). Resolved when mTLS
+      migration completes in sprint 22. LINDDUN data-disclosure finding is
+      tracked under the same remediation work.
+    ticket: VAULT-102
+    date: 2026-04-18
+    checked_by: Security Team
+
+  unawareness-no-consent-technology@browser-spa:
+    status: in-progress
+    justification: >
+      A consent management platform (CMP) is being evaluated (OneTrust / Osano).
+      In the interim, the privacy policy is displayed at registration and users
+      explicitly accept terms before account creation. Formal CMP integration is
+      planned for Q3 2026.
+    ticket: VAULT-118
+    date: 2026-04-25
+    checked_by: Privacy Team
+
+  linking-pii-multi-boundary@browser-spa:
+    status: accepted
+    justification: >
+      The Browser SPA processes user-credentials and note-content across the
+      Internet and DMZ boundaries by design (user-facing client). The risk is
+      inherent to the SPA architecture; mitigated by HTTPS-only transport and
+      short-lived session tokens.
+    ticket: VAULT-119
+    date: 2026-04-25
+    checked_by: Security Team
+
+  linking-pii-multi-boundary@nginx-proxy:
+    status: accepted
+    justification: >
+      Nginx is the TLS-termination proxy and must bridge Internet and DMZ by
+      design. Cross-boundary PII flow is intentional and unavoidable for this
+      component.
+    ticket: VAULT-119
+    date: 2026-04-25
+    checked_by: Security Team
+
+  # PASTA findings
+  no-rate-limiting-public-api@nginx-proxy:
+    status: in-progress
+    justification: >
+      Rate limiting via nginx limit_req_zone is planned for sprint 21.
+      Current mitigation: account lockout after 10 failed login attempts
+      implemented in the API layer. Full IP-level rate limiting is a VAULT-120
+      blocker before production launch.
+    ticket: VAULT-120
+    date: 2026-04-25
+    checked_by: Security Team

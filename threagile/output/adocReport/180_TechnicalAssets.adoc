@@ -1,0 +1,780 @@
+= Identified Risks by Technical Asset
+In total *35 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *1 as high*, *16 as elevated*, *15 as medium*, and *3 as low*. 
+
+These risks are distributed across *6 in-scope technical assets*. 
+The following sub-chapters of this section describe each identified risk grouped by technical asset. 
+The RAA value of a technical asset is the calculated "Relative Attacker Attractiveness" value in percent.
+[[api-server]]
+== [.HighRisk]#API Server: 16/16 unmitigated Risks#
+=== Description
+Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD on notes, file uploads to MinIO. Bridges the frontend and backend networks. Single most security-critical component — compromise equals full data access.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.HighRisk]#High Risk Severity#
+
+[.HighRisk]#*SQL/NoSQL-Injection* risk at *API Server* against database *PostgreSQL Database* via *PostgreSQL Connection*: Exploitation likelihood is _Very Likely_ with _High_ impact.#
+
+<<sql-nosql-injection,[SmallGrey]#sql-nosql-injection@api-server@postgresql-db@api-server>postgresql-connection#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Missing Authentication* covering communication link *HTTP to API Server* from *Nginx Reverse Proxy* to *API Server*: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<missing-authentication,[SmallGrey]#missing-authentication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Unencrypted Communication* named *MinIO File Storage* between *API Server* and *MinIO Object Storage* transferring authentication data (like credentials, token, session-id, etc.): Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<unencrypted-communication,[SmallGrey]#unencrypted-communication@api-server>minio-file-storage@api-server@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Unencrypted Communication* named *PostgreSQL Connection* between *API Server* and *PostgreSQL Database* transferring authentication data (like credentials, token, session-id, etc.): Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<unencrypted-communication,[SmallGrey]#unencrypted-communication@api-server>postgresql-connection@api-server@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Unencrypted Communication* named *Redis Session Store* between *API Server* and *Redis Cache* transferring authentication data (like credentials, token, session-id, etc.): Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<unencrypted-communication,[SmallGrey]#unencrypted-communication@api-server>redis-session-store@api-server@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Path-Traversal* risk at *API Server* against filesystem *MinIO Object Storage* via *MinIO File Storage*: Exploitation likelihood is _Very Likely_ with _Medium_ impact.#
+
+<<path-traversal,[SmallGrey]#path-traversal@api-server@minio-storage@api-server>minio-file-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*SQL/NoSQL-Injection* risk at *API Server* against database *MinIO Object Storage* via *MinIO File Storage*: Exploitation likelihood is _Very Likely_ with _Medium_ impact.#
+
+<<sql-nosql-injection,[SmallGrey]#sql-nosql-injection@api-server@minio-storage@api-server>minio-file-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*SQL/NoSQL-Injection* risk at *API Server* against database *Redis Cache* via *Redis Session Store*: Exploitation likelihood is _Very Likely_ with _Medium_ impact.#
+
+<<sql-nosql-injection,[SmallGrey]#sql-nosql-injection@api-server@redis-cache@api-server>redis-session-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Missing Hardening* risk at *API Server*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<missing-hardening,[SmallGrey]#missing-hardening@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Server-Side Request Forgery (SSRF)* risk at *API Server* server-side web-requesting the target *MinIO Object Storage* via *MinIO File Storage*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<server-side-request-forgery,[SmallGrey]#server-side-request-forgery@api-server@minio-storage@api-server>minio-file-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Container Base Image Backdooring* risk at *API Server*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Missing Build Infrastructure* in the threat model (referencing asset *API Server* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<missing-build-infrastructure,[SmallGrey]#missing-build-infrastructure@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Missing Two-Factor Authentication* covering communication link *HTTP to API Server* from *Browser SPA* forwarded via *Nginx Reverse Proxy* to *API Server*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<missing-authentication-second-factor,[SmallGrey]#missing-authentication-second-factor@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Missing Vault (Secret Storage)* in the threat model (referencing asset *API Server* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<missing-vault,[SmallGrey]#missing-vault@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Missing Web Application Firewall (WAF)* risk at *API Server*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<missing-waf,[SmallGrey]#missing-waf@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Low Risk Severity#
+
+[.HighRisk]#*Denial-of-Service* risky access of *API Server* by *Browser SPA* via *HTTPS to Nginx* forwarded via *Nginx Reverse Proxy*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<dos-risky-access-across-trust-boundary,[SmallGrey]#dos-risky-access-across-trust-boundary@api-server@browser-spa@browser-spa>https-to-nginx->nginx-proxy>http-to-api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| api-server
+| Type:             | process| Usage: | business
+| RAA:              | 79 %| Size: | service
+| Technology:       | web-service-rest| Tags: | express, jwt, nodejs
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| File Attachments, Note Content, Session Tokens, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | The API processes all user data. It bridges both Docker networks — a compromised API container can pivot into the internal data tier.
+
+|===
+
+=== Outgoing Communication Links: 3
+==== Redis Session Store (outgoing)
+Session token storage and JWT revocation list. Password-protected (requirepass) but no TLS.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<redis-cache,Redis Cache>>| Protocol:       | nosql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Session Tokens| Data Received:  | Session Tokens
+|===
+
+==== PostgreSQL Connection (outgoing)
+Application-level SQL queries for user auth, notes CRUD. Uses parameterized queries (pg library) to prevent SQL injection. No TLS on the connection — traffic is plaintext within backend-net.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<postgresql-db,PostgreSQL Database>>| Protocol:       | sql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Note Content, User Credentials| Data Received:  | Note Content, User Credentials
+|===
+
+==== MinIO File Storage (outgoing)
+INTENTIONAL MISCONFIGURATION: S3 API calls to MinIO over plain HTTP. Default minioadmin/minioadmin credentials are hardcoded in compose. Any container on backend-net can read all stored files.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<minio-storage,MinIO Object Storage>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments| Data Received:  | File Attachments
+|===
+
+=== Incoming Communication Links: 1
+==== HTTP to API Server (incoming)
+INTENTIONAL MISCONFIGURATION: Traffic between Nginx and the API server uses plaintext HTTP. An attacker with access to the Docker network (container escape, compromised sidecar) can intercept credentials, session tokens, and note content in transit.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<nginx-proxy,Nginx Reverse Proxy>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | none
+| Authorization:  | none| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+[[minio-storage]]
+== [.ElevatedRisk]#MinIO Object Storage: 3/3 unmitigated Risks#
+=== Description
+S3-compatible object store for file attachments. INTENTIONAL MISCONFIGURATION: Uses default minioadmin/minioadmin credentials (visible in docker-compose.yml) and stores files without encryption at rest. HTTP-only (no TLS) within the Docker network.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Hardcoded Credentials* detected on *MinIO Object Storage*: credentials visible in container configuration: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<hardcoded-credentials,[SmallGrey]#hardcoded-credentials@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Container Base Image Backdooring* risk at *MinIO Object Storage*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Unguarded Direct Datastore Access* of *MinIO Object Storage* by *API Server* via *MinIO File Storage*: Exploitation likelihood is _Likely_ with _Low_ impact.#
+
+<<unguarded-direct-datastore-access,[SmallGrey]#unguarded-direct-datastore-access@api-server>minio-file-storage@api-server@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| minio-storage
+| Type:             | datastore| Usage: | business
+| RAA:              | 33 %| Size: | service
+| Technology:       | file-server| Tags: | intentional-misconfiguration, minio, object-storage, s3
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | File
+| Data Processed: 3+| File Attachments
+| Data Stored:    3+| File Attachments
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | important<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Stores user file uploads which may contain sensitive documents. Default credentials + no encryption = trivial exfiltration by any process on backend-net.
+
+|===
+
+=== Incoming Communication Links: 1
+==== MinIO File Storage (incoming)
+INTENTIONAL MISCONFIGURATION: S3 API calls to MinIO over plain HTTP. Default minioadmin/minioadmin credentials are hardcoded in compose. Any container on backend-net can read all stored files.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<api-server,API Server>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments| Data Received:  | File Attachments
+|===
+
+[[nginx-proxy]]
+== [.ElevatedRisk]#Nginx Reverse Proxy: 5/5 unmitigated Risks#
+=== Description
+Nginx terminates TLS and forwards all API traffic to the Express server over plain HTTP (port 3000). This is the DMZ entry point.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Server-Side Request Forgery (SSRF)* risk at *Nginx Reverse Proxy* server-side web-requesting the target *API Server* via *HTTP to API Server*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<server-side-request-forgery,[SmallGrey]#server-side-request-forgery@nginx-proxy@api-server@nginx-proxy>http-to-api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Communication* named *HTTP to API Server* between *Nginx Reverse Proxy* and *API Server*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<unencrypted-communication,[SmallGrey]#unencrypted-communication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-18#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-102#
+
+4+|[.small]#Migrating Nginx-to-API communication to mTLS. A separate CA will be provisioned inside the Docker network. PR #47 is in review; target completion sprint 22.
+#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Container Base Image Backdooring* risk at *Nginx Reverse Proxy*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Missing Identity Store* in the threat model (referencing asset *Nginx Reverse Proxy* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<missing-identity-store,[SmallGrey]#missing-identity-store@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Low Risk Severity#
+
+[.ElevatedRisk]#*Denial-of-Service* risky access of *Nginx Reverse Proxy* by *Browser SPA* via *HTTPS to Nginx*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<dos-risky-access-across-trust-boundary,[SmallGrey]#dos-risky-access-across-trust-boundary@nginx-proxy@browser-spa@browser-spa>https-to-nginx->#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| nginx-proxy
+| Type:             | process| Usage: | business
+| RAA:              | 2 %| Size: | service
+| Technology:       | reverse-proxy| Tags: | nginx, tls-termination
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| File Attachments, Note Content, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | Nginx is the single external entry point. Its compromise exposes all downstream services. Availability is critical — outage = full service outage.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== HTTP to API Server (outgoing)
+INTENTIONAL MISCONFIGURATION: Traffic between Nginx and the API server uses plaintext HTTP. An attacker with access to the Docker network (container escape, compromised sidecar) can intercept credentials, session tokens, and note content in transit.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<api-server,API Server>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | none
+| Authorization:  | none| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+=== Incoming Communication Links: 1
+==== HTTPS to Nginx (incoming)
+User-initiated HTTPS requests carrying credentials (login) and note content (create/edit). This is the only encrypted link in the chain.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<browser-spa,Browser SPA>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | end-user-identity-propagation| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+[[postgresql-db]]
+== [.ElevatedRisk]#PostgreSQL Database: 5/5 unmitigated Risks#
+=== Description
+Primary relational datastore. Contains users table (email + bcrypt password hash), notes table (title + content), and attachments metadata. INTENTIONAL MISCONFIGURATION: No encryption at rest (encryption: none).
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Missing Hardening* risk at *PostgreSQL Database*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<missing-hardening,[SmallGrey]#missing-hardening@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unguarded Direct Datastore Access* of *PostgreSQL Database* by *API Server* via *PostgreSQL Connection*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<unguarded-direct-datastore-access,[SmallGrey]#unguarded-direct-datastore-access@api-server>postgresql-connection@api-server@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Container Base Image Backdooring* risk at *PostgreSQL Database*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Technical Asset* named *PostgreSQL Database* missing end user individual encryption with data-with-end-user-individual-key: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<unencrypted-asset,[SmallGrey]#unencrypted-asset@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-15#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-89#
+
+4+|[.small]#The PostgreSQL volume runs on a host-level LUKS-encrypted partition in all production deployments. The Threagile finding is acknowledged as informational for this demo environment which uses unencrypted storage. Production database TDE via pgcrypto will be evaluated in Q3.
+#
+|===
+
+
+==== [.ElevatedRisk]#Low Risk Severity#
+
+[.ElevatedRisk]#*Denial-of-Service* risky access of *PostgreSQL Database* by *API Server* via *PostgreSQL Connection*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<dos-risky-access-across-trust-boundary,[SmallGrey]#dos-risky-access-across-trust-boundary@postgresql-db@api-server@api-server>postgresql-connection->#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| postgresql-db
+| Type:             | datastore| Usage: | business
+| RAA:              | 100 %| Size: | service
+| Technology:       | database| Tags: | postgresql, relational
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Note Content, User Credentials
+| Data Stored:    3+| Note Content, User Credentials
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | Holds all user PII (email, hashed passwords) and all note content. Strictly confidential — unencrypted disk access exposes all data.
+
+|===
+
+=== Incoming Communication Links: 1
+==== PostgreSQL Connection (incoming)
+Application-level SQL queries for user auth, notes CRUD. Uses parameterized queries (pg library) to prevent SQL injection. No TLS on the connection — traffic is plaintext within backend-net.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<api-server,API Server>>| Protocol:       | sql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Note Content, User Credentials| Data Received:  | Note Content, User Credentials
+|===
+
+[[redis-cache]]
+== [.ElevatedRisk]#Redis Cache: 4/4 unmitigated Risks#
+=== Description
+In-memory store used as session store and JWT revocation list. INTENTIONAL MISCONFIGURATION: No encryption at rest. If Redis persistence is enabled and the RDB file is exfiltrated, session tokens are exposed.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unguarded Direct Datastore Access* of *Redis Cache* by *API Server* via *Redis Session Store*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<unguarded-direct-datastore-access,[SmallGrey]#unguarded-direct-datastore-access@api-server>redis-session-store@api-server@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Container Base Image Backdooring* risk at *Redis Cache*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Technical Asset* named *Redis Cache*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<unencrypted-asset,[SmallGrey]#unencrypted-asset@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Missing Hardening* risk at *Redis Cache*: Exploitation likelihood is _Likely_ with _Low_ impact.#
+
+<<missing-hardening,[SmallGrey]#missing-hardening@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| redis-cache
+| Type:             | datastore| Usage: | business
+| RAA:              | 41 %| Size: | component
+| Technology:       | database| Tags: | cache, redis, session-store
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | [GrayText]#none of the special data formats accepted#
+| Data Processed: 3+| Session Tokens
+| Data Stored:    3+| Session Tokens
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | important<<ref-criticality-values,*>>
+| CIA-Justification: | Session token exposure enables account takeover. Non-persistent by default but the container volume could persist RDB snapshots.
+
+|===
+
+=== Incoming Communication Links: 1
+==== Redis Session Store (incoming)
+Session token storage and JWT revocation list. Password-protected (requirepass) but no TLS.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<api-server,API Server>>| Protocol:       | nosql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Session Tokens| Data Received:  | Session Tokens
+|===
+
+[[browser-spa]]
+== Browser SPA: 0 mitigated Risks
+=== Description
+React Single Page Application served from Nginx. Users authenticate, manage notes, and upload files through this interface.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| browser-spa
+| Type:             | external-entity| Usage: | business
+| RAA:              | 51 %| Size: | application
+| Technology:       | browser| Tags: | react, spa
+| Internet:         | true| Machine: | physical
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | true| Formats Accepted: | JSON
+| Data Processed: 3+| File Attachments, Note Content, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | End Users
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Client-side code is public; the trust boundary here is user data entered into the browser. XSS would allow an attacker to exfiltrate session tokens.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== HTTPS to Nginx (outgoing)
+User-initiated HTTPS requests carrying credentials (login) and note content (create/edit). This is the only encrypted link in the chain.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<nginx-proxy,Nginx Reverse Proxy>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | end-user-identity-propagation| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+

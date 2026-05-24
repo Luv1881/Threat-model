@@ -1,0 +1,59 @@
+= Trust Boundaries
+In total *4 trust boundaries* have been modeled during the threat modeling process.
+
+[[application-network]]
+== [.Twilight]#Application Network#
+[.Twilight]#Internal Docker bridge network (frontend-net). Contains the API server which is reachable from Nginx but also bridges into backend-net.#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| ID:                | application-network
+| Type:              | [.Twilight]#network-on-prem#
+| Tags:              | [GrayText]#none#
+| Assets inside:     | api-server
+| Boundaries nested: | [GrayText]#none#
+|===
+
+[[dmz]]
+== [.Twilight]#DMZ#
+[.Twilight]#Demilitarized zone containing the Nginx reverse proxy. Accessible from the internet but isolated from the application and data tiers.#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| ID:                | dmz
+| Type:              | [.Twilight]#network-on-prem#
+| Tags:              | [GrayText]#none#
+| Assets inside:     | nginx-proxy
+| Boundaries nested: | [GrayText]#none#
+|===
+
+[[data-tier]]
+== [.Twilight]#Data Tier#
+[.Twilight]#Internal Docker bridge network (backend-net, marked internal: true). No external routing. Contains all datastores. The API server has a NIC on this network and acts as the sole legitimate access path.#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| ID:                | data-tier
+| Type:              | [.Twilight]#network-on-prem#
+| Tags:              | [GrayText]#none#
+| Assets inside:     | minio-storage, postgresql-db, redis-cache
+| Boundaries nested: | [GrayText]#none#
+|===
+
+[[internet]]
+== [.Twilight]#Internet#
+[.Twilight]#Untrusted external network. All traffic from this zone must cross the Nginx TLS termination point before entering the DMZ.#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| ID:                | internet
+| Type:              | [.Twilight]#network-on-prem#
+| Tags:              | [GrayText]#none#
+| Assets inside:     | browser-spa
+| Boundaries nested: | [GrayText]#none#
+|===
+

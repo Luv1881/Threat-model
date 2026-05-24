@@ -1,0 +1,1088 @@
+= Identified Risks by Vulnerability category
+In total *35 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *2 as high*, *14 as elevated*, *16 as medium*, and *3 as low*. 
+
+These risks are distributed across *19 vulnerability categories*. 
+The following sub-chapters of this section describe each identified risk category.
+
+[[exposed-default-credentials]]
+== [.HighRisk]#Asset Using Known Default or Hardcoded Credentials: 1/1 unmitigated Risk#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/1392.html[CWE 1392]::
+Technical assets tagged as intentional-misconfiguration that store confidential data represent an immediately exploitable attack vector. Default credentials (e.g. minioadmin/minioadmin, admin/admin, postgres/postgres) are published in vendor documentation and are the first credentials an attacker tries after reaching the service network.
+
+
+*Impact*::
+Any attacker with network access can authenticate using default credentials, exfiltrate all stored data, modify records, or pivot into adjacent systems.
+
+
+*Detection Logic*::
+In-scope technical assets tagged with intentional-misconfiguration that store data assets rated at confidential or above.
+
+
+*Risk Rating*::
+High severity — default credentials plus confidential stored data equals a trivial full data breach with no exploitation skill required.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Development or ephemeral test environments where no real PII or confidential data is present. Set the asset out_of_scope or remove the intentional-misconfiguration tag once credentials are rotated.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Rotate all default credentials before deployment; store secrets in a secrets manager::
+Replace all default credentials with randomly generated secrets (minimum 32 chars). Store in a secrets manager (Vault, AWS Secrets Manager, etc.) rather than environment variables or compose files. Add credential rotation to the pre-deployment checklist.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V2 - Authentication Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html[Authentication_Cheat_Sheet]
+
+
+*Check*
+
+Are all service credentials rotated from vendor defaults? Are secrets stored in a dedicated secrets manager rather than plain environment variables?
+
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Asset Using Known Default or Hardcoded Credentials* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.HighRisk]#_High Risk Severity_#
+[.HighRisk]#*Exposed Default Credentials*: *MinIO Object Storage* is tagged as intentional-misconfiguration and stores confidential data: Exploitation likelihood is _Very Likely_ with _High_ impact.#
+
+<<minio-storage,[SmallGrey]#exposed-default-credentials@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[sql-nosql-injection]]
+== [.HighRisk]#SQL/NoSQL-Injection: 2/2 unmitigated Risks#
+
+*Description* (Tampering): https://cwe.mitre.org/data/definitions/89.html[CWE 89]::
+When a database is accessed via database access protocols SQL/NoSQL-Injection risks might arise. The risk rating depends on the sensitivity technical asset itself and of the data assets processed.
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.
+
+*Detection Logic*::
+Database accessed via typical database access protocols by in-scope clients.
+
+*Risk Rating*::
+The risk rating depends on the sensitivity of the data stored inside the database.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Database accesses by queries not consisting of parts controllable by the caller can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Development): SQL/NoSQL-Injection Prevention::
+Try to use parameter binding to be safe from injection vulnerabilities. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V5 - Validation, Sanitization and Encoding Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html[SQL_Injection_Prevention_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *SQL/NoSQL-Injection* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.HighRisk]#_High Risk Severity_#
+[.HighRisk]#*SQL/NoSQL-Injection* risk at *API Server* against database *PostgreSQL Database* via *PostgreSQL Connection*: Exploitation likelihood is _Very Likely_ with _High_ impact.#
+
+<<api-server,[SmallGrey]#sql-nosql-injection@api-server@postgresql-db@api-server>postgresql-connection#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*SQL/NoSQL-Injection* risk at *API Server* against database *Redis Cache* via *Redis Session Store*: Exploitation likelihood is _Very Likely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#sql-nosql-injection@api-server@redis-cache@api-server>redis-session-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[missing-authentication]]
+== [.ElevatedRisk]#Missing Authentication: 1/1 unmitigated Risk#
+
+*Description* (Elevation of Privilege): https://cwe.mitre.org/data/definitions/306.html[CWE 306]::
+Technical assets (especially multi-tenant systems) should authenticate incoming requests when the asset processes sensitive data. 
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to access or modify sensitive data in an unauthenticated way.
+
+*Detection Logic*::
+In-scope technical assets (except load-balancer, reverse-proxy, service-registry, waf, ids, and ips and in-process calls) should authenticate incoming requests when the asset processes sensitive data. This is especially the case for all multi-tenant assets (there even non-sensitive ones).
+
+*Risk Rating*::
+The risk rating (medium or high) depends on the sensitivity of the data sent across the communication link. Monitoring callers are exempted from this risk.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Technical assets which do not process requests regarding functionality or data linked to end-users (customers) can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Authentication of Incoming Requests::
+Apply an authentication method to the technical asset. To protect highly sensitive data consider the use of two-factor authentication for human users.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V2 - Authentication Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html[Authentication_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Missing Authentication* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Missing Authentication* covering communication link *HTTP to API Server* from *Nginx Reverse Proxy* to *API Server*: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<api-server,[SmallGrey]#missing-authentication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[missing-cloud-hardening]]
+== [.ElevatedRisk]#Missing Cloud Hardening: 1/1 unmitigated Risk#
+
+*Description* (Tampering): https://cwe.mitre.org/data/definitions/1008.html[CWE 1008]::
+Cloud components should be hardened according to the cloud vendor best practices. This affects their configuration, auditing, and further areas.
+
+*Impact*::
+If this risk is unmitigated, attackers might access cloud components in an unintended way.
+
+*Detection Logic*::
+In-scope cloud components (either residing in cloud trust boundaries or more specifically tagged with cloud provider types).
+
+*Risk Rating*::
+The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Cloud components not running parts of the target architecture can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Cloud Hardening::
+Apply hardening of all cloud components and services, taking special care to follow the individual risk descriptions (which depend on the cloud provider tags in the model). 
+
+For *Amazon Web Services (AWS)*: Follow the _CIS Benchmark for Amazon Web Services_ (see also the automated checks of cloud audit tools like _"PacBot", "CloudSploit", "CloudMapper", "ScoutSuite", or "Prowler AWS CIS Benchmark Tool"_). 
+For EC2 and other servers running Amazon Linux, follow the _CIS Benchmark for Amazon Linux_ and switch to IMDSv2. 
+For S3 buckets follow the _Security Best Practices for Amazon S3_ at https://docs.aws.amazon.com/AmazonS3/latest/dev/security-best-practices.html[https://docs.aws.amazon.com/AmazonS3/latest/dev/security-best-practices.html] to avoid accidental leakage. 
+Also take a look at some of these tools: https://github.com/toniblyx/my-arsenal-of-aws-security-tools[https://github.com/toniblyx/my-arsenal-of-aws-security-tools] 
+
+For *Microsoft Azure*: Follow the _CIS Benchmark for Microsoft Azure_ (see also the automated checks of cloud audit tools like _"CloudSploit" or "ScoutSuite"_).
+
+For *Google Cloud Platform*: Follow the _CIS Benchmark for Google Cloud Computing Platform_ (see also the automated checks of cloud audit tools like _"CloudSploit" or "ScoutSuite"_). 
+
+For *Oracle Cloud Platform*: Follow the hardening best practices (see also the automated checks of cloud audit tools like _"CloudSploit"_).
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html[Attack_Surface_Analysis_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Missing Cloud Hardening* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Missing Cloud Hardening* risk at *Docker Host*: Exploitation likelihood is _Unlikely_ with _Very High_ impact.#
+
+<<,[SmallGrey]#missing-cloud-hardening@docker-host#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[missing-csp-header]]
+== [.ElevatedRisk]#Missing Content-Security-Policy Header on Web Entry Point: 1/1 unmitigated Risk#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/693.html[CWE 693]::
+Web entry points (reverse proxies and web applications) that serve browser-based clients and process authentication tokens without a Content-Security-Policy (CSP) header are vulnerable to XSS-facilitated token theft. An attacker who achieves XSS in the browser can read localStorage/sessionStorage tokens and replay them without any client-side protection if CSP is absent.
+
+
+*Impact*::
+An attacker who successfully injects client-side script can exfiltrate authentication tokens, impersonate users, and access all data the victim can access. Without CSP, there is no browser-enforced barrier against inline script execution or data exfiltration.
+
+
+*Detection Logic*::
+In-scope technical assets with reverse-proxy or web-application technology that process PII data assets and are not tagged with has-csp. The has-csp tag serves as the in-model confirmation that CSP is deployed and verified.
+
+
+*Risk Rating*::
+Medium baseline. Elevated when the application uses long-lived tokens (>1 h TTL) stored in browser-accessible storage, or when no WAF is present to block reflected XSS.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Add the tag has-csp to the technical asset once a Content-Security-Policy header is verified in production responses. Also false positive when the application exclusively uses HttpOnly cookies for session management and no JS-accessible token storage is used.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Configure a Content-Security-Policy response header on the web entry point::
+Add a strict Content-Security-Policy header to all responses served to browser clients. At minimum use: default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'. Combine with Subresource Integrity (SRI) for external scripts and avoid inline event handlers. Once deployed, tag the asset has-csp to suppress this finding.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V14 - Configuration Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html[Content_Security_Policy_Cheat_Sheet]
+
+
+*Check*
+
+Is a Content-Security-Policy response header present and non-trivial on all pages served to browsers? Use browser DevTools or securityheaders.com to verify.
+
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Missing Content-Security-Policy Header on Web Entry Point* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Missing Content-Security-Policy*: *Nginx Reverse Proxy* serves browser clients handling auth tokens without a verified CSP header: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<nginx-proxy,[SmallGrey]#missing-csp-header@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[missing-hardening]]
+== [.ElevatedRisk]#Missing Hardening: 3/3 unmitigated Risks#
+
+*Description* (Tampering): https://cwe.mitre.org/data/definitions/16.html[CWE 16]::
+Technical assets with a Relative Attacker Attractiveness (RAA) value of 55 % or higher should be explicitly hardened taking best practices and vendor hardening guides into account.
+
+*Impact*::
+If this risk remains unmitigated, attackers might be able to easier attack high-value targets.
+
+*Detection Logic*::
+In-scope technical assets with RAA values of 55 % or higher. Generally for high-value targets like data stores, application servers, identity providers and ERP systems this limit is reduced to 40 %
+
+*Risk Rating*::
+The risk rating depends on the sensitivity of the data processed in the technical asset.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Usually no false positives.#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): System Hardening::
+Try to apply all hardening best practices (like CIS benchmarks, OWASP recommendations, vendor recommendations, DevSec Hardening Framework, DBSAT for Oracle databases, and others).
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V14 - Configuration Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html[Attack_Surface_Analysis_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Missing Hardening* was found *3 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Missing Hardening* risk at *API Server*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#missing-hardening@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Missing Hardening* risk at *PostgreSQL Database*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<postgresql-db,[SmallGrey]#missing-hardening@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Missing Hardening* risk at *Redis Cache*: Exploitation likelihood is _Likely_ with _Low_ impact.#
+
+<<redis-cache,[SmallGrey]#missing-hardening@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[path-traversal]]
+== [.ElevatedRisk]#Path-Traversal: 1/1 unmitigated Risk#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/22.html[CWE 22]::
+When a filesystem is accessed Path-Traversal or Local-File-Inclusion (LFI) risks might arise. The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to read sensitive files (configuration data, key/credential files, deployment files, business data files, etc.) from the filesystem of affected components.
+
+*Detection Logic*::
+Filesystems accessed by in-scope callers.
+
+*Risk Rating*::
+The risk rating depends on the sensitivity of the data stored inside the technical asset.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#File accesses by filenames not consisting of parts controllable by the caller can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Development): Path-Traversal Prevention::
+Before accessing the file cross-check that it resides in the expected folder and is of the expected type and filename/suffix. Try to use a mapping if possible instead of directly accessing by a filename which is (partly or fully) provided by the caller. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V12 - File and Resources Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html[Input_Validation_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Path-Traversal* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Path-Traversal* risk at *API Server* against filesystem *MinIO Object Storage* via *MinIO File Storage*: Exploitation likelihood is _Very Likely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#path-traversal@api-server@minio-storage@api-server>minio-file-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[server-side-request-forgery]]
+== [.ElevatedRisk]#Server-Side Request Forgery (SSRF): 1/1 unmitigated Risk#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/918.html[CWE 918]::
+When a server system (i.e. not a client) is accessing other server systems via typical web protocols Server-Side Request Forgery (SSRF) or Local-File-Inclusion (LFI) or Remote-File-Inclusion (RFI) risks might arise. 
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.
+
+*Detection Logic*::
+In-scope non-client systems accessing (using outgoing communication links) targets with either HTTP or HTTPS protocol.
+
+*Risk Rating*::
+The risk rating (low or medium) depends on the sensitivity of the data assets receivable via web protocols from targets within the same network trust-boundary as well on the sensitivity of the data assets receivable via web protocols from the target asset itself. Also for cloud-based environments the exploitation impact is at least medium, as cloud backend services can be attacked via SSRF.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Servers not sending outgoing web requests can be considered as false positives after review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Development): SSRF Prevention::
+Try to avoid constructing the outgoing target URL with caller controllable values. Alternatively use a mapping (whitelist) when accessing outgoing URLs instead of creating them including caller controllable values. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V12 - File and Resources Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html[Server_Side_Request_Forgery_Prevention_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Server-Side Request Forgery (SSRF)* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Server-Side Request Forgery (SSRF)* risk at *API Server* server-side web-requesting the target *MinIO Object Storage* via *MinIO File Storage*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#server-side-request-forgery@api-server@minio-storage@api-server>minio-file-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[unencrypted-communication]]
+== [.ElevatedRisk]#Unencrypted Communication: 4/4 unmitigated Risks#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/319.html[CWE 319]::
+Due to the confidentiality and/or integrity rating of the data assets transferred over the communication link this connection must be encrypted.
+
+*Impact*::
+If this risk is unmitigated, network attackers might be able to to eavesdrop on unencrypted sensitive data sent between components.
+
+*Detection Logic*::
+Unencrypted technical communication links of in-scope technical assets (excluding monitoring traffic as well as local-file-access, in-process-library-call and inter-process-communication) transferring sensitive data.
+
+*Risk Rating*::
+Depending on the confidentiality rating of the transferred data-assets either medium or high risk.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#When all sensitive data sent over the communication link is already fully encrypted on document or data level. Also intra-container/pod communication can be considered false positive when container orchestration platform handles encryption.#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Encryption of Communication Links::
+Apply transport layer encryption to the communication link.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V9 - Communication Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html[Transport_Layer_Protection_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Unencrypted Communication* was found *4 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Unencrypted Communication* named *MinIO File Storage* between *API Server* and *MinIO Object Storage* transferring authentication data (like credentials, token, session-id, etc.): Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<api-server,[SmallGrey]#unencrypted-communication@api-server>minio-file-storage@api-server@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Unencrypted Communication* named *PostgreSQL Connection* between *API Server* and *PostgreSQL Database* transferring authentication data (like credentials, token, session-id, etc.): Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<api-server,[SmallGrey]#unencrypted-communication@api-server>postgresql-connection@api-server@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Unencrypted Communication* named *Redis Session Store* between *API Server* and *Redis Cache* transferring authentication data (like credentials, token, session-id, etc.): Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<api-server,[SmallGrey]#unencrypted-communication@api-server>redis-session-store@api-server@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Unencrypted Communication* named *HTTP to API Server* between *Nginx Reverse Proxy* and *API Server*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<nginx-proxy,[SmallGrey]#unencrypted-communication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-18#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-102#
+
+4+|[.small]#Migrating Nginx-to-API communication to mTLS. A separate CA will be provisioned inside the Docker network. PR #47 is in review; target completion sprint 22.
+#
+|===
+
+[[unguarded-direct-datastore-access]]
+== [.ElevatedRisk]#Unguarded Direct Datastore Access: 3/3 unmitigated Risks#
+
+*Description* (Elevation of Privilege): https://cwe.mitre.org/data/definitions/501.html[CWE 501]::
+Data stores accessed across trust boundaries must be guarded by some protecting service or application.
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.
+
+*Detection Logic*::
+In-scope technical assets of type datastore (except identity-store-ldap when accessed from identity-provider and file-server when accessed via file transfer protocols) with confidentiality rating of confidential (or higher) or with integrity rating of critical (or higher) which have incoming data-flows from assets outside across a network trust-boundary. DevOps config and deployment access is excluded from this risk.
+
+*Risk Rating*::
+The matching technical assets are at low risk. When either the confidentiality rating is strictly-confidential or the integrity rating is mission-critical, the risk-rating is considered medium. For assets with RAA values higher than 40 % the risk-rating increases.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#When the caller is considered fully trusted as if it was part of the datastore itself.#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Encapsulation of Datastore::
+Encapsulate the datastore access behind a guarding service or application.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html[Attack_Surface_Analysis_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Unguarded Direct Datastore Access* was found *3 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Unguarded Direct Datastore Access* of *PostgreSQL Database* by *API Server* via *PostgreSQL Connection*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<postgresql-db,[SmallGrey]#unguarded-direct-datastore-access@api-server>postgresql-connection@api-server@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Unguarded Direct Datastore Access* of *Redis Cache* by *API Server* via *Redis Session Store*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<redis-cache,[SmallGrey]#unguarded-direct-datastore-access@api-server>redis-session-store@api-server@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Unguarded Direct Datastore Access* of *MinIO Object Storage* by *API Server* via *MinIO File Storage*: Exploitation likelihood is _Likely_ with _Low_ impact.#
+
+<<minio-storage,[SmallGrey]#unguarded-direct-datastore-access@api-server>minio-file-storage@api-server@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[container-baseimage-backdooring]]
+== [.MediumRisk]#Container Base Image Backdooring: 5/5 unmitigated Risks#
+
+*Description* (Tampering): https://cwe.mitre.org/data/definitions/912.html[CWE 912]::
+When a technical asset is built using container technologies, Base Image Backdooring risks might arise where base images and other layers used contain vulnerable components or backdoors.
+
+See for example: https://techcrunch.com/2018/06/15/tainted-crypto-mining-containers-pulled-from-docker-hub/[https://techcrunch.com/2018/06/15/tainted-crypto-mining-containers-pulled-from-docker-hub/]
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to deeply persist in the target system by executing code in deployed containers.
+
+*Detection Logic*::
+In-scope technical assets running as containers.
+
+*Risk Rating*::
+The risk rating depends on the sensitivity of the technical asset itself and of the data assets.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Fully trusted (i.e. reviewed and cryptographically signed or similar) base images of containers can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Container Infrastructure Hardening::
+Apply hardening of all container infrastructures (see for example the _CIS-Benchmarks for Docker and Kubernetes_ and the _Docker Bench for Security_). Use only trusted base images of the original vendors, verify digital signatures and apply image creation best practices. Also consider using Google's _Distroless_ base images or otherwise very small base images. Regularly execute container image scans with tools checking the layers for vulnerable components.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V10 - Malicious Code Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html[Docker_Security_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS/CSVS applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Container Base Image Backdooring* was found *5 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Container Base Image Backdooring* risk at *API Server*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<api-server,[SmallGrey]#container-baseimage-backdooring@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Container Base Image Backdooring* risk at *Nginx Reverse Proxy*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<nginx-proxy,[SmallGrey]#container-baseimage-backdooring@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Container Base Image Backdooring* risk at *PostgreSQL Database*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<postgresql-db,[SmallGrey]#container-baseimage-backdooring@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Container Base Image Backdooring* risk at *MinIO Object Storage*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<minio-storage,[SmallGrey]#container-baseimage-backdooring@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Container Base Image Backdooring* risk at *Redis Cache*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<redis-cache,[SmallGrey]#container-baseimage-backdooring@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[missing-build-infrastructure]]
+== [.MediumRisk]#Missing Build Infrastructure: 1/1 unmitigated Risk#
+
+*Description* (Tampering): https://cwe.mitre.org/data/definitions/1127.html[CWE 1127]::
+The modeled architecture does not contain a build infrastructure (devops-client, sourcecode-repo, build-pipeline, etc.), which might be the risk of a model missing critical assets (and thus not seeing their risks). If the architecture contains custom-developed parts, the pipeline where code gets developed and built needs to be part of the model.
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model due to critical build infrastructure components missing in the model.
+
+*Detection Logic*::
+Models with in-scope custom-developed parts missing in-scope development (code creation) and build infrastructure components (devops-client, sourcecode-repo, build-pipeline, etc.).
+
+*Risk Rating*::
+The risk rating depends on the highest sensitivity of the in-scope assets running custom-developed parts.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Models not having any custom-developed parts can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Build Pipeline Hardening::
+Include the build infrastructure in the model.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html[Attack_Surface_Analysis_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Missing Build Infrastructure* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Missing Build Infrastructure* in the threat model (referencing asset *API Server* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#missing-build-infrastructure@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[missing-identity-store]]
+== [.MediumRisk]#Missing Identity Store: 1/1 unmitigated Risk#
+
+*Description* (Spoofing): https://cwe.mitre.org/data/definitions/287.html[CWE 287]::
+The modeled architecture does not contain an identity store, which might be the risk of a model missing critical assets (and thus not seeing their risks).
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model in the identity provider/store that is currently missing in the model.
+
+*Detection Logic*::
+Models with authenticated data-flows authorized via end user identity missing an in-scope identity store.
+
+*Risk Rating*::
+The risk rating depends on the sensitivity of the end user-identity authorized technical assets and their data assets processed.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Models only offering data/services without any real authentication need can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Identity Store::
+Include an identity store in the model if the application has a login.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V2 - Authentication Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html[Authentication_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Missing Identity Store* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Missing Identity Store* in the threat model (referencing asset *Nginx Reverse Proxy* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<nginx-proxy,[SmallGrey]#missing-identity-store@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[missing-authentication-second-factor]]
+== [.MediumRisk]#Missing Two-Factor Authentication (2FA): 1/1 unmitigated Risk#
+
+*Description* (Elevation of Privilege): https://cwe.mitre.org/data/definitions/308.html[CWE 308]::
+Technical assets (especially multi-tenant systems) should authenticate incoming requests with two-factor (2FA) authentication when the asset processes or stores highly sensitive data (in terms of confidentiality, integrity, and availability) and is accessed by humans.
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to access or modify highly sensitive data without strong authentication.
+
+*Detection Logic*::
+In-scope technical assets (except load-balancer, reverse-proxy, waf, ids, and ips) should authenticate incoming requests via two-factor authentication (2FA) when the asset processes or stores highly sensitive data (in terms of confidentiality, integrity, and availability) and is accessed by a client used by a human user.
+
+*Risk Rating*::
+medium
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Technical assets which do not process requests regarding functionality or data linked to end-users (customers) can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Business Side): Authentication with Second Factor (2FA)::
+Apply an authentication method to the technical asset protecting highly sensitive data via two-factor authentication for human users.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V2 - Authentication Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html[Multifactor_Authentication_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Missing Two-Factor Authentication (2FA)* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Missing Two-Factor Authentication* covering communication link *HTTP to API Server* from *Browser SPA* forwarded via *Nginx Reverse Proxy* to *API Server*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#missing-authentication-second-factor@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[missing-vault]]
+== [.MediumRisk]#Missing Vault (Secret Storage): 1/1 unmitigated Risk#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/522.html[CWE 522]::
+In order to avoid the risk of secret leakage via config files (when attacked through vulnerabilities being able to read files like Path-Traversal and others), it is best practice to use a separate hardened process with proper authentication, authorization, and audit logging to access config secrets (like credentials, private keys, client certificates, etc.). This component is usually some kind of Vault.
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to easier steal config secrets (like credentials, private keys, client certificates, etc.) once a vulnerability to access files is present and exploited.
+
+*Detection Logic*::
+Models without a Vault (Secret Storage).
+
+*Risk Rating*::
+The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Models where no technical assets have any kind of sensitive config data to protect can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Vault (Secret Storage)::
+Consider using a Vault (Secret Storage) to securely store and access config secrets (like credentials, private keys, client certificates, etc.).
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V6 - Stored Cryptography Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html[Cryptographic_Storage_Cheat_Sheet]
+
+
+*Check*
+
+GetAttribute a Vault (Secret Storage) in place?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Missing Vault (Secret Storage)* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Missing Vault (Secret Storage)* in the threat model (referencing asset *API Server* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#missing-vault@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[missing-waf]]
+== [.MediumRisk]#Missing Web Application Firewall (WAF): 1/1 unmitigated Risk#
+
+*Description* (Tampering): https://cwe.mitre.org/data/definitions/1008.html[CWE 1008]::
+To have a first line of filtering defense, security architectures with web-services or web-applications should include a WAF in front of them. Even though a WAF is not a replacement for security (all components must be secure even without a WAF) it adds another layer of defense to the overall system by delaying some attacks and having easier attack alerting through it.
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to apply standard attack pattern tests at great speed without any filtering.
+
+*Detection Logic*::
+In-scope web-services and/or web-applications accessed across a network trust boundary not having a Web Application Firewall (WAF) in front of them.
+
+*Risk Rating*::
+The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Targets only accessible via WAFs or reverse proxies containing a WAF component (like ModSecurity) can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Web Application Firewall (WAF)::
+Consider placing a Web Application Firewall (WAF) in front of the web-services and/or web-applications. For cloud environments many cloud providers offer pre-configured WAFs. Even reverse proxies can be enhances by a WAF component via ModSecurity plugins.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Virtual_Patching_Cheat_Sheet.html[Virtual_Patching_Cheat_Sheet]
+
+
+*Check*
+
+GetAttribute a Web Application Firewall (WAF) in place?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Missing Web Application Firewall (WAF)* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Missing Web Application Firewall (WAF)* risk at *API Server*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#missing-waf@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[mixed-targets-on-shared-runtime]]
+== [.MediumRisk]#Mixed Targets on Shared Runtime: 1/1 unmitigated Risk#
+
+*Description* (Elevation of Privilege): https://cwe.mitre.org/data/definitions/1008.html[CWE 1008]::
+Different attacker targets (like frontend and backend/datastore components) should not be running on the same shared (underlying) runtime.
+
+*Impact*::
+If this risk is unmitigated, attackers successfully attacking other components of the system might have an easy path towards more valuable targets, as they are running on the same shared runtime.
+
+*Detection Logic*::
+Shared runtime running technical assets of different trust-boundaries is at risk. Also mixing backend/datastore with frontend components on the same shared runtime is considered a risk.
+
+*Risk Rating*::
+The risk rating (low or medium) depends on the confidentiality, integrity, and availability rating of the technical asset running on the shared runtime.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#When all assets running on the shared runtime are hardened and protected to the same extend as if all were containing/processing highly sensitive data.#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Runtime Separation::
+Use separate runtime environments for running different target components or apply similar separation styles to prevent load- or breach-related problems originating from one more attacker-facing asset impacts also the other more critical rated backend/datastore assets.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html[Attack_Surface_Analysis_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Mixed Targets on Shared Runtime* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Mixed Targets on Shared Runtime* named *Docker Host* might enable attackers moving from one less valuable target to a more valuable one: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<docker-host,[SmallGrey]#mixed-targets-on-shared-runtime@docker-host#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-10#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-95#
+
+4+|[.small]#Docker containers run without privileged mode and with no host path mounts except the named volumes. The Docker socket is not mounted into any container. Risk is accepted for this demo environment.
+#
+|===
+
+[[unencrypted-asset]]
+== [.MediumRisk]#Unencrypted Technical Assets: 3/3 unmitigated Risks#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/311.html[CWE 311]::
+Due to the confidentiality rating of the technical asset itself and/or the stored data assets this technical asset must be encrypted. The risk rating depends on the sensitivity technical asset itself and of the data assets stored.
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to access unencrypted data when successfully compromising sensitive components.
+
+*Detection Logic*::
+In-scope unencrypted technical assets (excluding reverse-proxy, load-balancer, waf, ids, ips and embedded components like library) storing data assets rated at least as confidential or critical. For technical assets storing data assets rated as strictly-confidential or mission-critical the encryption must be of type data-with-end-user-individual-key.
+
+*Risk Rating*::
+Depending on the confidentiality rating of the stored data-assets either medium or high risk.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#When all sensitive data stored within the asset is already fully encrypted on document or data level.#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Encryption of Technical Asset::
+Apply encryption to the technical asset.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V6 - Stored Cryptography Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html[Cryptographic_Storage_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Unencrypted Technical Assets* was found *3 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Unencrypted Technical Asset* named *Redis Cache*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<redis-cache,[SmallGrey]#unencrypted-asset@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Unencrypted Technical Asset* named *PostgreSQL Database* missing end user individual encryption with data-with-end-user-individual-key: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<postgresql-db,[SmallGrey]#unencrypted-asset@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-15#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-89#
+
+4+|[.small]#The PostgreSQL volume runs on a host-level LUKS-encrypted partition in all production deployments. The Threagile finding is acknowledged as informational for this demo environment which uses unencrypted storage. Production database TDE via pgcrypto will be evaluated in Q3.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Unencrypted Technical Asset* named *MinIO Object Storage*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<minio-storage,[SmallGrey]#unencrypted-asset@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-18#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-110#
+
+4+|[.small]#MinIO server-side encryption (SSE-S3) is being evaluated. Default minioadmin credentials will be rotated before production deployment. This finding is a CRITICAL blocker for launch. Tracked in VAULT-110.
+#
+|===
+
+[[dos-risky-access-across-trust-boundary]]
+== [.LowRisk]#DoS-risky Access Across Trust-Boundary: 3/3 unmitigated Risks#
+
+*Description* (Denial of Service): https://cwe.mitre.org/data/definitions/400.html[CWE 400]::
+Assets accessed across trust boundaries with critical or mission-critical availability rating are more prone to Denial-of-Service (DoS) risks.
+
+*Impact*::
+If this risk remains unmitigated, attackers might be able to disturb the availability of important parts of the system.
+
+*Detection Logic*::
+In-scope technical assets (excluding load-balancer) with availability rating of critical or higher which have incoming data-flows across a network trust-boundary (excluding devops usage).
+
+*Risk Rating*::
+Matching technical assets with availability rating of critical or higher are at low risk. When the availability rating is mission-critical and neither a VPN nor IP filter for the incoming data-flow nor redundancy for the asset is applied, the risk-rating is considered medium.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#When the accessed target operations are not time- or resource-consuming.#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Anti-DoS Measures::
+Apply anti-DoS techniques like throttling and/or per-client load blocking with quotas. Also for maintenance access routes consider applying a VPN instead of public reachable interfaces. Generally applying redundancy on the targeted technical asset reduces the risk of DoS.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html[Denial_of_Service_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *DoS-risky Access Across Trust-Boundary* was found *3 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.LowRisk]#_Low Risk Severity_#
+[.LowRisk]#*Denial-of-Service* risky access of *API Server* by *Browser SPA* via *HTTPS to Nginx* forwarded via *Nginx Reverse Proxy*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<api-server,[SmallGrey]#dos-risky-access-across-trust-boundary@api-server@browser-spa@browser-spa>https-to-nginx->nginx-proxy>http-to-api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.LowRisk]#_Low Risk Severity_#
+[.LowRisk]#*Denial-of-Service* risky access of *Nginx Reverse Proxy* by *Browser SPA* via *HTTPS to Nginx*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<nginx-proxy,[SmallGrey]#dos-risky-access-across-trust-boundary@nginx-proxy@browser-spa@browser-spa>https-to-nginx->#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.LowRisk]#_Low Risk Severity_#
+[.LowRisk]#*Denial-of-Service* risky access of *PostgreSQL Database* by *API Server* via *PostgreSQL Connection*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<postgresql-db,[SmallGrey]#dos-risky-access-across-trust-boundary@postgresql-db@api-server@api-server>postgresql-connection->#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+

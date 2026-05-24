@@ -7,14 +7,14 @@ on:
   push:
     branches: ["main"]
     paths:
-      - "threagile/threagile.yaml"
+      - "threagile/**.yaml"
       - "docker-compose.yml"
       - "nginx/nginx.conf"
       - "api/src/routes/**"
       - "api/src/middleware/**"
   pull_request:
     paths:
-      - "threagile/threagile.yaml"
+      - "threagile/**.yaml"
       - "docker-compose.yml"
       - "nginx/nginx.conf"
       - "api/src/routes/**"
@@ -75,7 +75,7 @@ jobs:
           python3 scripts/threat-model-diff.py \
             --previous threagile/output/risks-previous.json \
             --current  threagile/output/risks.json \
-            --model    threagile/threagile.yaml \
+            --model    threagile/risk_tracking.yaml \
             --output   threagile/output/diff-report.json
 
       # ── 5. PR Comment ─────────────────────────────────────────────────────────
@@ -92,7 +92,7 @@ jobs:
               const errBody = MARKER + '\n## Threat Model Analysis\n\n' +
                 '> Analysis failed - Threagile could not parse the model or the diff step did not complete.\n\n' +
                 'Check the [workflow logs](' + runUrl + ') for details. Common causes:\n' +
-                '- Invalid YAML indentation in `threagile/threagile.yaml`\n' +
+                '- Invalid YAML indentation in one of the `threagile/*.yaml` files\n' +
                 '- Unknown field value (run `docker run --rm threagile/threagile -list-types` locally)\n';
               const { data: ec } = await github.rest.issues.listComments({ owner: context.repo.owner, repo: context.repo.repo, issue_number: context.issue.number });
               const pe = ec.find(c => c.body && c.body.includes(MARKER));
@@ -172,7 +172,7 @@ jobs:
         run: |
           echo "::error title=Untracked Critical Risks::This PR introduces critical or elevated risks with no risk_tracking entry in threagile/threagile.yaml."
           echo ""
-          echo "Add an entry under risk_tracking: in threagile/threagile.yaml for each new risk:"
+          echo "Add an entry under risk_tracking: in threagile/risk_tracking.yaml for each new risk:"
           echo ""
           echo "  risk_tracking:"
           echo "    <risk-synthetic-id>:"

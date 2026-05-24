@@ -1,0 +1,40 @@
+= STRIDE Classification of Identified Risks
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+This chapter clusters and classifies the risks by STRIDE categories: In total *12 potential risks* have been identified during the threat modeling process of which *0 in the Spoofing* category, *0 in the Tampering* category, *2 in the Repudiation* category, *10 in the Information Disclosure* category, *0 in the Denial of Service* category, and *0 in the Elevation of Privilege* category.{fn-risk-findings}
+
+== Spoofing
+No risk identified.
+
+== Tampering
+No risk identified.
+
+== Repudiation
+<<detecting-no-audit-logging,[.ElevatedRisk]#Elevated: *Detectability - PII Flows Without Audit Logging*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Inability to detect unauthorized access to personal data, failure to meet GDPR accountability obligations, and potential inability to meet breach notification deadlines.
+
+
+
+== Information Disclosure
+<<data-disclosure-pii-unencrypted-link,[.ElevatedRisk]#Elevated: *Data Disclosure - Personal Data Transmitted Over Unencrypted Channel*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Exposure of personal data to eavesdroppers, potential data breach notification obligations under GDPR Article 33, and significant regulatory penalties.
+
+<<pii-client-side-storage,[.ElevatedRisk]#Elevated: *Non-Repudiation - PII or Auth Tokens Accessible in Browser-Side Storage*: 1/1 unmitigated Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Stolen session tokens allow account takeover and impersonation. The original user cannot repudiate actions performed by the attacker. Stolen PII violates GDPR data minimisation and storage limitation principles.
+
+
+<<unawareness-no-consent-technology,[.ElevatedRisk]#Elevated: *Unawareness - PII Processed Without a Consent Management Component*: 1/1 unmitigated Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Data subjects cannot exercise GDPR rights. Regulatory investigation risk and class-action exposure in jurisdictions with private right of action.
+
+
+<<linking-pii-multi-boundary,[.MediumRisk]#Medium: *Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries*: 6/6 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+Aggregation of personal data enables profiling, re-identification, and violations of GDPR data minimisation and purpose limitation principles (Articles 5(1)(b) and 5(1)(c)).
+
+
+
+== Denial of Service
+No risk identified.
+
+== Elevation of Privilege
+No risk identified.
+

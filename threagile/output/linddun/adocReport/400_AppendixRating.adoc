@@ -1,0 +1,28 @@
+[appendix]
+= Ratings
+
+[[ref-confidentiality-values]]
+.Confidentiality Values
+[%header,cols="3,1,8"]
+|===
+| Name | Value | Description
+
+| public | 1 | Public available information
+| internal | 2 | (Company) internal information - but all people in the institution can access it
+| restricted | 3 | Internal and with restricted access
+| confidential | 4 | Only a few selected people have access
+| strictly-confidential | 5 | Highest secrecy level
+|===
+
+[[ref-criticality-values]]
+.Criticality Values
+[%header,cols="3,1,8"]
+|===
+| Name | Value | Description
+
+| critical | 4 | Failure is really expensive or crippling
+| mission-critical | 5 | This must not fail
+| archive | 1 | Stored, not active
+| operational | 2 | If this fails, people will just have an ad-hoc coffee break until it is back
+| important | 3 | Issues here results in angry people
+|===

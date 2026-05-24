@@ -1,0 +1,36 @@
+= Asset Register
+
+== Technical Assets
+
+<<api-server,*API Server*>>::
+  Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD on notes, file uploads to MinIO. Bridges the frontend and backend networks. Single most security-critical component — compromise equals full data access.
+
+<<browser-spa,*Browser SPA*>>::
+  React Single Page Application served from Nginx. Users authenticate, manage notes, and upload files through this interface.
+
+<<minio-storage,*MinIO Object Storage*>>::
+  S3-compatible object store for file attachments. INTENTIONAL MISCONFIGURATION: Uses default minioadmin/minioadmin credentials (visible in docker-compose.yml) and stores files without encryption at rest. HTTP-only (no TLS) within the Docker network.
+
+<<nginx-proxy,*Nginx Reverse Proxy*>>::
+  Nginx terminates TLS and forwards all API traffic to the Express server over plain HTTP (port 3000). This is the DMZ entry point.
+
+<<postgresql-db,*PostgreSQL Database*>>::
+  Primary relational datastore. Contains users table (email + bcrypt password hash), notes table (title + content), and attachments metadata. INTENTIONAL MISCONFIGURATION: No encryption at rest (encryption: none).
+
+<<redis-cache,*Redis Cache*>>::
+  In-memory store used as session store and JWT revocation list. INTENTIONAL MISCONFIGURATION: No encryption at rest. If Redis persistence is enabled and the RDB file is exfiltrated, session tokens are exposed.
+
+== Data Assets
+
+<<dataAsset:file-attachments,*File Attachments*>>::
+  Binary file uploads attached to notes. May include documents, images, or other sensitive files depending on note usage.
+
+<<dataAsset:note-content,*Note Content*>>::
+  User-authored note text — may include personal, financial, or health information depending on how users employ the application.
+
+<<dataAsset:session-tokens,*Session Tokens*>>::
+  JWT tokens and Redis session keys used to maintain authenticated state. Theft allows session hijacking without knowing the user's password.
+
+<<dataAsset:user-credentials,*User Credentials*>>::
+  Email addresses and bcrypt-hashed passwords used for authentication. Compromise allows full account takeover.
+

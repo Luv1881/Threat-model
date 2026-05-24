@@ -1,0 +1,47 @@
+# ============================================================
+# PASTA Threat Scenarios
+# ============================================================
+
+threat_scenarios:
+
+  Opportunistic Credential Stuffing:
+    id: cred-stuffing
+    title: Opportunistic Credential Stuffing Against Login API
+    description: >
+      A script-kiddie actor uses a leaked credential database and automated tooling
+      to attempt account takeover via the login endpoint exposed on nginx-proxy.
+    actor_capabilities: script-kiddie
+    entry_assets:
+      - nginx-proxy
+    kill_chain_steps:
+      - reconnaissance
+      - credential-access
+      - initial-access
+    mitigated_by:
+      - rate-limiting
+      - mfa
+      - account-lockout
+    attack_vector: internet
+
+  XSS Session Hijacking via Browser SPA:
+    id: xss-session-hijack
+    title: Cross-Site Scripting Leading to Session Token Exfiltration
+    description: >
+      An attacker injects malicious JavaScript into note content that is later
+      rendered by another user's browser. The React SPA lacks a Content Security
+      Policy and renders user-controlled HTML in some legacy note display paths,
+      allowing the attacker's script to read document.cookie / localStorage and
+      exfiltrate the victim's JWT session token to an attacker-controlled endpoint.
+    actor_capabilities: script-kiddie
+    entry_assets:
+      - browser-spa
+    kill_chain_steps:
+      - initial-access
+      - credential-access
+      - exfiltration
+    mitigated_by:
+      - content-security-policy
+      - output-encoding
+      - httponly-cookie-flag
+      - short-jwt-ttl
+    attack_vector: web

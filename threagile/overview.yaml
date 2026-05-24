@@ -1,0 +1,21 @@
+management_summary_comment: >
+  VaultNote is a containerized note-taking application comprised of a React SPA,
+  Nginx reverse proxy, Node.js/Express REST API, PostgreSQL database, Redis session
+  store, and MinIO object storage. The architecture deliberately contains several
+  intentional misconfigurations (unencrypted internal HTTP, no encryption at rest,
+  hardcoded credentials) to demonstrate automated threat detection via Threagile.
+  All findings below are expected and serve as demonstration targets.
+
+business_overview:
+  description: >
+    VaultNote allows authenticated users to create, edit, and share encrypted notes
+    with file attachments. The application stores sensitive user data and note
+    content that must be protected against unauthorized disclosure.
+  images: []
+
+technical_overview:
+  description: >
+    Multi-tier containerized deployment: Nginx terminates TLS and proxies requests
+    to the API over unencrypted HTTP. The API accesses PostgreSQL, Redis, and MinIO
+    over plaintext TCP/HTTP within an internal Docker network.
+  images: []

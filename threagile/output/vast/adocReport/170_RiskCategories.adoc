@@ -1,0 +1,357 @@
+= Identified Risks by Vulnerability category
+In total *11 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *11 as elevated*, *0 as medium*, and *0 as low*. 
+
+These risks are distributed across *4 vulnerability categories*. 
+The following sub-chapters of this section describe each identified risk category.
+
+[[application-secrets-across-processes]]
+== [.ElevatedRisk]#Application Threat - Strictly-Confidential Asset Bridges Business Process Contexts: 2/2 unmitigated Risks#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/287.html[CWE 287]::
+VAST Application Threat Model: a technical asset that supports business processes and stores or processes strictly-confidential data. Assets that bridge process contexts while holding sensitive credentials or secrets expose those secrets to any threat actor that targets any one of the supported processes, violating the least-privilege boundary between business processes.
+
+
+*Impact*::
+Credential exposure in any one process context compromises all other processes the asset supports, amplifying the breach blast radius.
+
+
+*Detection Logic*::
+In-scope technical assets that support at least one business process AND process or store strictly-confidential data.
+
+
+*Risk Rating*::
+High when the asset is internet-accessible; medium for internal-only assets.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Shared identity providers (IdPs) architecturally designed to federate identity across processes with explicit isolation controls.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Isolate strictly-confidential data per business process boundary::
+Issue separate service accounts and credentials scoped to individual process contexts. Use a secrets manager for per-process, short-lived credentials. Consider splitting the asset into process-specific instances.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V2 - Authentication Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html[Secrets_Management_Cheat_Sheet]
+
+
+*Check*
+
+Are strictly-confidential data assets and credentials scoped to individual business processes rather than shared via a common technical asset?
+
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Application Threat - Strictly-Confidential Asset Bridges Business Process Contexts* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Cross-Process Credential Exposure*: *API Server* bridges business process contexts while handling strictly-confidential data: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<api-server,[SmallGrey]#application-secrets-across-processes@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-124#
+
+4+|[.small]#The JWT_SECRET environment variable is shared across API server instances for stateless JWT verification. MinIO and PostgreSQL credentials are also shared via compose env vars. Migration to a secrets manager (HashiCorp Vault or AWS Secrets Manager) is planned for production deployment.
+#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Cross-Process Credential Exposure*: *PostgreSQL Database* bridges business process contexts while handling strictly-confidential data: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<postgresql-db,[SmallGrey]#application-secrets-across-processes@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-124#
+
+4+|[.small]#PostgreSQL POSTGRES_PASSWORD is set via compose environment variable and shared with the API server. Vault-managed dynamic credentials are planned for production.
+#
+|===
+
+[[operational-critical-process-no-redundancy]]
+== [.ElevatedRisk]#Operational Threat - Critical Business Process Supported by Non-Redundant Assets: 3/3 unmitigated Risks#
+
+*Description* (Denial of Service): https://cwe.mitre.org/data/definitions/400.html[CWE 400]::
+VAST Operational Threat Model: a business process classified as mission-critical or critical that is supported exclusively by technical assets with redundant=false. A single point of failure in the supporting infrastructure can take down the entire critical process, failing service level agreements and potentially causing significant financial or safety impact.
+
+
+*Impact*::
+Complete outage of a critical business process due to failure or targeted attack against the sole supporting technical asset. No failover path means maximum downtime.
+
+
+*Detection Logic*::
+Business processes classified as mission-critical or critical where all supporting technical assets have redundant set to false.
+
+
+*Risk Rating*::
+Critical for mission-critical processes; high for critical processes without redundancy.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Processes where redundancy is provided at the infrastructure layer (cloud-managed services with implicit HA) that are not modelled as separate assets.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Add redundancy for all assets supporting critical business processes::
+Deploy at least two instances of each technical asset that supports mission-critical or critical business processes. Set redundant to true after adding HA configuration. Implement health checks, automatic failover, and data replication.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html[Denial_of_Service_Cheat_Sheet]
+
+
+*Check*
+
+Are all assets supporting critical or mission-critical business processes deployed with redundancy (redundant=true)?
+
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Operational Threat - Critical Business Process Supported by Non-Redundant Assets* was found *3 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*No Redundancy for Critical Process*: *API Server* supports a critical business process without redundancy: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<api-server,[SmallGrey]#operational-critical-process-no-redundancy@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-122#
+
+4+|[.small]#API server runs as a single container. Horizontal scaling via docker-compose --scale is tested but not enabled in demo. Load balancer (Nginx upstream pool) will be configured for production.
+#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*No Redundancy for Critical Process*: *PostgreSQL Database* supports a critical business process without redundancy: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<postgresql-db,[SmallGrey]#operational-critical-process-no-redundancy@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-122#
+
+4+|[.small]#Single-instance PostgreSQL is appropriate for the demo environment. Production deployment will use a primary + hot-standby configuration (Patroni). Accepted for demo; tracked as pre-launch requirement.
+#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*No Redundancy for Critical Process*: *Redis Cache* supports a critical business process without redundancy: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<redis-cache,[SmallGrey]#operational-critical-process-no-redundancy@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-122#
+
+4+|[.small]#Redis Sentinel or Redis Cluster is planned for production. For the demo environment, a single Redis instance with AOF persistence is accepted.
+#
+|===
+
+[[operational-unmonitored-critical-process]]
+== [.ElevatedRisk]#Operational Threat - Critical Business Process Without Operational Monitoring: 3/3 unmitigated Risks#
+
+*Description* (Repudiation): https://cwe.mitre.org/data/definitions/778.html[CWE 778]::
+VAST Operational Threat Model: a business process classified as critical or mission-critical whose supporting technical assets have no communication links with audit logging enabled. Without monitoring, security incidents within this process go undetected, incident response is hindered, and compliance with accountability requirements (GDPR Art. 5(2), SOC 2, ISO 27001 A.12.4) is undermined.
+
+
+*Impact*::
+Undetected breaches, inability to investigate incidents, compliance failures, and violation of SLA accountability requirements.
+
+
+*Detection Logic*::
+Technical assets supporting critical or mission-critical business processes that have no incoming communication link with audit_logged set to true.
+
+
+*Risk Rating*::
+High; critical processes without monitoring violate multiple compliance frameworks.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Assets monitored by infrastructure-layer logging (cloud-native audit trails) with documented evidence of coverage.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Enable audit logging on all assets supporting critical business processes::
+Set audit_logged to true on communication links feeding into technical assets that support critical business processes. Ship logs to a centralised SIEM with alerting on anomalous patterns.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V7 - Error Handling and Logging Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html[Logging_Cheat_Sheet]
+
+
+*Check*
+
+Do all assets supporting critical business processes have at least one audit-logged communication link?
+
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Operational Threat - Critical Business Process Without Operational Monitoring* was found *3 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Unmonitored Critical Process*: *API Server* supports a critical business process but has no audit-logged ingress: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<api-server,[SmallGrey]#operational-unmonitored-critical-process@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-123#
+
+4+|[.small]#Application-level metrics (request rate, error rate, p99 latency) are exposed via /metrics endpoint but Prometheus scraping is not configured in the demo environment. Production monitoring stack is tracked in VAULT-123.
+#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Unmonitored Critical Process*: *PostgreSQL Database* supports a critical business process but has no audit-logged ingress: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<postgresql-db,[SmallGrey]#operational-unmonitored-critical-process@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-123#
+
+4+|[.small]#PostgreSQL slow-query log and pg_stat_statements are enabled in the demo config. Full APM integration (Prometheus postgres_exporter + Grafana) is planned for production. Alert thresholds are being defined.
+#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Unmonitored Critical Process*: *Redis Cache* supports a critical business process but has no audit-logged ingress: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<redis-cache,[SmallGrey]#operational-unmonitored-critical-process@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-123#
+
+4+|[.small]#Redis INFO metrics are scraped by the Prometheus redis_exporter sidecar in production config but not in the demo compose file. Tracked in VAULT-123.
+#
+|===
+
+[[operational-shared-runtime-critical-process]]
+== [.ElevatedRisk]#Operational Threat - Critical Business Process on Shared Runtime: 3/3 unmitigated Risks#
+
+*Description* (Elevation of Privilege): https://cwe.mitre.org/data/definitions/284.html[CWE 284]::
+VAST Operational Threat Model: a business process marked as mission-critical or critical that depends on a shared runtime (container host, VM cluster) with other, lower-criticality workloads. A compromise of any co-located workload (container escape, host privilege escalation) can directly impact the critical process through shared kernel, storage, or network namespaces.
+
+
+*Impact*::
+Lateral movement from a compromised co-located workload to the infrastructure supporting a critical business process, causing service outage, data exfiltration, or integrity violations at the process level.
+
+
+*Detection Logic*::
+Shared runtimes that host assets supporting mission-critical or critical business processes together with assets that do not support any business process.
+
+
+*Risk Rating*::
+High when a critical business process asset shares a runtime with an internet-facing component; elevated otherwise.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Dev/test environments where isolation is consciously traded for resource efficiency with documented approval.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Isolate critical business process workloads onto dedicated runtimes::
+Run technical assets supporting critical or mission-critical business processes on dedicated container hosts or hypervisors not shared with untrusted workloads. Use separate node pools, VM sets, or bare-metal where process criticality demands it.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html[Docker_Security_Cheat_Sheet]
+
+
+*Check*
+
+Are technical assets supporting critical business processes isolated from shared runtimes used by lower-criticality workloads?
+
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Operational Threat - Critical Business Process on Shared Runtime* was found *3 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Shared Runtime - Critical Process*: *API Server* supports a critical business process on a shared runtime: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<api-server,[SmallGrey]#operational-shared-runtime-critical-process@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-10#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-95#
+
+4+|[.small]#See VAULT-95. API server shares the Docker host with datastores. No privileged containers or host mounts beyond named volumes.
+#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Shared Runtime - Critical Process*: *PostgreSQL Database* supports a critical business process on a shared runtime: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<postgresql-db,[SmallGrey]#operational-shared-runtime-critical-process@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-10#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-95#
+
+4+|[.small]#All services share the Docker host as accepted per VAULT-95. No privileged containers; Docker socket not mounted. This is a demo environment constraint.
+#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Shared Runtime - Critical Process*: *Redis Cache* supports a critical business process on a shared runtime: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<redis-cache,[SmallGrey]#operational-shared-runtime-critical-process@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-10#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-95#
+
+4+|[.small]#See VAULT-95. Shared Docker host is accepted for demo; production deployment targets separate VM/node for stateful services.
+#
+|===
+

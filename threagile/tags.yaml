@@ -1,0 +1,19 @@
+tags_available:
+  - react
+  - spa
+  - nginx
+  - tls-termination
+  - nodejs
+  - express
+  - jwt
+  - postgresql
+  - relational
+  - redis
+  - cache
+  - session-store
+  - minio
+  - s3
+  - object-storage
+  - intentional-misconfiguration
+  - docker
+  - container-runtime

@@ -1,0 +1,25 @@
+= RAA Analysis
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+For each technical asset the *"Relative Attacker Attractiveness"* (RAA) value was calculated in percent. The higher the RAA, the more interesting it is for an attacker to compromise the asset. The calculation algorithm takes the sensitivity ratings and quantities of stored and processed data into account as well as the communication links of the technical asset. Neighbouring assets to high-value RAA targets might receive an increase in their RAA value when they have a communication link towards that target ("Pivoting-Factor").
+
+The following lists all technical assets sorted by their RAA value from highest (most attacker attractive) to lowest. This list can be used to prioritize on efforts relevant for the most attacker-attractive technical assets:{fn-risk-findings}
+
+<<postgresql-db,*PostgreSQL Database*: RAA 100%>>::
+  Primary relational datastore. Contains users table (email + bcrypt password hash), notes table (title + content), and attachments metadata. INTENTIONAL MISCONFIGURATION: No encryption at rest (encryption: none).
+
+<<api-server,[HighRisk]#*API Server*: RAA 79%#>>::
+  Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD on notes, file uploads to MinIO. Bridges the frontend and backend networks. Single most security-critical component — compromise equals full data access.
+
+<<browser-spa,*Browser SPA*: RAA 51%>>::
+  React Single Page Application served from Nginx. Users authenticate, manage notes, and upload files through this interface.
+
+<<redis-cache,*Redis Cache*: RAA 41%>>::
+  In-memory store used as session store and JWT revocation list. INTENTIONAL MISCONFIGURATION: No encryption at rest. If Redis persistence is enabled and the RDB file is exfiltrated, session tokens are exposed.
+
+<<minio-storage,*MinIO Object Storage*: RAA 33%>>::
+  S3-compatible object store for file attachments. INTENTIONAL MISCONFIGURATION: Uses default minioadmin/minioadmin credentials (visible in docker-compose.yml) and stores files without encryption at rest. HTTP-only (no TLS) within the Docker network.
+
+<<nginx-proxy,*Nginx Reverse Proxy*: RAA 2%>>::
+  Nginx terminates TLS and forwards all API traffic to the Express server over plain HTTP (port 3000). This is the DMZ entry point.
+

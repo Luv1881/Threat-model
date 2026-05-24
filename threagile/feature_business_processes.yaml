@@ -1,0 +1,52 @@
+# ============================================================
+# VAST Business Processes
+# ============================================================
+
+business_processes:
+
+  Note Creation and Storage:
+    id: note-creation
+    title: Note Creation and Storage
+    description: >
+      Core user-facing business process: authenticated users create, edit, and store
+      encrypted notes with optional file attachments. This is the primary value
+      proposition of VaultNote.
+    criticality: critical
+    owner: VaultNote Product Team
+    supported_by_technical_assets:
+      - browser-spa
+      - nginx-proxy
+      - api-server
+      - postgresql-db
+    data_assets_in_flight:
+      - note-content
+      - user-credentials
+
+  File Attachment Management:
+    id: file-attachment
+    title: File Attachment Management
+    description: >
+      Allows users to upload and retrieve file attachments linked to notes.
+      Backed by MinIO object storage.
+    criticality: important
+    owner: VaultNote Product Team
+    supported_by_technical_assets:
+      - api-server
+      - minio-storage
+    data_assets_in_flight:
+      - file-attachments
+
+  Authentication and Session Management:
+    id: auth-session
+    title: Authentication and Session Management
+    description: >
+      Handles user login, JWT issuance, and session token lifecycle management
+      via Redis. Security-critical infrastructure process.
+    criticality: critical
+    owner: VaultNote Security Team
+    supported_by_technical_assets:
+      - api-server
+      - redis-cache
+    data_assets_in_flight:
+      - user-credentials
+      - session-tokens

@@ -1,0 +1,35 @@
+= STRIDE Classification of Identified Risks
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+This chapter clusters and classifies the risks by STRIDE categories: In total *11 potential risks* have been identified during the threat modeling process of which *0 in the Spoofing* category, *0 in the Tampering* category, *3 in the Repudiation* category, *2 in the Information Disclosure* category, *3 in the Denial of Service* category, and *3 in the Elevation of Privilege* category.{fn-risk-findings}
+
+== Spoofing
+No risk identified.
+
+== Tampering
+No risk identified.
+
+== Repudiation
+<<operational-unmonitored-critical-process,[.ElevatedRisk]#Elevated: *Operational Threat - Critical Business Process Without Operational Monitoring*: 3/3 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Undetected breaches, inability to investigate incidents, compliance failures, and violation of SLA accountability requirements.
+
+
+
+== Information Disclosure
+<<application-secrets-across-processes,[.ElevatedRisk]#Elevated: *Application Threat - Strictly-Confidential Asset Bridges Business Process Contexts*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Credential exposure in any one process context compromises all other processes the asset supports, amplifying the breach blast radius.
+
+
+
+== Denial of Service
+<<operational-critical-process-no-redundancy,[.ElevatedRisk]#Elevated: *Operational Threat - Critical Business Process Supported by Non-Redundant Assets*: 3/3 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Complete outage of a critical business process due to failure or targeted attack against the sole supporting technical asset. No failover path means maximum downtime.
+
+
+
+== Elevation of Privilege
+<<operational-shared-runtime-critical-process,[.ElevatedRisk]#Elevated: *Operational Threat - Critical Business Process on Shared Runtime*: 3/3 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Lateral movement from a compromised co-located workload to the infrastructure supporting a critical business process, causing service outage, data exfiltration, or integrity violations at the process level.
+
+
+

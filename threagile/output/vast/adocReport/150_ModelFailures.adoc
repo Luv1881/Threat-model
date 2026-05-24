@@ -1,0 +1,9 @@
+= Potential Model Failures: 0 mitigated Risks
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+
+This chapter lists potential model failures where not all relevant assets have been
+modeled or the model might itself contain inconsistencies. Each potential model failure should be checked
+in the model against the architecture design:{fn-risk-findings}
+
+No potential model failures have been identified.

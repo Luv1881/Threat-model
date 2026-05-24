@@ -1,0 +1,393 @@
+= Identified Risks by Vulnerability category
+In total *12 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *6 as elevated*, *6 as medium*, and *0 as low*. 
+
+These risks are distributed across *5 vulnerability categories*. 
+The following sub-chapters of this section describe each identified risk category.
+
+[[data-disclosure-pii-unencrypted-link]]
+== [.ElevatedRisk]#Data Disclosure - Personal Data Transmitted Over Unencrypted Channel: 2/2 unmitigated Risks#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/319.html[CWE 319]::
+Personal data in transit over unencrypted communication links (plain HTTP, unencrypted database protocols, etc.) is exposed to network observers. GDPR Article 32 requires appropriate technical measures including encryption in transit.
+
+*Impact*::
+Exposure of personal data to eavesdroppers, potential data breach notification obligations under GDPR Article 33, and significant regulatory penalties.
+
+*Detection Logic*::
+In-scope technical assets that process PII data assets AND have at least one outgoing communication link that is unencrypted and not VPN-protected.
+
+*Risk Rating*::
+High — unencrypted PII in transit is a direct GDPR Article 32 violation.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Assets that process PII but only transmit it over TLS or VPN links; verify with the full threat model review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Encrypt all links that carry personal data::
+Migrate all communication links carrying PII data assets to TLS 1.2+ (preferably TLS 1.3). For internal service-to-service communication, consider mutual TLS (mTLS).
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V9 - Communication Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html[Transport_Layer_Security_Cheat_Sheet]
+
+
+*Check*
+
+Are all communication links carrying personal data encrypted in transit?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Data Disclosure - Personal Data Transmitted Over Unencrypted Channel* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Data Disclosure*: *API Server* processes personal data and has an unencrypted outgoing communication link: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<api-server,[SmallGrey]#data-disclosure-pii-unencrypted-link@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-117#
+
+4+|[.small]#The API server communicates with PostgreSQL, Redis, and MinIO over plaintext connections within backend-net. TLS for all internal database connections is planned post-launch in VAULT-117. MinIO credential rotation is tracked in VAULT-110 (blocker).
+#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Data Disclosure*: *Nginx Reverse Proxy* processes personal data and has an unencrypted outgoing communication link: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<nginx-proxy,[SmallGrey]#data-disclosure-pii-unencrypted-link@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-18#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-102#
+
+4+|[.small]#Duplicate of VAULT-102 (Nginx→API plaintext link). Resolved when mTLS migration completes in sprint 22. LINDDUN data-disclosure finding is tracked under the same remediation work.
+#
+|===
+
+[[detecting-no-audit-logging]]
+== [.ElevatedRisk]#Detectability - PII Flows Without Audit Logging: 2/2 unmitigated Risks#
+
+*Description* (Repudiation): https://cwe.mitre.org/data/definitions/778.html[CWE 778]::
+Communication links that carry personal data without audit logging enabled mean that access to and use of personal data cannot be detected or reviewed after the fact. GDPR Article 5(2) requires demonstrable accountability.
+
+
+*Impact*::
+Inability to detect unauthorized access to personal data, failure to meet GDPR accountability obligations, and potential inability to meet breach notification deadlines.
+
+
+*Detection Logic*::
+In-scope technical assets that process PII AND have at least one outgoing link without audit logging enabled.
+
+
+*Risk Rating*::
+Medium severity baseline; elevated if the data includes sensitive categories.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Fully tokenised flows, or flows covered by audit logging at a gateway layer.#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Enable audit logging on all links carrying personal data::
+Set audit_logged to true on every communication link that transmits PII data assets. Store logs in a tamper-evident system separate from the application.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V7 - Error Handling and Logging Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html[Logging_Cheat_Sheet]
+
+
+*Check*
+
+Are all communication links that carry personal data audit-logged?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Detectability - PII Flows Without Audit Logging* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Detectability*: *Nginx Reverse Proxy* processes PII and has communication links without audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<nginx-proxy,[SmallGrey]#detecting-no-audit-logging@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-115#
+
+4+|[.small]#Nginx access.log captures all incoming requests (IP, URL, status code, response size). Individual API-level audit events are handled by the API server. The Nginx→API internal hop has no separate audit log; this is accepted as the TLS-termination boundary log is sufficient for DMZ-level audit requirements.
+#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Detectability*: *API Server* processes PII and has communication links without audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#detecting-no-audit-logging@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-116#
+
+4+|[.small]#Structured request/response audit logging (Morgan + Winston) is implemented for authenticated endpoints but coverage is incomplete for internal data-access events. Full audit trail covering all PII-processing operations is tracked in VAULT-116. Target: sprint 23.
+#
+|===
+
+[[pii-client-side-storage]]
+== [.ElevatedRisk]#Non-Repudiation - PII or Auth Tokens Accessible in Browser-Side Storage: 1/1 unmitigated Risk#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/922.html[CWE 922]::
+Browser-based clients (SPAs, web apps) that process personal data or authentication tokens typically persist them in localStorage or sessionStorage. This browser-accessible storage is readable by any JavaScript running in the same origin — including injected scripts. Without HttpOnly cookies or a strict Content-Security-Policy, the stored tokens and PII are one XSS payload away from full exfiltration. From a LINDDUN perspective this enables Non-Repudiation attacks: an adversary who steals a token can act as the victim, making it impossible to distinguish attacker actions from legitimate user actions in audit logs.
+
+
+*Impact*::
+Stolen session tokens allow account takeover and impersonation. The original user cannot repudiate actions performed by the attacker. Stolen PII violates GDPR data minimisation and storage limitation principles.
+
+
+*Detection Logic*::
+In-scope technical assets with browser (client) technology that process PII data assets and are not tagged with has-httponly-session.
+
+
+*Risk Rating*::
+Medium baseline. Elevated when tokens have long TTL (>1 hour) or when no CSP is configured on the serving origin.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Applications that exclusively use HttpOnly cookies for session management and do not store any PII in JavaScript-accessible storage. Tag the asset has-httponly-session to suppress this finding once verified.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Development): Move session tokens to HttpOnly cookies; apply Content-Security-Policy::
+Replace localStorage/sessionStorage token storage with HttpOnly, Secure, SameSite=Strict cookies. Cookies with the HttpOnly flag are inaccessible to JavaScript, eliminating the XSS token-theft vector. Deploy a strict Content-Security-Policy to limit damage from any residual XSS. Tag the asset has-httponly-session once deployed.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V3 - Session Management Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/HTML5_Security_Cheat_Sheet.html[HTML5_Security_Cheat_Sheet]
+
+
+*Check*
+
+Are authentication tokens stored in HttpOnly cookies rather than localStorage? Is a Content-Security-Policy header present on all pages served to this browser client?
+
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Non-Repudiation - PII or Auth Tokens Accessible in Browser-Side Storage* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*PII in Client-Side Storage*: browser asset *Browser SPA* processes personal data that may be stored in JavaScript-accessible browser storage: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<browser-spa,[SmallGrey]#pii-client-side-storage@browser-spa#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[unawareness-no-consent-technology]]
+== [.ElevatedRisk]#Unawareness - PII Processed Without a Consent Management Component: 1/1 unmitigated Risk#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/359.html[CWE 359]::
+When a system processes personal data from end users but has no consent-management technology in the architecture, data subjects are likely unaware of the nature and extent of processing. GDPR Articles 13 and 14 require transparent disclosure.
+
+
+*Impact*::
+Data subjects cannot exercise GDPR rights. Regulatory investigation risk and class-action exposure in jurisdictions with private right of action.
+
+
+*Detection Logic*::
+In-scope user-facing technical assets that process PII data assets where no other asset carries a consent_collector technology attribute.
+
+
+*Risk Rating*::
+Medium baseline; elevated for consumer-facing applications or special-category data.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#B2B systems under a contract lawful basis where consent is not applicable.#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Add a consent management technical asset to the architecture::
+Introduce a consent-manager (tagged with technology consent-manager) to capture, store, and honour data-subject preferences.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V8 - Data Protection Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html[Logging_Cheat_Sheet]
+
+
+*Check*
+
+Does the architecture include a consent management component when processing PII?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Unawareness - PII Processed Without a Consent Management Component* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Unawareness*: *Browser SPA* processes end-user PII but no consent management component is present: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<browser-spa,[SmallGrey]#unawareness-no-consent-technology@browser-spa#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Privacy Team#
+| [.GreyText.small]#VAULT-118#
+
+4+|[.small]#A consent management platform (CMP) is being evaluated (OneTrust / Osano). In the interim, the privacy policy is displayed at registration and users explicitly accept terms before account creation. Formal CMP integration is planned for Q3 2026.
+#
+|===
+
+[[linking-pii-multi-boundary]]
+== [.MediumRisk]#Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries: 6/6 unmitigated Risks#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/359.html[CWE 359]::
+When the same personal-data asset is processed by technical assets in two or more different trust boundaries, an attacker who compromises any one boundary gains linkability across all others, enabling cross-context profiling.
+
+
+*Impact*::
+Aggregation of personal data enables profiling, re-identification, and violations of GDPR data minimisation and purpose limitation principles (Articles 5(1)(b) and 5(1)(c)).
+
+
+*Detection Logic*::
+Technical assets that process PII data assets that also appear in assets in at least one other trust boundary.
+
+
+*Risk Rating*::
+Medium baseline; elevated for sensitive categories or high-quantity data.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Internal service meshes within a single logical zone modelled as separate trust boundaries.#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Apply data minimisation and per-context pseudonymisation::
+Use per-context pseudonyms or pairwise identifiers so the same natural person cannot be linked across trust boundaries.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V8 - Data Protection Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html[Attack_Surface_Analysis_Cheat_Sheet]
+
+
+*Check*
+
+Does each PII data asset appear in assets across more than one trust boundary?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries* was found *6 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *API Server* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<api-server,[SmallGrey]#linking-pii-multi-boundary@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-119#
+
+4+|[.small]#The API server bridges frontend-net and backend-net by architectural necessity — it is the sole legitimate data path between the two networks. Cross-boundary PII flow is an inherent design characteristic, not a misconfiguration. Mitigated by authentication + authorization enforcement at the API layer.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *Browser SPA* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<browser-spa,[SmallGrey]#linking-pii-multi-boundary@browser-spa#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-119#
+
+4+|[.small]#The Browser SPA processes user-credentials and note-content across the Internet and DMZ boundaries by design (user-facing client). The risk is inherent to the SPA architecture; mitigated by HTTPS-only transport and short-lived session tokens.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *MinIO Object Storage* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<minio-storage,[SmallGrey]#linking-pii-multi-boundary@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-119#
+
+4+|[.small]#File attachments uploaded via the Internet are stored in the Data Tier. Cross-boundary flow is by design. VAULT-110 (credential rotation + SSE) addresses the high-severity storage risk; the linkability finding is accepted as an inherent architectural property.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *Nginx Reverse Proxy* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<nginx-proxy,[SmallGrey]#linking-pii-multi-boundary@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-119#
+
+4+|[.small]#Nginx is the TLS-termination proxy and must bridge Internet and DMZ by design. Cross-boundary PII flow is intentional and unavoidable for this component.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *PostgreSQL Database* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<postgresql-db,[SmallGrey]#linking-pii-multi-boundary@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-119#
+
+4+|[.small]#PostgreSQL stores credentials and note content that originate from multiple trust boundaries (Internet → DMZ → App Network → Data Tier). This is inherent to the data flow by design. Risk is accepted; mitigated by parameterized queries and authentication-only access via the API.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *Redis Cache* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<redis-cache,[SmallGrey]#linking-pii-multi-boundary@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-119#
+
+4+|[.small]#Session identifiers originate from users across the Internet boundary. Storage in Redis within the Data Tier is unavoidable. Mitigated by short TTL (15 minutes), revocation list, and password-protected access.
+#
+|===
+

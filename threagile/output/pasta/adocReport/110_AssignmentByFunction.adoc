@@ -1,0 +1,25 @@
+= Assignment by Function
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+This chapter clusters and assigns the risks by functions which are most likely able to check and mitigate them: In total *5 potential risks* have been identified during the threat modeling process of which *0 should be checked by Business Side*, *0 should be checked by Architecture*, *2 should be checked by Development*, and *3 should be checked by Operations*.{fn-risk-findings}
+
+== Business Side
+
+== Architecture
+
+== Development
+<<custom-development-no-sast,[.MediumRisk]#Medium: *Stage II - Custom-Developed Asset With No Build Pipeline Security*: 2/2 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+Injection vulnerabilities, insecure dependencies, hardcoded secrets, and other code-level weaknesses reach production without detection, widening the attack surface.
+
+
+
+== Operations
+<<per-operation-rate-limiting-missing,[.ElevatedRisk]#Elevated: *Stage V - Custom-Developed Service Without Per-Operation Rate Limiting*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Attackers can enumerate users, brute-force credentials, bulk-download sensitive data, or exhaust backend resources by sending unlimited requests to unthrottled operations. Business process integrity degrades when operations can be repeated without throttling.
+
+
+<<no-rate-limiting-public-api,[.ElevatedRisk]#Elevated: *Stage V - No Rate Limiting on Internet-Exposed API*: 1/1 unmitigated Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Brute-force attacks against authentication endpoints, mass data harvesting via enumeration, DDoS amplification, and billing abuse on pay-per-use endpoints.
+
+
+

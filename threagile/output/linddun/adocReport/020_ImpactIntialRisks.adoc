@@ -1,0 +1,23 @@
+= Impact Analysis Of 12 Initial Risks In 5 Categories
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+The most prevalent impacts of the *12 initial risks* (distributed over *5 risk categories*) are (taking the severity ratings into account and using the highest for each category)!{fn-risk-findings}
+
+<<data-disclosure-pii-unencrypted-link,[.ElevatedRisk]#Elevated: *Data Disclosure - Personal Data Transmitted Over Unencrypted Channel*: 2 Initial Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Exposure of personal data to eavesdroppers, potential data breach notification obligations under GDPR Article 33, and significant regulatory penalties.
+
+<<detecting-no-audit-logging,[.ElevatedRisk]#Elevated: *Detectability - PII Flows Without Audit Logging*: 2 Initial Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Inability to detect unauthorized access to personal data, failure to meet GDPR accountability obligations, and potential inability to meet breach notification deadlines.
+
+
+<<pii-client-side-storage,[.ElevatedRisk]#Elevated: *Non-Repudiation - PII or Auth Tokens Accessible in Browser-Side Storage*: 1 Initial Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Stolen session tokens allow account takeover and impersonation. The original user cannot repudiate actions performed by the attacker. Stolen PII violates GDPR data minimisation and storage limitation principles.
+
+
+<<unawareness-no-consent-technology,[.ElevatedRisk]#Elevated: *Unawareness - PII Processed Without a Consent Management Component*: 1 Initial Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Data subjects cannot exercise GDPR rights. Regulatory investigation risk and class-action exposure in jurisdictions with private right of action.
+
+
+<<linking-pii-multi-boundary,[.MediumRisk]#Medium: *Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries*: 6 Initial Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+Aggregation of personal data enables profiling, re-identification, and violations of GDPR data minimisation and purpose limitation principles (Articles 5(1)(b) and 5(1)(c)).
+
+

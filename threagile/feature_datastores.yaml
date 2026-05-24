@@ -1,0 +1,392 @@
+# ============================================================
+# Feature: Data / Storage Layer
+# Components: PostgreSQL, Redis, MinIO
+# Networks:   Data Tier (backend-net)
+# Runtime:    Docker Host (shared)
+# Data:       Note Content, File Attachments
+# ============================================================
+
+data_assets:
+
+  Note Content:
+    id: note-content
+    description: >
+      User-authored note text — may include personal, financial, or health
+      information depending on how users employ the application.
+    usage: business
+    tags: []
+    origin: customer
+    owner: VaultNote Team
+    quantity: many
+    confidentiality: confidential
+    integrity: critical
+    availability: operational
+    justification_cia_rating: >
+      Notes may contain highly sensitive personal information. Integrity is
+      critical because corrupted notes lose user trust.
+    pii_categories: [free-text-note-content]
+    data_subject_category: customer
+    lawful_basis: contract
+    processing_purpose: Core note storage service
+    retention_period: "duration of account + 30 days post-deletion"
+
+  File Attachments:
+    id: file-attachments
+    description: >
+      Binary file uploads attached to notes. May include documents, images,
+      or other sensitive files depending on note usage.
+    usage: business
+    tags: []
+    origin: customer
+    owner: VaultNote Team
+    quantity: many
+    confidentiality: confidential
+    integrity: critical
+    availability: operational
+    justification_cia_rating: >
+      Files may contain sensitive documents. Integrity is critical because
+      tampered attachments corrupt evidence or business records. MinIO's default
+      credentials (minioadmin) make all stored files accessible to anyone on
+      the network — intentional misconfiguration for demo purposes.
+    pii_categories: [user-uploaded-file]
+    data_subject_category: customer
+    lawful_basis: contract
+    processing_purpose: File attachment storage for notes
+
+technical_assets:
+
+  PostgreSQL Database:
+    id: postgresql-db
+    description: >
+      Primary relational datastore. Contains users table (email + bcrypt password
+      hash), notes table (title + content), and attachments metadata.
+      INTENTIONAL MISCONFIGURATION: No encryption at rest (encryption: none).
+    type: datastore
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: database
+    tags: ["postgresql", "relational"]
+    internet: false
+    machine: container
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: strictly-confidential
+    integrity: critical
+    availability: critical
+    justification_cia_rating: >
+      Holds all user PII (email, hashed passwords) and all note content.
+      Strictly confidential — unencrypted disk access exposes all data.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    # LINDDUN — stores user PII on behalf of the API controller
+    is_pii_processor: true
+    is_pii_controller: false
+    # PASTA — internal datastore; no direct internet exposure
+    attack_surface_exposure: internal_lan
+    supported_business_processes:
+      - note-creation
+      - auth-session
+    data_assets_processed:
+      - user-credentials
+      - note-content
+    data_assets_stored:
+      - user-credentials
+      - note-content
+    data_formats_accepted:
+      - json
+    communication_links: {}
+
+  Redis Cache:
+    id: redis-cache
+    description: >
+      In-memory store used as session store and JWT revocation list.
+      INTENTIONAL MISCONFIGURATION: No encryption at rest. If Redis persistence
+      is enabled and the RDB file is exfiltrated, session tokens are exposed.
+    type: datastore
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: component
+    technology: database
+    tags: ["redis", "cache", "session-store"]
+    internet: false
+    machine: container
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: operational
+    availability: important
+    justification_cia_rating: >
+      Session token exposure enables account takeover. Non-persistent by default
+      but the container volume could persist RDB snapshots.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    # LINDDUN — stores session identifiers (PII-adjacent) on behalf of API
+    is_pii_processor: true
+    is_pii_controller: false
+    # PASTA
+    attack_surface_exposure: internal_lan
+    supported_business_processes:
+      - auth-session
+    data_assets_processed:
+      - session-tokens
+    data_assets_stored:
+      - session-tokens
+    data_formats_accepted: []
+    communication_links: {}
+
+  MinIO Object Storage:
+    id: minio-storage
+    description: >
+      S3-compatible object store for file attachments.
+      INTENTIONAL MISCONFIGURATION: Uses default minioadmin/minioadmin credentials
+      (visible in docker-compose.yml) and stores files without encryption at rest.
+      HTTP-only (no TLS) within the Docker network.
+    type: datastore
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: file-server
+    tags: ["minio", "s3", "object-storage", "intentional-misconfiguration"]
+    internet: false
+    machine: container
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: important
+    availability: operational
+    justification_cia_rating: >
+      Stores user file uploads which may contain sensitive documents.
+      Default credentials + no encryption = trivial exfiltration by any
+      process on backend-net.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    # LINDDUN — stores user-uploaded files (may contain PII) on behalf of API
+    is_pii_processor: true
+    is_pii_controller: false
+    # PASTA — no-mitigation-internet-datastore rule: internal lan, not internet
+    attack_surface_exposure: internal_lan
+    supported_business_processes:
+      - file-attachment
+    data_assets_processed:
+      - file-attachments
+    data_assets_stored:
+      - file-attachments
+    data_formats_accepted:
+      - file
+    communication_links: {}
+
+trust_boundaries:
+
+  Data Tier:
+    id: data-tier
+    description: >
+      Internal Docker bridge network (backend-net, marked internal: true).
+      No external routing. Contains all datastores. The API server has
+      a NIC on this network and acts as the sole legitimate access path.
+    type: network-on-prem
+    tags: []
+    technical_assets_inside:
+      - postgresql-db
+      - redis-cache
+      - minio-storage
+    trust_boundaries_nested: []
+
+shared_runtimes:
+
+  Docker Host:
+    id: docker-host
+    description: >
+      All containers run on the same Docker host. A container escape or privileged
+      container could access the host filesystem including Docker socket and
+      database volumes.
+    tags: ["docker", "container-runtime"]
+    technical_assets_running:
+      - nginx-proxy
+      - api-server
+      - postgresql-db
+      - redis-cache
+      - minio-storage
+
+risk_tracking:
+
+  unencrypted-asset@postgresql-db:
+    status: accepted
+    justification: >
+      The PostgreSQL volume runs on a host-level LUKS-encrypted partition
+      in all production deployments. The Threagile finding is acknowledged
+      as informational for this demo environment which uses unencrypted storage.
+      Production database TDE via pgcrypto will be evaluated in Q3.
+    ticket: VAULT-89
+    date: 2026-04-15
+    checked_by: Infrastructure Team
+
+  unencrypted-asset@minio-storage:
+    status: in-progress
+    justification: >
+      MinIO server-side encryption (SSE-S3) is being evaluated. Default
+      minioadmin credentials will be rotated before production deployment.
+      This finding is a CRITICAL blocker for launch. Tracked in VAULT-110.
+    ticket: VAULT-110
+    date: 2026-04-18
+    checked_by: Security Team
+
+  mixed-targets-on-shared-runtime@docker-host:
+    status: accepted
+    justification: >
+      Docker containers run without privileged mode and with no host path
+      mounts except the named volumes. The Docker socket is not mounted
+      into any container. Risk is accepted for this demo environment.
+    ticket: VAULT-95
+    date: 2026-04-10
+    checked_by: Infrastructure Team
+
+  # LINDDUN findings on datastores
+  linking-pii-multi-boundary@postgresql-db:
+    status: accepted
+    justification: >
+      PostgreSQL stores credentials and note content that originate from
+      multiple trust boundaries (Internet → DMZ → App Network → Data Tier).
+      This is inherent to the data flow by design. Risk is accepted; mitigated
+      by parameterized queries and authentication-only access via the API.
+    ticket: VAULT-119
+    date: 2026-04-25
+    checked_by: Security Team
+
+  linking-pii-multi-boundary@redis-cache:
+    status: accepted
+    justification: >
+      Session identifiers originate from users across the Internet boundary.
+      Storage in Redis within the Data Tier is unavoidable. Mitigated by
+      short TTL (15 minutes), revocation list, and password-protected access.
+    ticket: VAULT-119
+    date: 2026-04-25
+    checked_by: Security Team
+
+  linking-pii-multi-boundary@minio-storage:
+    status: accepted
+    justification: >
+      File attachments uploaded via the Internet are stored in the Data Tier.
+      Cross-boundary flow is by design. VAULT-110 (credential rotation + SSE)
+      addresses the high-severity storage risk; the linkability finding is
+      accepted as an inherent architectural property.
+    ticket: VAULT-119
+    date: 2026-04-25
+    checked_by: Security Team
+
+  # VAST findings on datastores and runtime
+  operational-critical-process-no-redundancy@postgresql-db:
+    status: accepted
+    justification: >
+      Single-instance PostgreSQL is appropriate for the demo environment.
+      Production deployment will use a primary + hot-standby configuration
+      (Patroni). Accepted for demo; tracked as pre-launch requirement.
+    ticket: VAULT-122
+    date: 2026-04-25
+    checked_by: Infrastructure Team
+
+  operational-critical-process-no-redundancy@redis-cache:
+    status: accepted
+    justification: >
+      Redis Sentinel or Redis Cluster is planned for production. For the demo
+      environment, a single Redis instance with AOF persistence is accepted.
+    ticket: VAULT-122
+    date: 2026-04-25
+    checked_by: Infrastructure Team
+
+  operational-critical-process-no-redundancy@api-server:
+    status: accepted
+    justification: >
+      API server runs as a single container. Horizontal scaling via
+      docker-compose --scale is tested but not enabled in demo. Load balancer
+      (Nginx upstream pool) will be configured for production.
+    ticket: VAULT-122
+    date: 2026-04-25
+    checked_by: Infrastructure Team
+
+  operational-shared-runtime-critical-process@postgresql-db:
+    status: accepted
+    justification: >
+      All services share the Docker host as accepted per VAULT-95. No
+      privileged containers; Docker socket not mounted. This is a demo
+      environment constraint.
+    ticket: VAULT-95
+    date: 2026-04-10
+    checked_by: Infrastructure Team
+
+  operational-shared-runtime-critical-process@redis-cache:
+    status: accepted
+    justification: >
+      See VAULT-95. Shared Docker host is accepted for demo; production
+      deployment targets separate VM/node for stateful services.
+    ticket: VAULT-95
+    date: 2026-04-10
+    checked_by: Infrastructure Team
+
+  operational-shared-runtime-critical-process@api-server:
+    status: accepted
+    justification: >
+      See VAULT-95. API server shares the Docker host with datastores.
+      No privileged containers or host mounts beyond named volumes.
+    ticket: VAULT-95
+    date: 2026-04-10
+    checked_by: Infrastructure Team
+
+  operational-unmonitored-critical-process@postgresql-db:
+    status: in-progress
+    justification: >
+      PostgreSQL slow-query log and pg_stat_statements are enabled in the
+      demo config. Full APM integration (Prometheus postgres_exporter +
+      Grafana) is planned for production. Alert thresholds are being defined.
+    ticket: VAULT-123
+    date: 2026-04-25
+    checked_by: Infrastructure Team
+
+  operational-unmonitored-critical-process@redis-cache:
+    status: in-progress
+    justification: >
+      Redis INFO metrics are scraped by the Prometheus redis_exporter sidecar
+      in production config but not in the demo compose file. Tracked in VAULT-123.
+    ticket: VAULT-123
+    date: 2026-04-25
+    checked_by: Infrastructure Team
+
+  operational-unmonitored-critical-process@api-server:
+    status: in-progress
+    justification: >
+      Application-level metrics (request rate, error rate, p99 latency) are
+      exposed via /metrics endpoint but Prometheus scraping is not configured
+      in the demo environment. Production monitoring stack is tracked in VAULT-123.
+    ticket: VAULT-123
+    date: 2026-04-25
+    checked_by: Infrastructure Team
+
+  application-secrets-across-processes@api-server:
+    status: in-progress
+    justification: >
+      The JWT_SECRET environment variable is shared across API server instances
+      for stateless JWT verification. MinIO and PostgreSQL credentials are also
+      shared via compose env vars. Migration to a secrets manager (HashiCorp
+      Vault or AWS Secrets Manager) is planned for production deployment.
+    ticket: VAULT-124
+    date: 2026-04-25
+    checked_by: Security Team
+
+  application-secrets-across-processes@postgresql-db:
+    status: in-progress
+    justification: >
+      PostgreSQL POSTGRES_PASSWORD is set via compose environment variable
+      and shared with the API server. Vault-managed dynamic credentials
+      are planned for production.
+    ticket: VAULT-124
+    date: 2026-04-25
+    checked_by: Security Team

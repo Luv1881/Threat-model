@@ -1,0 +1,16 @@
+= Impact Analysis Of 5 Remaining Risks In 3 Categories
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+The most prevalent impacts of the *5 remaining risks* (distributed over *3 risk categories*) are (taking the severity ratings into account and using the highest for each category)!{fn-risk-findings}
+
+<<per-operation-rate-limiting-missing,[.ElevatedRisk]#Elevated: *Stage V - Custom-Developed Service Without Per-Operation Rate Limiting*: 2 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Attackers can enumerate users, brute-force credentials, bulk-download sensitive data, or exhaust backend resources by sending unlimited requests to unthrottled operations. Business process integrity degrades when operations can be repeated without throttling.
+
+
+<<no-rate-limiting-public-api,[.ElevatedRisk]#Elevated: *Stage V - No Rate Limiting on Internet-Exposed API*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Brute-force attacks against authentication endpoints, mass data harvesting via enumeration, DDoS amplification, and billing abuse on pay-per-use endpoints.
+
+
+<<custom-development-no-sast,[.MediumRisk]#Medium: *Stage II - Custom-Developed Asset With No Build Pipeline Security*: 2 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+Injection vulnerabilities, insecure dependencies, hardcoded secrets, and other code-level weaknesses reach production without detection, widening the attack surface.
+
+

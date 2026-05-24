@@ -1,0 +1,235 @@
+{
+  "otmVersion": "0.2.0",
+  "project": {
+    "name": "VaultNote",
+    "id": "vaultnote"
+  },
+  "representations": [
+    {
+      "name": "Terraform",
+      "id": "Terraform",
+      "type": "code"
+    }
+  ],
+  "trustZones": [
+    {
+      "id": "2ab4effa-40b7-4cd2-ba81-8247d29a6f2f",
+      "name": "Private Secured (Data Tier)",
+      "type": "2ab4effa-40b7-4cd2-ba81-8247d29a6f2f",
+      "risk": {
+        "trustRating": 10
+      }
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91",
+      "name": "Public Cloud",
+      "type": "b61d6911-338d-46a8-9f39-8dcd24abfe91",
+      "risk": {
+        "trustRating": 10
+      }
+    },
+    {
+      "id": "f0ba7722-39b6-4c81-8290-a30a248bb8d9",
+      "name": "Internet",
+      "type": "f0ba7722-39b6-4c81-8290-a30a248bb8d9",
+      "risk": {
+        "trustRating": 10
+      }
+    }
+  ],
+  "components": [
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote",
+      "name": "vaultnote",
+      "type": "vpc",
+      "parent": {
+        "trustZone": "b61d6911-338d-46a8-9f39-8dcd24abfe91"
+      },
+      "tags": [
+        "aws_vpc"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote.aws_subnet-public",
+      "name": "public",
+      "type": "empty-component",
+      "parent": {
+        "component": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote"
+      },
+      "tags": [
+        "aws_subnet"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote.aws_subnet-private",
+      "name": "private",
+      "type": "empty-component",
+      "parent": {
+        "component": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote"
+      },
+      "tags": [
+        "aws_subnet"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc_endpoint-s3",
+      "name": "s3",
+      "type": "empty-component",
+      "parent": {
+        "trustZone": "b61d6911-338d-46a8-9f39-8dcd24abfe91"
+      },
+      "tags": [
+        "aws_vpc_endpoint"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_internet_gateway-igw",
+      "name": "igw",
+      "type": "empty-component",
+      "parent": {
+        "trustZone": "b61d6911-338d-46a8-9f39-8dcd24abfe91"
+      },
+      "tags": [
+        "aws_internet_gateway"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote.aws_subnet-private.aws_ecs_service-api",
+      "name": "api",
+      "type": "elastic-container-service",
+      "parent": {
+        "component": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote.aws_subnet-private"
+      },
+      "tags": [
+        "aws_ecs_service"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote.aws_subnet-private.aws_ecs_service-api.aws_ecs_task_definition-api",
+      "name": "api",
+      "type": "docker-container",
+      "parent": {
+        "component": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote.aws_subnet-private.aws_ecs_service-api"
+      },
+      "tags": [
+        "aws_ecs_task_definition"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote.aws_subnet-public.aws_lb-vaultnote",
+      "name": "vaultnote",
+      "type": "load-balancer",
+      "parent": {
+        "component": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote.aws_subnet-public"
+      },
+      "tags": [
+        "aws_lb"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_db_instance-postgresql",
+      "name": "postgresql",
+      "type": "rds",
+      "parent": {
+        "trustZone": "b61d6911-338d-46a8-9f39-8dcd24abfe91"
+      },
+      "tags": [
+        "aws_db_instance"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_s3_bucket-attachments",
+      "name": "attachments",
+      "type": "s3",
+      "parent": {
+        "trustZone": "b61d6911-338d-46a8-9f39-8dcd24abfe91"
+      },
+      "tags": [
+        "aws_s3_bucket"
+      ]
+    },
+    {
+      "id": "f0ba7722-39b6-4c81-8290-a30a248bb8d9.aws_security_group-alb.0_0_0_0_0",
+      "name": "0.0.0.0/0",
+      "type": "generic-client",
+      "parent": {
+        "trustZone": "f0ba7722-39b6-4c81-8290-a30a248bb8d9"
+      },
+      "tags": [
+        "Outbound connection destination IP"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_cloudwatch_log_group-api",
+      "name": "api",
+      "type": "cloudwatch",
+      "parent": {
+        "trustZone": "b61d6911-338d-46a8-9f39-8dcd24abfe91"
+      },
+      "tags": [
+        "aws_cloudwatch_log_group"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_secretsmanager_secret-db_password",
+      "name": "CD-SECRETS-MANAGER (grouped)",
+      "type": "CD-SECRETS-MANAGER",
+      "parent": {
+        "trustZone": "b61d6911-338d-46a8-9f39-8dcd24abfe91"
+      },
+      "tags": [
+        "db_password (aws_secretsmanager_secret)",
+        "jwt_secret (aws_secretsmanager_secret)",
+        "redis_token (aws_secretsmanager_secret)",
+        "db_url (aws_secretsmanager_secret)",
+        "redis_url (aws_secretsmanager_secret)"
+      ]
+    },
+    {
+      "id": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_elasticache_subnet_group-vaultnote",
+      "name": "elasticache (grouped)",
+      "type": "elasticache",
+      "parent": {
+        "trustZone": "b61d6911-338d-46a8-9f39-8dcd24abfe91"
+      },
+      "tags": [
+        "vaultnote (aws_elasticache_subnet_group)",
+        "redis (aws_elasticache_replication_group)"
+      ]
+    }
+  ],
+  "dataflows": [
+    {
+      "id": "355c25b6-8046-4a9b-8720-23862e345301",
+      "name": "alb -> vaultnote",
+      "source": "f0ba7722-39b6-4c81-8290-a30a248bb8d9.aws_security_group-alb.0_0_0_0_0",
+      "destination": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote.aws_subnet-public.aws_lb-vaultnote",
+      "tags": [
+        "HTTPS from internet",
+        "tcp",
+        "443",
+        "443"
+      ]
+    },
+    {
+      "id": "f0678b54-1cd6-4ea4-b795-c6e6a44ffb9a",
+      "name": "vaultnote -> alb",
+      "source": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote.aws_subnet-public.aws_lb-vaultnote",
+      "destination": "f0ba7722-39b6-4c81-8290-a30a248bb8d9.aws_security_group-alb.0_0_0_0_0",
+      "tags": [
+        "-1",
+        "0.0.0.0/0"
+      ]
+    },
+    {
+      "id": "e7460747-9221-47bc-b783-e96253f3bc02",
+      "name": "api -> api",
+      "source": "b61d6911-338d-46a8-9f39-8dcd24abfe91.aws_vpc-vaultnote.aws_subnet-private.aws_ecs_service-api",
+      "destination": "f0ba7722-39b6-4c81-8290-a30a248bb8d9.aws_security_group-alb.0_0_0_0_0",
+      "tags": [
+        "-1",
+        "0.0.0.0/0"
+      ]
+    }
+  ]
+}

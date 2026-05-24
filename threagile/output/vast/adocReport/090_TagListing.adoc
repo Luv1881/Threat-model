@@ -1,0 +1,58 @@
+= Tag Listing
+This chapter lists what tags are used by which elements.
+
+
+cache::
+  Redis Cache
+
+container-runtime::
+  Docker Host
+
+docker::
+  Docker Host
+
+express::
+  API Server
+
+intentional-misconfiguration::
+  MinIO File Storage, MinIO Object Storage, HTTP to API Server
+
+jwt::
+  API Server
+
+minio::
+  MinIO Object Storage
+
+nginx::
+  Nginx Reverse Proxy
+
+nodejs::
+  API Server
+
+object-storage::
+  MinIO Object Storage
+
+postgresql::
+  PostgreSQL Database
+
+react::
+  Browser SPA
+
+redis::
+  Redis Cache
+
+relational::
+  PostgreSQL Database
+
+s3::
+  MinIO Object Storage
+
+session-store::
+  Redis Cache
+
+spa::
+  Browser SPA
+
+tls-termination::
+  Nginx Reverse Proxy
+

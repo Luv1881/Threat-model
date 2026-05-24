@@ -1,0 +1,168 @@
+= Identified Data Breach Probabilities by Data Asset
+In total *35 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *1 as high*, *16 as elevated*, *15 as medium*, and *3 as low*. 
+
+These risks are distributed across *4 data assets*. 
+The following sub-chapters of this section describe the derived data breach probabilities grouped by data asset.
+
+<<<
+[[dataAsset:file-attachments]]
+== [.HighRisk]#File Attachments: 17/17 unmitigated Risks#
+Binary file uploads attached to notes. May include documents, images, or other sensitive files depending on note usage.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| file-attachments
+| Usage:               | business| Quantity:          | many
+| Tags:                | [GrayText]#none#| Origin:            | customer
+| Owner:               | VaultNote Team| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:           | important<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| Files may contain confidential content. MinIO's default credentials (minioadmin) make all stored files accessible to anyone on the network.
+
+| Processed by:      3+| API Server, Browser SPA, MinIO Object Storage, Nginx Reverse Proxy
+| Stored by:         3+| MinIO Object Storage
+| Sent via:            | HTTP to API Server, HTTPS to Nginx, MinIO File Storage| Received via:        | HTTP to API Server, HTTPS to Nginx, MinIO File Storage
+| Data Breach:       3+| [.HighRisk]#probable#
+| Data Breach Risks: 3+| This data asset has data breach potential because of 17 remaining risks:
+|                    2+| <<container-baseimage-backdooring,[.HighRisk.small]#Probable: container-baseimage-backdooring@api-server#>>
+|                    2+| <<container-baseimage-backdooring,[.HighRisk.small]#Probable: container-baseimage-backdooring@minio-storage#>>
+|                    2+| <<container-baseimage-backdooring,[.HighRisk.small]#Probable: container-baseimage-backdooring@nginx-proxy#>>
+|                    2+| <<hardcoded-credentials,[.HighRisk.small]#Probable: hardcoded-credentials@minio-storage#>>
+|                    2+| <<missing-cloud-hardening,[.HighRisk.small]#Probable: missing-cloud-hardening@docker-host#>>
+|                    2+| <<path-traversal,[.HighRisk.small]#Probable: path-traversal@api-server@minio-storage@api-server>minio-file-storage#>>
+|                    2+| <<sql-nosql-injection,[.HighRisk.small]#Probable: sql-nosql-injection@api-server@minio-storage@api-server>minio-file-storage#>>
+|                    2+| <<missing-authentication,[.MediumRisk.small]#Possible: missing-authentication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<missing-authentication-second-factor,[.MediumRisk.small]#Possible: missing-authentication-second-factor@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<server-side-request-forgery,[.MediumRisk.small]#Possible: server-side-request-forgery@api-server@minio-storage@api-server>minio-file-storage#>>
+|                    2+| <<server-side-request-forgery,[.MediumRisk.small]#Possible: server-side-request-forgery@nginx-proxy@api-server@nginx-proxy>http-to-api-server#>>
+|                    2+| <<unencrypted-communication,[.MediumRisk.small]#Possible: unencrypted-communication@api-server>minio-file-storage@api-server@minio-storage#>>
+|                    2+| <<unencrypted-communication,[.MediumRisk.small]#Possible: unencrypted-communication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<missing-hardening,[.LowRisk.small]#Improbable: missing-hardening@api-server#>>
+|                    2+| <<missing-waf,[.LowRisk.small]#Improbable: missing-waf@api-server#>>
+|                    2+| <<unguarded-direct-datastore-access,[.LowRisk.small]#Improbable: unguarded-direct-datastore-access@api-server>minio-file-storage@api-server@minio-storage#>>
+|                    2+| <<mixed-targets-on-shared-runtime,[.LowRisk.small]#Improbable: mixed-targets-on-shared-runtime@docker-host#>>
+
+|===
+
+<<<
+[[dataAsset:note-content]]
+== [.HighRisk]#Note Content: 17/17 unmitigated Risks#
+User-authored note text — may include personal, financial, or health information depending on how users employ the application.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| note-content
+| Usage:               | business| Quantity:          | many
+| Tags:                | [GrayText]#none#| Origin:            | customer
+| Owner:               | VaultNote Team| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:           | critical<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| Notes may contain highly sensitive personal information. Integrity is critical because corrupted notes lose user trust.
+
+| Processed by:      3+| API Server, Browser SPA, Nginx Reverse Proxy, PostgreSQL Database
+| Stored by:         3+| PostgreSQL Database
+| Sent via:            | HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection| Received via:        | HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection
+| Data Breach:       3+| [.HighRisk]#probable#
+| Data Breach Risks: 3+| This data asset has data breach potential because of 17 remaining risks:
+|                    2+| <<container-baseimage-backdooring,[.HighRisk.small]#Probable: container-baseimage-backdooring@api-server#>>
+|                    2+| <<container-baseimage-backdooring,[.HighRisk.small]#Probable: container-baseimage-backdooring@nginx-proxy#>>
+|                    2+| <<container-baseimage-backdooring,[.HighRisk.small]#Probable: container-baseimage-backdooring@postgresql-db#>>
+|                    2+| <<missing-cloud-hardening,[.HighRisk.small]#Probable: missing-cloud-hardening@docker-host#>>
+|                    2+| <<sql-nosql-injection,[.HighRisk.small]#Probable: sql-nosql-injection@api-server@postgresql-db@api-server>postgresql-connection#>>
+|                    2+| <<missing-authentication,[.MediumRisk.small]#Possible: missing-authentication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<missing-authentication-second-factor,[.MediumRisk.small]#Possible: missing-authentication-second-factor@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<server-side-request-forgery,[.MediumRisk.small]#Possible: server-side-request-forgery@api-server@minio-storage@api-server>minio-file-storage#>>
+|                    2+| <<server-side-request-forgery,[.MediumRisk.small]#Possible: server-side-request-forgery@nginx-proxy@api-server@nginx-proxy>http-to-api-server#>>
+|                    2+| <<unencrypted-communication,[.MediumRisk.small]#Possible: unencrypted-communication@api-server>postgresql-connection@api-server@postgresql-db#>>
+|                    2+| <<unencrypted-communication,[.MediumRisk.small]#Possible: unencrypted-communication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<missing-hardening,[.LowRisk.small]#Improbable: missing-hardening@api-server#>>
+|                    2+| <<missing-hardening,[.LowRisk.small]#Improbable: missing-hardening@postgresql-db#>>
+|                    2+| <<missing-waf,[.LowRisk.small]#Improbable: missing-waf@api-server#>>
+|                    2+| <<unguarded-direct-datastore-access,[.LowRisk.small]#Improbable: unguarded-direct-datastore-access@api-server>postgresql-connection@api-server@postgresql-db#>>
+|                    2+| <<mixed-targets-on-shared-runtime,[.LowRisk.small]#Improbable: mixed-targets-on-shared-runtime@docker-host#>>
+|                    2+| <<unencrypted-asset,[.LowRisk.small]#Improbable: unencrypted-asset@postgresql-db#>>
+
+|===
+
+<<<
+[[dataAsset:session-tokens]]
+== [.HighRisk]#Session Tokens: 15/15 unmitigated Risks#
+JWT tokens and Redis session keys used to maintain authenticated state. Theft allows session hijacking without knowing the user's password.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| session-tokens
+| Usage:               | business| Quantity:          | many
+| Tags:                | [GrayText]#none#| Origin:            | internal
+| Owner:               | VaultNote Team| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:           | critical<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| Session token compromise enables full session hijacking. Short TTLs and revocation lists mitigate but do not eliminate the risk.
+
+| Processed by:      3+| API Server, Redis Cache
+| Stored by:         3+| Redis Cache
+| Sent via:            | Redis Session Store| Received via:        | Redis Session Store
+| Data Breach:       3+| [.HighRisk]#probable#
+| Data Breach Risks: 3+| This data asset has data breach potential because of 15 remaining risks:
+|                    2+| <<container-baseimage-backdooring,[.HighRisk.small]#Probable: container-baseimage-backdooring@api-server#>>
+|                    2+| <<container-baseimage-backdooring,[.HighRisk.small]#Probable: container-baseimage-backdooring@redis-cache#>>
+|                    2+| <<missing-cloud-hardening,[.HighRisk.small]#Probable: missing-cloud-hardening@docker-host#>>
+|                    2+| <<sql-nosql-injection,[.HighRisk.small]#Probable: sql-nosql-injection@api-server@redis-cache@api-server>redis-session-store#>>
+|                    2+| <<missing-authentication,[.MediumRisk.small]#Possible: missing-authentication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<missing-authentication-second-factor,[.MediumRisk.small]#Possible: missing-authentication-second-factor@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<server-side-request-forgery,[.MediumRisk.small]#Possible: server-side-request-forgery@api-server@minio-storage@api-server>minio-file-storage#>>
+|                    2+| <<unencrypted-communication,[.MediumRisk.small]#Possible: unencrypted-communication@api-server>redis-session-store@api-server@redis-cache#>>
+|                    2+| <<unencrypted-communication,[.MediumRisk.small]#Possible: unencrypted-communication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<missing-hardening,[.LowRisk.small]#Improbable: missing-hardening@api-server#>>
+|                    2+| <<missing-hardening,[.LowRisk.small]#Improbable: missing-hardening@redis-cache#>>
+|                    2+| <<missing-waf,[.LowRisk.small]#Improbable: missing-waf@api-server#>>
+|                    2+| <<unencrypted-asset,[.LowRisk.small]#Improbable: unencrypted-asset@redis-cache#>>
+|                    2+| <<unguarded-direct-datastore-access,[.LowRisk.small]#Improbable: unguarded-direct-datastore-access@api-server>redis-session-store@api-server@redis-cache#>>
+|                    2+| <<mixed-targets-on-shared-runtime,[.LowRisk.small]#Improbable: mixed-targets-on-shared-runtime@docker-host#>>
+
+|===
+
+<<<
+[[dataAsset:user-credentials]]
+== [.HighRisk]#User Credentials: 17/17 unmitigated Risks#
+Email addresses and bcrypt-hashed passwords used for authentication. Compromise allows full account takeover.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| user-credentials
+| Usage:               | business| Quantity:          | many
+| Tags:                | [GrayText]#none#| Origin:            | customer
+| Owner:               | VaultNote Team| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:           | critical<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| Credentials grant full account access. A breach leaks all users' identities and enables account takeover across every note and attachment.
+
+| Processed by:      3+| API Server, Browser SPA, Nginx Reverse Proxy, PostgreSQL Database
+| Stored by:         3+| PostgreSQL Database
+| Sent via:            | HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection| Received via:        | PostgreSQL Connection
+| Data Breach:       3+| [.HighRisk]#probable#
+| Data Breach Risks: 3+| This data asset has data breach potential because of 17 remaining risks:
+|                    2+| <<container-baseimage-backdooring,[.HighRisk.small]#Probable: container-baseimage-backdooring@api-server#>>
+|                    2+| <<container-baseimage-backdooring,[.HighRisk.small]#Probable: container-baseimage-backdooring@nginx-proxy#>>
+|                    2+| <<container-baseimage-backdooring,[.HighRisk.small]#Probable: container-baseimage-backdooring@postgresql-db#>>
+|                    2+| <<missing-cloud-hardening,[.HighRisk.small]#Probable: missing-cloud-hardening@docker-host#>>
+|                    2+| <<sql-nosql-injection,[.HighRisk.small]#Probable: sql-nosql-injection@api-server@postgresql-db@api-server>postgresql-connection#>>
+|                    2+| <<missing-authentication,[.MediumRisk.small]#Possible: missing-authentication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<missing-authentication-second-factor,[.MediumRisk.small]#Possible: missing-authentication-second-factor@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<server-side-request-forgery,[.MediumRisk.small]#Possible: server-side-request-forgery@api-server@minio-storage@api-server>minio-file-storage#>>
+|                    2+| <<server-side-request-forgery,[.MediumRisk.small]#Possible: server-side-request-forgery@nginx-proxy@api-server@nginx-proxy>http-to-api-server#>>
+|                    2+| <<unencrypted-communication,[.MediumRisk.small]#Possible: unencrypted-communication@api-server>postgresql-connection@api-server@postgresql-db#>>
+|                    2+| <<unencrypted-communication,[.MediumRisk.small]#Possible: unencrypted-communication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+|                    2+| <<missing-hardening,[.LowRisk.small]#Improbable: missing-hardening@api-server#>>
+|                    2+| <<missing-hardening,[.LowRisk.small]#Improbable: missing-hardening@postgresql-db#>>
+|                    2+| <<missing-waf,[.LowRisk.small]#Improbable: missing-waf@api-server#>>
+|                    2+| <<unguarded-direct-datastore-access,[.LowRisk.small]#Improbable: unguarded-direct-datastore-access@api-server>postgresql-connection@api-server@postgresql-db#>>
+|                    2+| <<mixed-targets-on-shared-runtime,[.LowRisk.small]#Improbable: mixed-targets-on-shared-runtime@docker-host#>>
+|                    2+| <<unencrypted-asset,[.LowRisk.small]#Improbable: unencrypted-asset@postgresql-db#>>
+
+|===
+

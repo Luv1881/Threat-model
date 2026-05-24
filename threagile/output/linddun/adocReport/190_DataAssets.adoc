@@ -1,0 +1,136 @@
+= Identified Data Breach Probabilities by Data Asset
+In total *12 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *6 as elevated*, *6 as medium*, and *0 as low*. 
+
+These risks are distributed across *4 data assets*. 
+The following sub-chapters of this section describe the derived data breach probabilities grouped by data asset.
+
+<<<
+[[dataAsset:file-attachments]]
+== [.HighRisk]#File Attachments: 10/10 unmitigated Risks#
+Binary file uploads attached to notes. May include documents, images, or other sensitive files depending on note usage.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| file-attachments
+| Usage:               | business| Quantity:          | many
+| Tags:                | [GrayText]#none#| Origin:            | customer
+| Owner:               | VaultNote Team| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:           | critical<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| Files may contain sensitive documents. Integrity is critical because tampered attachments corrupt evidence or business records. MinIO's default credentials (minioadmin) make all stored files accessible to anyone on the network — intentional misconfiguration for demo purposes.
+
+| Processed by:      3+| API Server, Browser SPA, MinIO Object Storage, Nginx Reverse Proxy
+| Stored by:         3+| MinIO Object Storage
+| Sent via:            | HTTP to API Server, HTTPS to Nginx, MinIO File Storage| Received via:        | HTTP to API Server, HTTPS to Nginx, MinIO File Storage
+| Data Breach:       3+| [.HighRisk]#probable#
+| Data Breach Risks: 3+| This data asset has data breach potential because of 10 remaining risks:
+|                    2+| <<detecting-no-audit-logging,[.HighRisk.small]#Probable: detecting-no-audit-logging@nginx-proxy#>>
+|                    2+| <<data-disclosure-pii-unencrypted-link,[.HighRisk.small]#Probable: data-disclosure-pii-unencrypted-link@api-server#>>
+|                    2+| <<data-disclosure-pii-unencrypted-link,[.HighRisk.small]#Probable: data-disclosure-pii-unencrypted-link@nginx-proxy#>>
+|                    2+| <<detecting-no-audit-logging,[.HighRisk.small]#Probable: detecting-no-audit-logging@api-server#>>
+|                    2+| <<pii-client-side-storage,[.MediumRisk.small]#Possible: pii-client-side-storage@browser-spa#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@api-server#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@browser-spa#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@minio-storage#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@nginx-proxy#>>
+|                    2+| <<unawareness-no-consent-technology,[.LowRisk.small]#Improbable: unawareness-no-consent-technology@browser-spa#>>
+
+|===
+
+<<<
+[[dataAsset:note-content]]
+== [.HighRisk]#Note Content: 10/10 unmitigated Risks#
+User-authored note text — may include personal, financial, or health information depending on how users employ the application.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| note-content
+| Usage:               | business| Quantity:          | many
+| Tags:                | [GrayText]#none#| Origin:            | customer
+| Owner:               | VaultNote Team| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:           | critical<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| Notes may contain highly sensitive personal information. Integrity is critical because corrupted notes lose user trust.
+
+| Processed by:      3+| API Server, Browser SPA, Nginx Reverse Proxy, PostgreSQL Database
+| Stored by:         3+| PostgreSQL Database
+| Sent via:            | HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection| Received via:        | HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection
+| Data Breach:       3+| [.HighRisk]#probable#
+| Data Breach Risks: 3+| This data asset has data breach potential because of 10 remaining risks:
+|                    2+| <<detecting-no-audit-logging,[.HighRisk.small]#Probable: detecting-no-audit-logging@nginx-proxy#>>
+|                    2+| <<data-disclosure-pii-unencrypted-link,[.HighRisk.small]#Probable: data-disclosure-pii-unencrypted-link@api-server#>>
+|                    2+| <<data-disclosure-pii-unencrypted-link,[.HighRisk.small]#Probable: data-disclosure-pii-unencrypted-link@nginx-proxy#>>
+|                    2+| <<detecting-no-audit-logging,[.HighRisk.small]#Probable: detecting-no-audit-logging@api-server#>>
+|                    2+| <<pii-client-side-storage,[.MediumRisk.small]#Possible: pii-client-side-storage@browser-spa#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@api-server#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@browser-spa#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@nginx-proxy#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@postgresql-db#>>
+|                    2+| <<unawareness-no-consent-technology,[.LowRisk.small]#Improbable: unawareness-no-consent-technology@browser-spa#>>
+
+|===
+
+<<<
+[[dataAsset:session-tokens]]
+== [.HighRisk]#Session Tokens: 4/4 unmitigated Risks#
+JWT tokens and Redis session keys used to maintain authenticated state. Theft allows session hijacking without knowing the user's password.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| session-tokens
+| Usage:               | business| Quantity:          | many
+| Tags:                | [GrayText]#none#| Origin:            | internal
+| Owner:               | VaultNote Team| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:           | critical<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| Session token compromise enables full session hijacking. Short TTLs and revocation lists mitigate but do not eliminate the risk.
+
+| Processed by:      3+| API Server, Redis Cache
+| Stored by:         3+| Redis Cache
+| Sent via:            | Redis Session Store| Received via:        | Redis Session Store
+| Data Breach:       3+| [.HighRisk]#probable#
+| Data Breach Risks: 3+| This data asset has data breach potential because of 4 remaining risks:
+|                    2+| <<data-disclosure-pii-unencrypted-link,[.HighRisk.small]#Probable: data-disclosure-pii-unencrypted-link@api-server#>>
+|                    2+| <<detecting-no-audit-logging,[.HighRisk.small]#Probable: detecting-no-audit-logging@api-server#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@api-server#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@redis-cache#>>
+
+|===
+
+<<<
+[[dataAsset:user-credentials]]
+== [.HighRisk]#User Credentials: 10/10 unmitigated Risks#
+Email addresses and bcrypt-hashed passwords used for authentication. Compromise allows full account takeover.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| user-credentials
+| Usage:               | business| Quantity:          | many
+| Tags:                | [GrayText]#none#| Origin:            | customer
+| Owner:               | VaultNote Team| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:           | critical<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| Credentials grant full account access. A breach leaks all users' identities and enables account takeover across every note and attachment.
+
+| Processed by:      3+| API Server, Browser SPA, Nginx Reverse Proxy, PostgreSQL Database
+| Stored by:         3+| PostgreSQL Database
+| Sent via:            | HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection| Received via:        | PostgreSQL Connection
+| Data Breach:       3+| [.HighRisk]#probable#
+| Data Breach Risks: 3+| This data asset has data breach potential because of 10 remaining risks:
+|                    2+| <<detecting-no-audit-logging,[.HighRisk.small]#Probable: detecting-no-audit-logging@nginx-proxy#>>
+|                    2+| <<data-disclosure-pii-unencrypted-link,[.HighRisk.small]#Probable: data-disclosure-pii-unencrypted-link@api-server#>>
+|                    2+| <<data-disclosure-pii-unencrypted-link,[.HighRisk.small]#Probable: data-disclosure-pii-unencrypted-link@nginx-proxy#>>
+|                    2+| <<detecting-no-audit-logging,[.HighRisk.small]#Probable: detecting-no-audit-logging@api-server#>>
+|                    2+| <<pii-client-side-storage,[.MediumRisk.small]#Possible: pii-client-side-storage@browser-spa#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@api-server#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@browser-spa#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@nginx-proxy#>>
+|                    2+| <<linking-pii-multi-boundary,[.LowRisk.small]#Improbable: linking-pii-multi-boundary@postgresql-db#>>
+|                    2+| <<unawareness-no-consent-technology,[.LowRisk.small]#Improbable: unawareness-no-consent-technology@browser-spa#>>
+
+|===
+
