@@ -1,0 +1,240 @@
+# ============================================================
+# Feature: CI/CD & Supply Chain
+# Components: Source Code Repo, Build Pipeline, Container Registry
+# Networks:   External CI/CD (GitHub / AWS ECR)
+# Rules:      supply-chain pack (branch protection, SBOM, unsigned images,
+#             dependency scanning, provenance, secrets-in-pipeline)
+# ============================================================
+
+technical_assets:
+
+  VaultNote Source Repository:
+    id: source-repo
+    description: >
+      GitHub repository hosting the VaultNote monorepo (API, frontend, Terraform).
+      Contains application secrets in compose files (minioadmin credentials visible
+      in git history) and Terraform state references.
+      INTENTIONAL: No branch protection rules configured — developers push directly
+      to main, bypassing review and signed-commit requirements.
+    type: process
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: sourcecode-repository
+    tags: ["github", "git", "supply-chain"]
+    internet: true
+    machine: virtual
+    encryption: transparent
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: critical
+    availability: operational
+    justification_cia_rating: >
+      Source code is the root of the supply chain. Integrity is critical — malicious
+      code injected here propagates to every built artifact. May contain leaked secrets.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    is_pii_processor: false
+    is_pii_controller: false
+    data_assets_processed:
+      - build-artifacts
+    data_assets_stored:
+      - build-artifacts
+    data_formats_accepted:
+      - file
+    communication_links:
+
+      Push to Pipeline:
+        target: build-pipeline
+        description: >
+          Git push triggers GitHub Actions workflow. The webhook carries the commit
+          SHA and branch reference to the CI runner.
+        protocol: https
+        authentication: credentials
+        authorization: technical-user
+        tags: []
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: devops
+        rate_limited: false
+        audit_logged: false
+        cross_border: false
+        data_assets_sent:
+          - build-artifacts
+        data_assets_received: []
+        diagram_tweak_weight: 1
+        diagram_tweak_constraint: false
+
+  GitHub Actions Build Pipeline:
+    id: build-pipeline
+    description: >
+      GitHub Actions CI/CD pipeline. Builds Docker images, runs tests, pushes to ECR.
+      INTENTIONAL: No SBOM generation (no Syft or CycloneDX step configured).
+      No build provenance attestation (no SLSA provenance step).
+      Hardcoded AWS_SECRET_ACCESS_KEY in workflow environment variables.
+    type: process
+    usage: devops
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: build-pipeline
+    tags: ["github-actions", "ci", "supply-chain"]
+    internet: true
+    machine: virtual
+    encryption: transparent
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: critical
+    availability: operational
+    justification_cia_rating: >
+      Build pipeline is a privileged component — it has read access to secrets
+      and write access to the container registry. Compromise = full supply chain
+      injection. No SBOM means post-build vulnerability tracking is impossible.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    is_pii_processor: false
+    is_pii_controller: false
+    data_assets_processed:
+      - build-artifacts
+    data_assets_stored:
+      - build-artifacts
+    data_formats_accepted:
+      - file
+    communication_links:
+
+      Push Image to Registry:
+        target: container-registry
+        description: >
+          docker push to AWS ECR after build completes. Images are tagged with the
+          git commit SHA and pushed without cryptographic signing (no Cosign step).
+        protocol: https
+        authentication: credentials
+        authorization: technical-user
+        tags: []
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: devops
+        rate_limited: false
+        audit_logged: false
+        cross_border: false
+        data_assets_sent:
+          - build-artifacts
+        data_assets_received: []
+        diagram_tweak_weight: 1
+        diagram_tweak_constraint: false
+
+  AWS ECR Container Registry:
+    id: container-registry
+    description: >
+      AWS Elastic Container Registry storing VaultNote Docker images (api, nginx).
+      INTENTIONAL: Image vulnerability scanning is disabled (ECR Basic scanning only,
+      not Enhanced/Inspector). Images are not signed — no Cosign/Sigstore policy enforced.
+      Repository is private but no admission controller validates signatures at deploy time.
+    type: datastore
+    usage: devops
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: container-registry
+    tags: ["ecr", "aws", "supply-chain"]
+    internet: true
+    machine: virtual
+    encryption: transparent
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: critical
+    availability: operational
+    justification_cia_rating: >
+      Container registry is the final source of truth for deployed images. Tampering
+      with registry contents (image swap or layer injection) propagates malicious code
+      to every deployment. No signing verification means a registry compromise is
+      undetectable until damage is done.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: false
+    is_pii_processor: false
+    is_pii_controller: false
+    data_assets_processed:
+      - build-artifacts
+    data_assets_stored:
+      - build-artifacts
+    data_formats_accepted:
+      - file
+    communication_links: {}
+
+data_assets:
+
+  Build Artifacts:
+    id: build-artifacts
+    description: >
+      Docker container images, compiled source bundles, and dependency lockfiles
+      produced by the CI/CD pipeline. Integrity is critical — these are the
+      deployable units of the application.
+    usage: devops
+    tags: ["supply-chain"]
+    origin: internal
+    owner: VaultNote Team
+    quantity: few
+    confidentiality: internal
+    integrity: critical
+    availability: operational
+    justification_cia_rating: >
+      Build artifacts are the final deliverable of the supply chain. Integrity is
+      critical — tampered artifacts compromise every environment they are deployed to.
+
+trust_boundaries:
+
+  External CI/CD:
+    id: external-cicd
+    description: >
+      GitHub-hosted CI/CD infrastructure and AWS ECR registry. External to the
+      application runtime but directly connected to it via image pull at deploy time.
+      Trust boundary represents the entire supply chain attack surface.
+    type: network-cloud-provider
+    tags: ["supply-chain"]
+    technical_assets_inside:
+      - source-repo
+      - build-pipeline
+      - container-registry
+    trust_boundaries_nested: []
+
+risk_tracking:
+
+  supply-chain-no-branch-protection@source-repo:
+    status: in-progress
+    justification: >
+      Branch protection rules (require PR review, require CI status checks, prevent
+      force push) are being configured on the GitHub repository. Target: sprint 22.
+      Currently main branch allows direct push from any contributor with write access.
+    ticket: VAULT-130
+    date: 2026-04-28
+    checked_by: Security Team
+
+  supply-chain-no-sbom@build-pipeline:
+    status: in-progress
+    justification: >
+      Syft SBOM generation step is planned for the GitHub Actions workflow.
+      Will generate CycloneDX format and publish to S3 artifact store alongside images.
+      Blocked on VAULT-130 (branch protection) for pipeline trust reasons.
+    ticket: VAULT-131
+    date: 2026-04-28
+    checked_by: Security Team
+
+  supply-chain-unsigned-container-image@container-registry:
+    status: in-progress
+    justification: >
+      Cosign/Sigstore image signing is planned post-SBOM (VAULT-131). Signature
+      verification via Kyverno admission controller will be added when EKS migration
+      completes. Current mitigation: ECR repository policy restricts push access to
+      the CI service account only.
+    ticket: VAULT-132
+    date: 2026-04-28
+    checked_by: Security Team

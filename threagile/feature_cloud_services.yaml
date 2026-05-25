@@ -1,0 +1,382 @@
+# ============================================================
+# Feature: Cloud-Native Production Infrastructure
+# Components: AWS API Gateway, Lambda Notifier, RDS, S3, Elasticache
+# Networks:   AWS Cloud (production deployment)
+# Rules:      cloud-native pack (API gateway, serverless, managed-db,
+#             object-storage, container scanning)
+# ============================================================
+
+technical_assets:
+
+  AWS API Gateway:
+    id: aws-api-gateway
+    description: >
+      AWS API Gateway (HTTP API) fronting the ECS API containers in production.
+      Routes traffic from the ALB to backend ECS tasks.
+      INTENTIONAL: No usage plan or throttling policy configured.
+      No WAF association on the API gateway stage. Auth relies entirely on the
+      API server (JWT) — no gateway-level auth enforcement.
+    type: process
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: cloud-api-gateway
+    tags: ["aws", "api-gateway", "cloud-native"]
+    internet: true
+    machine: virtual
+    encryption: transparent
+    owner: VaultNote Team
+    confidentiality: internal
+    integrity: critical
+    availability: critical
+    justification_cia_rating: >
+      API gateway is the single internet entry point in production. No rate limiting
+      = credential stuffing and cost amplification risk. WAF absence leaves XSS/SQLi
+      traffic unfiltered before it reaches the API.
+    multi_tenant: false
+    redundant: true
+    custom_developed_parts: false
+    is_pii_processor: true
+    is_pii_controller: false
+    data_assets_processed:
+      - user-credentials
+      - note-content
+      - file-attachments
+    data_assets_stored: []
+    data_formats_accepted:
+      - json
+    communication_links:
+
+      Route to ECS API:
+        target: api-server
+        description: >
+          HTTP forward from API Gateway to the ECS-hosted API containers via ALB.
+          Traffic is within the AWS VPC — no public routing for backend traffic.
+        protocol: https
+        authentication: none
+        authorization: none
+        tags: []
+        vpn: false
+        ip_filtered: true
+        readonly: false
+        usage: business
+        rate_limited: false
+        audit_logged: true
+        cross_border: false
+        data_assets_sent:
+          - user-credentials
+          - note-content
+          - file-attachments
+        data_assets_received:
+          - note-content
+          - file-attachments
+        diagram_tweak_weight: 1
+        diagram_tweak_constraint: false
+
+  Lambda Email Notifier:
+    id: lambda-notifier
+    description: >
+      AWS Lambda function that sends transactional emails (note-share invitations,
+      account verification) triggered by SQS messages from the API server.
+      Processes user email addresses (PII) and note titles in notification payloads.
+      INTENTIONAL: No dead letter queue (DLQ) configured on the SQS event source.
+      Failed notifications are silently dropped after 3 retries with no audit trail.
+    type: process
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: component
+    technology: serverless-function
+    tags: ["aws", "lambda", "notifications", "cloud-native"]
+    internet: false
+    machine: virtual
+    encryption: transparent
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: operational
+    availability: operational
+    justification_cia_rating: >
+      Lambda processes email addresses and note titles. PII loss due to silent failure
+      creates compliance issues (incomplete processing records). Overpermissive IAM
+      role could be exploited to access other AWS resources.
+    multi_tenant: false
+    redundant: false
+    custom_developed_parts: true
+    is_pii_processor: true
+    is_pii_controller: false
+    data_assets_processed:
+      - notification-payloads
+    data_assets_stored: []
+    data_formats_accepted:
+      - json
+    communication_links:
+
+      SES Email Send:
+        target: aws-api-gateway
+        description: >
+          Lambda calls AWS SES to deliver transactional emails. Outbound to
+          AWS SES endpoint (not represented as a separate asset — using gateway
+          as proxy reference).
+        protocol: https
+        authentication: credentials
+        authorization: technical-user
+        tags: []
+        vpn: false
+        ip_filtered: false
+        readonly: false
+        usage: business
+        rate_limited: false
+        audit_logged: false
+        cross_border: false
+        data_assets_sent:
+          - notification-payloads
+        data_assets_received: []
+        diagram_tweak_weight: 1
+        diagram_tweak_constraint: false
+
+  AWS RDS PostgreSQL:
+    id: rds-postgresql
+    description: >
+      AWS RDS PostgreSQL instance (production). Replaces the Docker-based PostgreSQL
+      in production deployments. Automated backups enabled (7-day retention).
+      INTENTIONAL: Encryption at rest is disabled (storage_encrypted = false in
+      Terraform). Public accessibility is off but subnet group is in app subnet
+      (not data subnet), creating potential exposure via compromised app instances.
+    type: datastore
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: managed-database
+    tags: ["aws", "rds", "postgresql", "cloud-native", "information-asset-container",
+           "criticality-high"]
+    internet: false
+    machine: virtual
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: strictly-confidential
+    integrity: critical
+    availability: critical
+    justification_cia_rating: >
+      Production database stores all user PII and note content. Encryption disabled
+      means RDS snapshot exfiltration exposes all data in plaintext. Snapshot sharing
+      misconfiguration (a common AWS incident) bypasses all access controls.
+    multi_tenant: false
+    redundant: true
+    custom_developed_parts: false
+    is_pii_processor: true
+    is_pii_controller: false
+    data_assets_processed:
+      - user-credentials
+      - note-content
+    data_assets_stored:
+      - user-credentials
+      - note-content
+    data_formats_accepted:
+      - json
+    communication_links: {}
+
+  AWS S3 Notes Bucket:
+    id: s3-notes-bucket
+    description: >
+      AWS S3 bucket storing file attachments for production deployments. Replaces
+      MinIO S3-compatible storage in the cloud environment. Bucket is private
+      (Block Public Access enabled) but server-side encryption is not configured.
+      INTENTIONAL: SSE-S3 or SSE-KMS not enabled. Objects are stored unencrypted
+      at the storage layer — provider-side access exposes raw data.
+    type: datastore
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: object-storage
+    tags: ["aws", "s3", "cloud-native", "information-asset-container", "criticality-high",
+           "third-party-shared"]
+    internet: false
+    machine: virtual
+    encryption: none
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: important
+    availability: operational
+    justification_cia_rating: >
+      S3 stores user-uploaded files which may contain sensitive documents. No SSE
+      means provider-side access (support channel, storage engineer) reads raw data.
+      third-party-shared because S3 is operated by AWS and subject to subprocessor
+      data protection requirements. No DPA review completed.
+    multi_tenant: false
+    redundant: true
+    custom_developed_parts: false
+    is_pii_processor: true
+    is_pii_controller: false
+    data_assets_processed:
+      - file-attachments
+    data_assets_stored:
+      - file-attachments
+    data_formats_accepted:
+      - file
+    communication_links: {}
+
+  ECS Container Platform:
+    id: ecs-platform
+    description: >
+      AWS ECS (Fargate) running the API and Nginx containers in production.
+      INTENTIONAL: ECR Enhanced Scanning (Inspector v2) is not enabled.
+      Running containers are not scanned post-deployment for newly disclosed CVEs.
+      Container images are pulled from ECR without signature verification.
+    type: process
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: container-platform
+    tags: ["aws", "ecs", "fargate", "cloud-native"]
+    internet: false
+    machine: virtual
+    encryption: transparent
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: critical
+    availability: critical
+    justification_cia_rating: >
+      ECS runs the production API containers. Container escape or image tampering
+      grants access to the application runtime and its mounted secrets. No image
+      scanning means known CVEs in base images are undetected until exploitation.
+    multi_tenant: false
+    redundant: true
+    custom_developed_parts: false
+    is_pii_processor: false
+    is_pii_controller: false
+    data_assets_processed:
+      - note-content
+      - user-credentials
+    data_assets_stored: []
+    data_formats_accepted:
+      - json
+    communication_links:
+
+      Pull Images from ECR:
+        target: container-registry
+        description: >
+          ECS task pulls Docker images from ECR at task launch. Images are not
+          verified against signatures before execution.
+        protocol: https
+        authentication: credentials
+        authorization: technical-user
+        tags: []
+        vpn: false
+        ip_filtered: true
+        readonly: true
+        usage: devops
+        rate_limited: false
+        audit_logged: false
+        cross_border: false
+        data_assets_sent: []
+        data_assets_received:
+          - build-artifacts
+        diagram_tweak_weight: 1
+        diagram_tweak_constraint: false
+
+data_assets:
+
+  Notification Payloads:
+    id: notification-payloads
+    description: >
+      Email notification payloads containing user email addresses and note
+      titles sent via Lambda to AWS SES. Contains PII (email address) and
+      indirect note content references.
+    usage: business
+    tags: ["pii"]
+    origin: internal
+    owner: VaultNote Team
+    quantity: many
+    confidentiality: confidential
+    integrity: operational
+    availability: operational
+    justification_cia_rating: >
+      Email addresses are PII. Note titles may be sensitive. Loss via DLQ absence
+      creates unauditable data processing gaps.
+    has_pii: true
+    pii_categories: [email-address, note-title]
+    data_subject_category: customer
+    lawful_basis: contract
+    processing_purpose: Transactional notification delivery
+
+trust_boundaries:
+
+  AWS Cloud:
+    id: aws-cloud
+    description: >
+      AWS production environment (VPC). Contains managed services (RDS, S3, ECS,
+      Lambda, API Gateway). Separated from the dev Docker environment by an
+      air gap — production traffic flows through the API Gateway, never through
+      the Docker compose setup.
+    type: network-cloud-provider
+    tags: ["aws", "cloud-native"]
+    technical_assets_inside:
+      - aws-api-gateway
+      - lambda-notifier
+      - rds-postgresql
+      - s3-notes-bucket
+      - ecs-platform
+    trust_boundaries_nested: []
+
+risk_tracking:
+
+  cloud-api-gateway-no-rate-limiting@aws-api-gateway:
+    status: in-progress
+    justification: >
+      AWS API Gateway usage plan with per-IP throttling is planned for sprint 23.
+      Current mitigation: application-level account lockout after 10 failed logins.
+      WAF association (VAULT-135) is a separate workstream.
+    ticket: VAULT-133
+    date: 2026-04-28
+    checked_by: Security Team
+
+  cloud-serverless-no-dlq@lambda-notifier:
+    status: in-progress
+    justification: >
+      SQS DLQ configuration is on the Lambda function backlog. Currently failed
+      notification events are silently dropped. DLQ with CloudWatch depth alarm
+      is planned alongside the DPA review for SES (VAULT-136).
+    ticket: VAULT-134
+    date: 2026-04-28
+    checked_by: Security Team
+
+  cloud-managed-db-no-encryption@rds-postgresql:
+    status: in-progress
+    justification: >
+      RDS encryption cannot be enabled on an existing instance — requires snapshot
+      + restore with encryption enabled. This is planned as a maintenance window
+      operation in Q3 2026. Customer-managed KMS key (CMK) will be used for the
+      strictly-confidential classification level.
+    ticket: VAULT-135
+    date: 2026-04-28
+    checked_by: Infrastructure Team
+
+  cloud-object-storage-no-encryption@s3-notes-bucket:
+    status: in-progress
+    justification: >
+      SSE-KMS is planned alongside the RDS encryption work (VAULT-135). S3
+      default encryption will use a dedicated CMK for the notes bucket.
+      Compensating control: S3 Block Public Access is enabled; bucket policy
+      restricts access to the API ECS task role only.
+    ticket: VAULT-135
+    date: 2026-04-28
+    checked_by: Infrastructure Team
+
+  cloud-container-no-image-scanning@ecs-platform:
+    status: in-progress
+    justification: >
+      ECR Enhanced Scanning (Inspector v2) is being evaluated. Basic ECR scanning
+      is enabled but does not cover OS packages comprehensively. Enhanced scanning
+      with critical/high gate in the CI pipeline is planned for sprint 22.
+    ticket: VAULT-136
+    date: 2026-04-28
+    checked_by: Security Team

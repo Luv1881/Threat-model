@@ -65,7 +65,7 @@ technical_assets:
     justification_out_of_scope: ""
     size: service
     technology: web-service-rest
-    tags: ["nodejs", "express", "jwt"]
+    tags: ["nodejs", "express", "jwt", "trike-trust-level-admin"]
     internet: false
     machine: container
     encryption: none

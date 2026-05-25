@@ -48,5 +48,8 @@ includes:
   - feature_frontend.yaml  # Browser SPA + Nginx | Internet/DMZ | network risk tracking
   - feature_api.yaml       # API Server | App Network | auth data assets
   - feature_datastores.yaml # PostgreSQL + Redis + MinIO | Data Tier | Docker runtime | storage data assets + datastore risk tracking
+  - feature_cicd.yaml       # GitHub + Actions + ECR | External CI/CD | supply-chain pack
+  - feature_cloud_services.yaml # AWS API GW + Lambda + RDS + S3 + ECS | AWS Cloud | cloud-native pack
+  - feature_ai.yaml         # LLM Summarizer + Vector Store + RAG Pipeline | AI Services | ai-ml pack
   - feature_threats.yaml          # PASTA threat scenarios
   - feature_business_processes.yaml # VAST business processes

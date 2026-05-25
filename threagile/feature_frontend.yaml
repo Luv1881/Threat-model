@@ -18,7 +18,7 @@ technical_assets:
     justification_out_of_scope: ""
     size: application
     technology: browser
-    tags: ["react", "spa"]
+    tags: ["react", "spa", "trike-actor", "trike-actor-untrusted"]
     internet: true
     machine: physical
     encryption: none

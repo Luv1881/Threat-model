@@ -48,6 +48,7 @@ data_assets:
       tampered attachments corrupt evidence or business records. MinIO's default
       credentials (minioadmin) make all stored files accessible to anyone on
       the network — intentional misconfiguration for demo purposes.
+    has_pii: true
     pii_categories: [user-uploaded-file]
     data_subject_category: customer
     lawful_basis: contract
@@ -68,7 +69,8 @@ technical_assets:
     justification_out_of_scope: ""
     size: service
     technology: database
-    tags: ["postgresql", "relational"]
+    tags: ["postgresql", "relational", "information-asset-container", "criticality-high",
+           "third-party-shared"]
     internet: false
     machine: container
     encryption: none
@@ -113,7 +115,7 @@ technical_assets:
     justification_out_of_scope: ""
     size: component
     technology: database
-    tags: ["redis", "cache", "session-store"]
+    tags: ["redis", "cache", "session-store", "information-asset-container", "criticality-high"]
     internet: false
     machine: container
     encryption: none
@@ -154,8 +156,9 @@ technical_assets:
     out_of_scope: false
     justification_out_of_scope: ""
     size: service
-    technology: file-server
-    tags: ["minio", "s3", "object-storage", "intentional-misconfiguration"]
+    technology: object-storage
+    tags: ["minio", "s3", "object-storage", "intentional-misconfiguration",
+           "information-asset-container", "criticality-high", "third-party-shared"]
     internet: false
     machine: container
     encryption: none
