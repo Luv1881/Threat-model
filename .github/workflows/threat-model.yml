@@ -165,6 +165,7 @@ jobs:
         run: |
           python3 scripts/create-tickets.py \
             --risks        threagile/output/risks.json \
+            --assets       threagile/output/technical-assets.json \
             --min-severity medium \
             --repo         "${{ github.repository }}" \
             --token        "${{ secrets.GITHUB_TOKEN }}"
