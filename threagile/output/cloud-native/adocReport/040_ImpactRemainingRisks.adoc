@@ -1,0 +1,142 @@
+= Impact Analysis Of 83 Remaining Risks In 36 Categories
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+The most prevalent impacts of the *83 remaining risks* (distributed over *36 risk categories*) are (taking the severity ratings into account and using the highest for each category)!{fn-risk-findings}
+
+<<exposed-default-credentials,[.HighRisk]#High: *Asset Using Known Default or Hardcoded Credentials*: 1 Remaining Risk - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
+Any attacker with network access can authenticate using default credentials, exfiltrate all stored data, modify records, or pivot into adjacent systems.
+
+
+<<sql-nosql-injection,[.HighRisk]#High: *SQL/NoSQL-Injection*: 2 Remaining Risks - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.
+
+<<cloud-no-audit-logging-high-value,[.ElevatedRisk]#Elevated: *Cloud Audit - High-Value Cloud Service Without Audit Logging*: 5 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Without audit logging, unauthorized access and data exfiltration can go completely undetected. Post-incident forensic investigation is severely hampered. Compliance with GDPR, HIPAA, SOC2, and PCI-DSS typically requires demonstrable audit trails for access to systems processing sensitive or personal data.
+
+
+<<cloud-container-no-image-scanning,[.ElevatedRisk]#Elevated: *Cloud Container - Container Platform Without Image Vulnerability Scanning*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Unscanned container images may contain critical or high CVEs with public exploits. An attacker can exploit these vulnerabilities to achieve container escape, privilege escalation inside the container, or lateral movement across the cluster.
+
+
+<<cloud-container-registry-public,[.ElevatedRisk]#Elevated: *Cloud Container - Container Registry Publicly Accessible*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Publicly accessible images expose application source code, embedded configuration, and potentially secrets baked into image layers. Attackers can identify unpatched vulnerabilities in the exact versions deployed in production and craft targeted exploits. Images may also contain proprietary business logic.
+
+
+<<cloud-managed-db-no-encryption,[.ElevatedRisk]#Elevated: *Cloud Data - Managed Database Without Encryption at Rest*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Unencrypted database files and their automated snapshots can be mounted and read outside the database engine. Snapshot sharing misconfigurations (a common accidental exposure) bypass all access controls when the data is unencrypted.
+
+
+<<cloud-api-gateway-no-rate-limiting,[.ElevatedRisk]#Elevated: *Cloud Network - API Gateway Without Rate Limiting*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Without rate limiting, a determined attacker or misconfigured client can trigger denial of service through cost amplification (serverless per-invocation billing), exhaust backend connection pools, or perform credential stuffing attacks at thousands of attempts per second with no automated blocking.
+
+
+<<cloud-api-gateway-no-waf,[.ElevatedRisk]#Elevated: *Cloud Network - Internet-Facing API Gateway Without WAF Protection*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Without WAF protection, a single successful injection or exploitation of an unpatched vulnerability in a backend service can lead to data exfiltration, authentication bypass, or denial of service. WAF absence also means no geo-blocking or rate-limiting at the edge for volumetric attacks.
+
+
+<<cloud-serverless-overpermissive-role,[.ElevatedRisk]#Elevated: *Cloud Serverless - Function Execution Role Without Least-Privilege Restrictions*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+A compromised function with an overpermissive role allows privilege escalation: the attacker can create backdoor IAM users, exfiltrate data from other services, pivot to other accounts, or destroy infrastructure. The blast radius equals the IAM role's permissions scope.
+
+
+<<cloud-serverless-no-dlq,[.ElevatedRisk]#Elevated: *Cloud Serverless - Function Without Dead Letter Queue for PII Processing*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Failed PII processing events are permanently lost without a DLQ. This can result in undetected data loss, compliance violations (incomplete data processing records), and inability to audit what data was received and what was processed during an incident.
+
+
+<<cloud-object-storage-no-encryption,[.ElevatedRisk]#Elevated: *Cloud Storage - Object Storage Without Encryption at Rest*: 2 Remaining Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Unencrypted data in cloud storage can be read by anyone with low-level storage access, including support staff, exfiltrated via cloud-provider vulnerabilities, or copied via signed URL leaks. In a breach scenario, unencrypted data requires mandatory notification under GDPR, HIPAA, and PCI-DSS.
+
+
+<<lateral-movement-shared-runtime,[.ElevatedRisk]#Elevated: *Lateral Movement via Shared Runtime*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+An attacker who compromises any asset on the shared runtime may pivot to other co-located assets, including those in higher trust zones.
+
+<<missing-authentication,[.ElevatedRisk]#Elevated: *Missing Authentication*: 2 Remaining Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access or modify sensitive data in an unauthenticated way.
+
+<<missing-cloud-hardening,[.ElevatedRisk]#Elevated: *Missing Cloud Hardening*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Very High_ impact.#>>::
+If this risk is unmitigated, attackers might access cloud components in an unintended way.
+
+<<missing-csp-header,[.ElevatedRisk]#Elevated: *Missing Content-Security-Policy Header on Web Entry Point*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+An attacker who successfully injects client-side script can exfiltrate authentication tokens, impersonate users, and access all data the victim can access. Without CSP, there is no browser-enforced barrier against inline script execution or data exfiltration.
+
+
+<<missing-hardening,[.ElevatedRisk]#Elevated: *Missing Hardening*: 3 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk remains unmitigated, attackers might be able to easier attack high-value targets.
+
+<<path-traversal,[.ElevatedRisk]#Elevated: *Path-Traversal*: 3 Remaining Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to read sensitive files (configuration data, key/credential files, deployment files, business data files, etc.) from the filesystem of affected components.
+
+<<sql-nosql-injection,[.ElevatedRisk]#Elevated: *SQL/NoSQL-Injection*: 2 Remaining Risks - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.
+
+<<server-side-request-forgery,[.ElevatedRisk]#Elevated: *Server-Side Request Forgery (SSRF)*: 8 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.
+
+<<unencrypted-communication,[.ElevatedRisk]#Elevated: *Unencrypted Communication*: 4 Remaining Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, network attackers might be able to to eavesdrop on unencrypted sensitive data sent between components.
+
+<<unguarded-access-from-internet,[.ElevatedRisk]#Elevated: *Unguarded Access From Internet*: 5 Remaining Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive systems without any hardening components in-between due to them being directly exposed on the internet.
+
+<<unguarded-direct-datastore-access,[.ElevatedRisk]#Elevated: *Unguarded Direct Datastore Access*: 3 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.
+
+<<accidental-secret-leak,[.MediumRisk]#Medium: *Accidental Secret Leak*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers which have access to affected sourcecode repositories or artifact registries might find secrets accidentally checked-in.
+
+<<cloud-object-storage-no-versioning,[.MediumRisk]#Medium: *Cloud Storage - Object Storage Without Versioning for Strictly-Confidential Data*: 2 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+Without versioning, a single authorized or unauthorized write or delete permanently destroys the only copy of critical data. Ransomware actors specifically target unversioned buckets to maximize recovery leverage.
+
+
+<<code-backdooring,[.MediumRisk]#Medium: *Code Backdooring*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk remains unmitigated, attackers might be able to execute code on and completely takeover production environments.
+
+<<container-baseimage-backdooring,[.MediumRisk]#Medium: *Container Base Image Backdooring*: 7 Remaining Risks - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to deeply persist in the target system by executing code in deployed containers.
+
+<<container-platform-escape,[.MediumRisk]#Medium: *Container Platform Escape*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers which have successfully compromised a container (via other vulnerabilities) might be able to deeply persist in the target system by executing code in many deployed containers and the container platform itself.
+
+<<missing-build-infrastructure,[.MediumRisk]#Medium: *Missing Build Infrastructure*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model due to critical build infrastructure components missing in the model.
+
+<<missing-cloud-hardening,[.MediumRisk]#Medium: *Missing Cloud Hardening*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Very High_ impact.#>>::
+If this risk is unmitigated, attackers might access cloud components in an unintended way.
+
+<<missing-identity-store,[.MediumRisk]#Medium: *Missing Identity Store*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model in the identity provider/store that is currently missing in the model.
+
+<<missing-authentication-second-factor,[.MediumRisk]#Medium: *Missing Two-Factor Authentication (2FA)*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access or modify highly sensitive data without strong authentication.
+
+<<missing-vault,[.MediumRisk]#Medium: *Missing Vault (Secret Storage)*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to easier steal config secrets (like credentials, private keys, client certificates, etc.) once a vulnerability to access files is present and exploited.
+
+<<missing-waf,[.MediumRisk]#Medium: *Missing Web Application Firewall (WAF)*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to apply standard attack pattern tests at great speed without any filtering.
+
+<<mixed-targets-on-shared-runtime,[.MediumRisk]#Medium: *Mixed Targets on Shared Runtime*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers successfully attacking other components of the system might have an easy path towards more valuable targets, as they are running on the same shared runtime.
+
+<<server-side-request-forgery,[.MediumRisk]#Medium: *Server-Side Request Forgery (SSRF)*: 8 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.
+
+<<unchecked-deployment,[.MediumRisk]#Medium: *Unchecked Deployment*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk remains unmitigated, vulnerabilities in custom-developed software or their dependencies might not be identified during continuous deployment cycles.
+
+<<unencrypted-asset,[.MediumRisk]#Medium: *Unencrypted Technical Assets*: 5 Remaining Risks - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access unencrypted data when successfully compromising sensitive components.
+
+<<unguarded-access-from-internet,[.MediumRisk]#Medium: *Unguarded Access From Internet*: 5 Remaining Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive systems without any hardening components in-between due to them being directly exposed on the internet.
+
+<<unguarded-direct-datastore-access,[.MediumRisk]#Medium: *Unguarded Direct Datastore Access*: 3 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.
+
+<<dos-risky-access-across-trust-boundary,[.LowRisk]#Low: *DoS-risky Access Across Trust-Boundary*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Low_ impact.#>>::
+If this risk remains unmitigated, attackers might be able to disturb the availability of important parts of the system.
+
+<<unchecked-deployment,[.LowRisk]#Low: *Unchecked Deployment*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk remains unmitigated, vulnerabilities in custom-developed software or their dependencies might not be identified during continuous deployment cycles.
+
+<<unnecessary-technical-asset,[.LowRisk]#Low: *Unnecessary Technical Asset*: 2 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Low_ impact.#>>::
+If this risk is unmitigated, attackers might be able to target unnecessary technical assets.
+

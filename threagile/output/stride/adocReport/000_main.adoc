@@ -19,8 +19,10 @@ include::035_AssetRegister.adoc[leveloffset=+1]
 include::040_ImpactRemainingRisks.adoc[leveloffset=+1]
 <<<
 include::050_TargetDescription.adoc[leveloffset=+1]
+[page-layout=landscape]
 <<<
 include::060_DataFlowDiagram.adoc[leveloffset=+1]
+[page-layout=portrait]
 <<<
 include::070_SecurityRequirements.adoc[leveloffset=+1]
 <<<

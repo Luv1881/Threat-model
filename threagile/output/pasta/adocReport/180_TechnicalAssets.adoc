@@ -1,11 +1,11 @@
 = Identified Risks by Technical Asset
-In total *5 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *3 as elevated*, *2 as medium*, and *0 as low*. 
+In total *12 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *11 as elevated*, *0 as medium*, and *1 as low*. 
 
-These risks are distributed across *6 in-scope technical assets*. 
+These risks are distributed across *18 in-scope technical assets*. 
 The following sub-chapters of this section describe each identified risk grouped by technical asset. 
 The RAA value of a technical asset is the calculated "Relative Attacker Attractiveness" value in percent.
 [[api-server]]
-== [.ElevatedRisk]#API Server: 2/2 unmitigated Risks#
+== [.ElevatedRisk]#API Server: 1/1 unmitigated Risk#
 === Description
 Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD on notes, file uploads to MinIO. Bridges the frontend and backend networks. Single most security-critical component — compromise equals full data access.
 
@@ -24,24 +24,6 @@ Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD on notes, fi
 |===
 
 
-==== [.ElevatedRisk]#Medium Risk Severity#
-
-[.ElevatedRisk]#*No Build Pipeline Security*: custom-developed asset *API Server* has no SAST or dependency scanning: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
-
-<<custom-development-no-sast,[SmallGrey]#custom-development-no-sast@api-server#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-| [.RiskStatusInProgress.small]#In Progress#
-| [.GreyText.small]#2026-04-25#
-| [.GreyText.small]#Security Team#
-| [.GreyText.small]#VAULT-121#
-
-4+|[.small]#SAST tooling (Semgrep with Node.js ruleset) is integrated into the GitHub Actions pipeline but the full security rule set is not yet enabled. Remaining rule categories (injection, secrets, SSRF) are being evaluated for false-positive rates. Target: sprint 21.
-#
-|===
-
-
 <<<
 
 === Asset Information
@@ -50,8 +32,8 @@ Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD on notes, fi
 |===
 | ID:             3+| api-server
 | Type:             | process| Usage: | business
-| RAA:              | 82 %| Size: | service
-| Technology:       | web-service-rest| Tags: | express, jwt, nodejs
+| RAA:              | 44 %| Size: | service
+| Technology:       | web-service-rest| Tags: | express, jwt, nodejs, trike-trust-level-admin
 | Internet:         | false| Machine: | container
 | Encryption:       | none| Multi-Tenant: | false
 | Redundant:        | false| Custom-Developed: | true
@@ -112,7 +94,7 @@ INTENTIONAL MISCONFIGURATION: S3 API calls to MinIO over plain HTTP. Default min
 | Data Sent:      | File Attachments| Data Received:  | File Attachments
 |===
 
-=== Incoming Communication Links: 1
+=== Incoming Communication Links: 2
 ==== HTTP to API Server (incoming)
 INTENTIONAL MISCONFIGURATION: Traffic between Nginx and the API server uses plaintext HTTP. An attacker with access to the Docker network (container escape, compromised sidecar) can intercept credentials, session tokens, and note content in transit.
 
@@ -126,8 +108,238 @@ INTENTIONAL MISCONFIGURATION: Traffic between Nginx and the API server uses plai
 | Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
 |===
 
+==== Route to ECS API (incoming)
+HTTP forward from API Gateway to the ECS-hosted API containers via ALB. Traffic is within the AWS VPC — no public routing for backend traffic.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<aws-api-gateway,AWS API Gateway>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | none
+| Authorization:  | none| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | true
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+[[aws-api-gateway]]
+== [.ElevatedRisk]#AWS API Gateway: 1/1 unmitigated Risk#
+=== Description
+AWS API Gateway (HTTP API) fronting the ECS API containers in production. Routes traffic from the ALB to backend ECS tasks. INTENTIONAL: No usage plan or throttling policy configured. No WAF association on the API gateway stage. Auth relies entirely on the API server (JWT) — no gateway-level auth enforcement.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Undocumented Entry Point*: *AWS API Gateway* is internet-exposed but has no entry_point_type declared: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<undocumented-entry-point,[SmallGrey]#undocumented-entry-point@aws-api-gateway#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| aws-api-gateway
+| Type:             | process| Usage: | business
+| RAA:              | 30 %| Size: | service
+| Technology:       | cloud-api-gateway| Tags: | api-gateway, aws, cloud-native
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | true| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| File Attachments, Note Content, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | API gateway is the single internet entry point in production. No rate limiting = credential stuffing and cost amplification risk. WAF absence leaves XSS/SQLi traffic unfiltered before it reaches the API.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== Route to ECS API (outgoing)
+HTTP forward from API Gateway to the ECS-hosted API containers via ALB. Traffic is within the AWS VPC — no public routing for backend traffic.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<api-server,API Server>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | none
+| Authorization:  | none| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | true
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+[[container-registry]]
+== [.ElevatedRisk]#AWS ECR Container Registry: 2/2 unmitigated Risks#
+=== Description
+AWS Elastic Container Registry storing VaultNote Docker images (api, nginx). INTENTIONAL: Image vulnerability scanning is disabled (ECR Basic scanning only, not Enhanced/Inspector). Images are not signed — no Cosign/Sigstore policy enforced. Repository is private but no admission controller validates signatures at deploy time.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Internet-Reachable Datastore*: *AWS ECR Container Registry* can be reached from an internet-exposed asset with no application-tier separation: Exploitation likelihood is _Likely_ with _Very High_ impact.#
+
+<<internet-reachable-datastore,[SmallGrey]#internet-reachable-datastore@container-registry#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Undocumented Entry Point*: *AWS ECR Container Registry* is internet-exposed but has no entry_point_type declared: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<undocumented-entry-point,[SmallGrey]#undocumented-entry-point@container-registry#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| container-registry
+| Type:             | datastore| Usage: | devops
+| RAA:              | 9 %| Size: | service
+| Technology:       | container-registry| Tags: | aws, ecr, supply-chain
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | File
+| Data Processed: 3+| Build Artifacts
+| Data Stored:    3+| Build Artifacts
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Container registry is the final source of truth for deployed images. Tampering with registry contents (image swap or layer injection) propagates malicious code to every deployment. No signing verification means a registry compromise is undetectable until damage is done.
+
+|===
+
+=== Incoming Communication Links: 2
+==== Push Image to Registry (incoming)
+docker push to AWS ECR after build completes. Images are tagged with the git commit SHA and pushed without cryptographic signing (no Cosign step).
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<build-pipeline,GitHub Actions Build Pipeline>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Build Artifacts| Data Received:  | [GrayText]#none#
+|===
+
+==== Pull Images from ECR (incoming)
+ECS task pulls Docker images from ECR at task launch. Images are not verified against signatures before execution.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<ecs-platform,ECS Container Platform>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | true
+| Data Sent:      | [GrayText]#none#| Data Received:  | Build Artifacts
+|===
+
+[[aws-ses]]
+== [.ElevatedRisk]#AWS SES: 1/1 unmitigated Risk#
+=== Description
+AWS Simple Email Service used for transactional email delivery (note-share invitations, account verification). Managed service — not custom-developed. SES sending identity (domain) is verified; DKIM and SPF records are configured. No dedicated sending quota alarm; a compromised Lambda could exhaust the daily send limit and cause notification delivery failure.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Undocumented Entry Point*: *AWS SES* is internet-exposed but has no entry_point_type declared: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<undocumented-entry-point,[SmallGrey]#undocumented-entry-point@aws-ses#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| aws-ses
+| Type:             | process| Usage: | business
+| RAA:              | 0 %| Size: | service
+| Technology:       | mail-server| Tags: | aws, cloud-native, email, ses
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | true| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Notification Payloads
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | operational<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | SES handles PII (email addresses). Sending quota exhaustion prevents delivery of account verification emails, blocking user registration. Email spoofing via insufficient SPF/DKIM/DMARC alignment is possible if domain records are misconfigured.
+
+|===
+
+=== Incoming Communication Links: 1
+==== SES Email Send (incoming)
+Lambda calls AWS SES to deliver transactional emails. IAM role grants ses:SendEmail only; no SendRawEmail permission. No SES sending rate limit configured on the IAM policy — a compromised Lambda could exhaust the SES daily quota.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<lambda-notifier,Lambda Email Notifier>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Notification Payloads| Data Received:  | [GrayText]#none#
+|===
+
 [[browser-spa]]
-== [.ElevatedRisk]#Browser SPA: 2/2 unmitigated Risks#
+== [.ElevatedRisk]#Browser SPA: 1/1 unmitigated Risk#
 === Description
 React Single Page Application served from Nginx. Users authenticate, manage notes, and upload files through this interface.
 
@@ -146,24 +358,6 @@ React Single Page Application served from Nginx. Users authenticate, manage note
 |===
 
 
-==== [.ElevatedRisk]#Medium Risk Severity#
-
-[.ElevatedRisk]#*No Build Pipeline Security*: custom-developed asset *Browser SPA* has no SAST or dependency scanning: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
-
-<<custom-development-no-sast,[SmallGrey]#custom-development-no-sast@browser-spa#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-| [.RiskStatusInProgress.small]#In Progress#
-| [.GreyText.small]#2026-04-25#
-| [.GreyText.small]#Security Team#
-| [.GreyText.small]#VAULT-121#
-
-4+|[.small]#Same Semgrep pipeline as api-server covers the React SPA source. ESLint security plugin (eslint-plugin-security) is configured but not yet enforced as a blocking check. Planned for sprint 21.
-#
-|===
-
-
 <<<
 
 === Asset Information
@@ -172,8 +366,8 @@ React Single Page Application served from Nginx. Users authenticate, manage note
 |===
 | ID:             3+| browser-spa
 | Type:             | external-entity| Usage: | business
-| RAA:              | 54 %| Size: | application
-| Technology:       | browser| Tags: | react, spa
+| RAA:              | 29 %| Size: | application
+| Technology:       | browser| Tags: | react, spa, trike-actor, trike-actor-untrusted
 | Internet:         | true| Machine: | physical
 | Encryption:       | none| Multi-Tenant: | false
 | Redundant:        | false| Custom-Developed: | true
@@ -206,6 +400,173 @@ User-initiated HTTPS requests carrying credentials (login) and note content (cre
 | Usage:          | business| Tags:           | [GrayText]#none#
 | VPN:            | false| IP-Filtered:    | false
 | Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+[[build-pipeline]]
+== [.ElevatedRisk]#GitHub Actions Build Pipeline: 1/1 unmitigated Risk#
+=== Description
+GitHub Actions CI/CD pipeline. Builds Docker images, runs tests, pushes to ECR. INTENTIONAL: No SBOM generation (no Syft or CycloneDX step configured). No build provenance attestation (no SLSA provenance step). Hardcoded AWS_SECRET_ACCESS_KEY in workflow environment variables.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Undocumented Entry Point*: *GitHub Actions Build Pipeline* is internet-exposed but has no entry_point_type declared: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<undocumented-entry-point,[SmallGrey]#undocumented-entry-point@build-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| build-pipeline
+| Type:             | process| Usage: | devops
+| RAA:              | 12 %| Size: | service
+| Technology:       | build-pipeline| Tags: | ci, github-actions, supply-chain
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | File
+| Data Processed: 3+| Build Artifacts
+| Data Stored:    3+| Build Artifacts
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Build pipeline is a privileged component — it has read access to secrets and write access to the container registry. Compromise = full supply chain injection. No SBOM means post-build vulnerability tracking is impossible.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== Push Image to Registry (outgoing)
+docker push to AWS ECR after build completes. Images are tagged with the git commit SHA and pushed without cryptographic signing (no Cosign step).
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<container-registry,AWS ECR Container Registry>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Build Artifacts| Data Received:  | [GrayText]#none#
+|===
+
+=== Incoming Communication Links: 1
+==== Push to Pipeline (incoming)
+Git push triggers GitHub Actions workflow. The webhook carries the commit SHA and branch reference to the CI runner.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<source-repo,VaultNote Source Repository>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Build Artifacts| Data Received:  | [GrayText]#none#
+|===
+
+[[llm-summarizer]]
+== [.ElevatedRisk]#LLM Note Summarizer: 2/2 unmitigated Risks#
+=== Description
+OpenAI-compatible LLM inference endpoint used to generate AI summaries of user notes on demand. Deployed as a containerised model proxy (LiteLLM) with a public API endpoint for testing. INTENTIONAL: Endpoint is internet-accessible and lacks authentication — the has-authentication tag is intentionally absent to demonstrate the finding. No adversarial input shield (Llama Guard or guardrails) is configured. System prompt contains internal business context visible to adversarial probing.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Weak Authentication*: internet-exposed entry point *LLM Note Summarizer* lacks strong authentication for confidential data: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<weak-auth-on-entry-point,[SmallGrey]#weak-auth-on-entry-point@llm-summarizer#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Low Risk Severity#
+
+[.ElevatedRisk]#*Missing Threat Scenario*: internet entry point *LLM Note Summarizer* has no documented threat scenario: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<missing-threat-scenario,[SmallGrey]#missing-threat-scenario@llm-summarizer#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| llm-summarizer
+| Type:             | process| Usage: | business
+| RAA:              | 20 %| Size: | service
+| Technology:       | llm-inference-endpoint| Tags: | ai, cloud-native, llm, openai
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| AI Model Responses, Embedding Vectors, Note Content
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | LLM endpoint processes user note content. Unauthenticated internet exposure allows arbitrary prompt submission, system prompt extraction via jailbreaks, and inference cost abuse. No guardrails means malicious inputs could generate harmful content or exfiltrate context window data.
+
+|===
+
+=== Outgoing Communication Links: 2
+==== Query Vector Store (outgoing)
+LLM retrieves relevant note chunks from the vector store to build RAG context. Similarity search over user-owned embeddings.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<vector-store,VaultNote Vector Store>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Embedding Vectors| Data Received:  | Note Content
+|===
+
+==== Call RAG Pipeline (outgoing)
+LLM inference endpoint triggers the RAG pipeline to build context from stored note embeddings before generating a summary response.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<rag-pipeline,Note RAG Pipeline>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Note Content| Data Received:  | Note Content
 |===
 
 [[nginx-proxy]]
@@ -242,7 +603,7 @@ Nginx terminates TLS and forwards all API traffic to the Express server over pla
 |===
 | ID:             3+| nginx-proxy
 | Type:             | process| Usage: | business
-| RAA:              | 2 %| Size: | service
+| RAA:              | 1 %| Size: | service
 | Technology:       | reverse-proxy| Tags: | nginx, tls-termination
 | Internet:         | false| Machine: | container
 | Encryption:       | none| Multi-Tenant: | false
@@ -292,6 +653,327 @@ User-initiated HTTPS requests carrying credentials (login) and note content (cre
 | Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
 |===
 
+[[source-repo]]
+== [.ElevatedRisk]#VaultNote Source Repository: 1/1 unmitigated Risk#
+=== Description
+GitHub repository hosting the VaultNote monorepo (API, frontend, Terraform). Contains application secrets in compose files (minioadmin credentials visible in git history) and Terraform state references. INTENTIONAL: No branch protection rules configured — developers push directly to main, bypassing review and signed-commit requirements.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Undocumented Entry Point*: *VaultNote Source Repository* is internet-exposed but has no entry_point_type declared: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<undocumented-entry-point,[SmallGrey]#undocumented-entry-point@source-repo#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| source-repo
+| Type:             | process| Usage: | business
+| RAA:              | 12 %| Size: | service
+| Technology:       | sourcecode-repository| Tags: | git, github, supply-chain
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | File
+| Data Processed: 3+| Build Artifacts
+| Data Stored:    3+| Build Artifacts
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Source code is the root of the supply chain. Integrity is critical — malicious code injected here propagates to every built artifact. May contain leaked secrets.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== Push to Pipeline (outgoing)
+Git push triggers GitHub Actions workflow. The webhook carries the commit SHA and branch reference to the CI runner.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<build-pipeline,GitHub Actions Build Pipeline>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Build Artifacts| Data Received:  | [GrayText]#none#
+|===
+
+[[vector-store]]
+== [.ElevatedRisk]#VaultNote Vector Store: 1/1 unmitigated Risk#
+=== Description
+Qdrant vector database storing embedding vectors for semantic search and RAG context retrieval. Vectors are generated by the embedding service from user note content. INTENTIONAL: No encryption at rest configured (encryption: none). The vector store is queryable by the LLM pipeline and the API server without row-level isolation — all user embeddings share the same collection. No access control list separates per-user embedding queries.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Internet-Reachable Datastore*: *VaultNote Vector Store* can be reached from an internet-exposed asset with no application-tier separation: Exploitation likelihood is _Likely_ with _Very High_ impact.#
+
+<<internet-reachable-datastore,[SmallGrey]#internet-reachable-datastore@vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| vector-store
+| Type:             | datastore| Usage: | business
+| RAA:              | 26 %| Size: | service
+| Technology:       | vector-store| Tags: | ai, criticality-high, embeddings, information-asset-container, qdrant
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Embedding Vectors, Note Content
+| Data Stored:    3+| Embedding Vectors
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | operational<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Embedding vectors encode semantic information from user notes. Even without raw text, vectors can be used to infer content via inversion attacks. Unencrypted storage and lack of per-user access control create cross-tenant leakage risk.
+
+|===
+
+=== Incoming Communication Links: 2
+==== Retrieve from Vector Store (incoming)
+RAG pipeline queries the vector store for nearest-neighbor embeddings to build context chunks. Returns raw embedding text — no content filtering before injection into LLM context.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<rag-pipeline,Note RAG Pipeline>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Embedding Vectors| Data Received:  | Note Content
+|===
+
+==== Query Vector Store (incoming)
+LLM retrieves relevant note chunks from the vector store to build RAG context. Similarity search over user-owned embeddings.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<llm-summarizer,LLM Note Summarizer>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Embedding Vectors| Data Received:  | Note Content
+|===
+
+[[rds-postgresql]]
+== AWS RDS PostgreSQL: 0 mitigated Risks
+=== Description
+AWS RDS PostgreSQL instance (production). Replaces the Docker-based PostgreSQL in production deployments. Automated backups enabled (7-day retention). INTENTIONAL: Encryption at rest is disabled (storage_encrypted = false in Terraform). Public accessibility is off but subnet group is in app subnet (not data subnet), creating potential exposure via compromised app instances.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| rds-postgresql
+| Type:             | datastore| Usage: | business
+| RAA:              | 54 %| Size: | service
+| Technology:       | managed-database| Tags: | aws, cloud-native, criticality-high, has-automated-backup, information-asset-container, postgresql, rds
+| Internet:         | false| Machine: | virtual
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | true| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Note Content, User Credentials
+| Data Stored:    3+| Note Content, User Credentials
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | Production database stores all user PII and note content. Encryption disabled means RDS snapshot exfiltration exposes all data in plaintext. Snapshot sharing misconfiguration (a common AWS incident) bypasses all access controls.
+
+|===
+
+[[s3-notes-bucket]]
+== AWS S3 Notes Bucket: 0 mitigated Risks
+=== Description
+AWS S3 bucket storing file attachments for production deployments. Replaces MinIO S3-compatible storage in the cloud environment. Bucket is private (Block Public Access enabled) but server-side encryption is not configured. INTENTIONAL: SSE-S3 or SSE-KMS not enabled. Objects are stored unencrypted at the storage layer — provider-side access exposes raw data.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| s3-notes-bucket
+| Type:             | datastore| Usage: | business
+| RAA:              | 21 %| Size: | service
+| Technology:       | object-storage| Tags: | aws, cloud-native, criticality-high, information-asset-container, s3, third-party-shared
+| Internet:         | false| Machine: | virtual
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | true| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | File
+| Data Processed: 3+| File Attachments
+| Data Stored:    3+| File Attachments
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | S3 stores user-uploaded files which may contain sensitive documents. No SSE means provider-side access (support channel, storage engineer) reads raw data. third-party-shared because S3 is operated by AWS and subject to subprocessor data protection requirements. No DPA review completed.
+
+|===
+
+[[ecs-platform]]
+== ECS Container Platform: 0 mitigated Risks
+=== Description
+AWS ECS (Fargate) running the API and Nginx containers in production. INTENTIONAL: ECR Enhanced Scanning (Inspector v2) is not enabled. Running containers are not scanned post-deployment for newly disclosed CVEs. Container images are pulled from ECR without signature verification.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| ecs-platform
+| Type:             | process| Usage: | business
+| RAA:              | 100 %| Size: | service
+| Technology:       | container-platform| Tags: | aws, cloud-native, ecs, fargate
+| Internet:         | false| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | true| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Build Artifacts, Note Content, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | ECS runs the production API containers. Container escape or image tampering grants access to the application runtime and its mounted secrets. No image scanning means known CVEs in base images are undetected until exploitation.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== Pull Images from ECR (outgoing)
+ECS task pulls Docker images from ECR at task launch. Images are not verified against signatures before execution.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<container-registry,AWS ECR Container Registry>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | true
+| Data Sent:      | [GrayText]#none#| Data Received:  | Build Artifacts
+|===
+
+[[lambda-notifier]]
+== Lambda Email Notifier: 0 mitigated Risks
+=== Description
+AWS Lambda function that sends transactional emails (note-share invitations, account verification) triggered by SQS messages from the API server. Processes user email addresses (PII) and note titles in notification payloads. INTENTIONAL: No dead letter queue (DLQ) configured on the SQS event source. Failed notifications are silently dropped after 3 retries with no audit trail.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| lambda-notifier
+| Type:             | process| Usage: | business
+| RAA:              | 2 %| Size: | component
+| Technology:       | serverless-function| Tags: | aws, cloud-native, lambda, notifications
+| Internet:         | false| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Notification Payloads
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | operational<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Lambda processes email addresses and note titles. PII loss due to silent failure creates compliance issues (incomplete processing records). Overpermissive IAM role could be exploited to access other AWS resources.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== SES Email Send (outgoing)
+Lambda calls AWS SES to deliver transactional emails. IAM role grants ses:SendEmail only; no SendRawEmail permission. No SES sending rate limit configured on the IAM policy — a compromised Lambda could exhaust the SES daily quota.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<aws-ses,AWS SES>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Notification Payloads| Data Received:  | [GrayText]#none#
+|===
+
 [[minio-storage]]
 == MinIO Object Storage: 0 mitigated Risks
 === Description
@@ -308,8 +990,8 @@ S3-compatible object store for file attachments. INTENTIONAL MISCONFIGURATION: U
 |===
 | ID:             3+| minio-storage
 | Type:             | datastore| Usage: | business
-| RAA:              | 39 %| Size: | service
-| Technology:       | file-server| Tags: | intentional-misconfiguration, minio, object-storage, s3
+| RAA:              | 21 %| Size: | service
+| Technology:       | object-storage| Tags: | criticality-high, information-asset-container, intentional-misconfiguration, minio, object-storage, s3, third-party-shared
 | Internet:         | false| Machine: | container
 | Encryption:       | none| Multi-Tenant: | false
 | Redundant:        | false| Custom-Developed: | false
@@ -344,6 +1026,72 @@ INTENTIONAL MISCONFIGURATION: S3 API calls to MinIO over plain HTTP. Default min
 | Data Sent:      | File Attachments| Data Received:  | File Attachments
 |===
 
+[[rag-pipeline]]
+== Note RAG Pipeline: 0 mitigated Risks
+=== Description
+Retrieval-Augmented Generation pipeline that assembles context chunks from the vector store before forwarding to the LLM. Built on LangChain. INTENTIONAL: No input validation or injection guard on retrieved chunks (has-input-validation absent). A note containing prompt injection payloads could be retrieved as context and alter LLM behavior. No retrieval filtering — all results from the vector store are injected into context without relevance threshold or content sanitisation.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| rag-pipeline
+| Type:             | process| Usage: | business
+| RAA:              | 11 %| Size: | component
+| Technology:       | rag-pipeline| Tags: | ai, langchain, rag
+| Internet:         | false| Machine: | container
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Embedding Vectors, Note Content
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | RAG pipeline is the injection point between user-controlled note content and the LLM context window. Without input validation, a malicious note can manipulate the LLM into ignoring instructions, leaking system prompts, or generating harmful content on behalf of an attacker.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== Retrieve from Vector Store (outgoing)
+RAG pipeline queries the vector store for nearest-neighbor embeddings to build context chunks. Returns raw embedding text — no content filtering before injection into LLM context.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<vector-store,VaultNote Vector Store>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Embedding Vectors| Data Received:  | Note Content
+|===
+
+=== Incoming Communication Links: 1
+==== Call RAG Pipeline (incoming)
+LLM inference endpoint triggers the RAG pipeline to build context from stored note embeddings before generating a summary response.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<llm-summarizer,LLM Note Summarizer>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Note Content| Data Received:  | Note Content
+|===
+
 [[postgresql-db]]
 == PostgreSQL Database: 0 mitigated Risks
 === Description
@@ -360,8 +1108,8 @@ Primary relational datastore. Contains users table (email + bcrypt password hash
 |===
 | ID:             3+| postgresql-db
 | Type:             | datastore| Usage: | business
-| RAA:              | 100 %| Size: | service
-| Technology:       | database| Tags: | postgresql, relational
+| RAA:              | 54 %| Size: | service
+| Technology:       | database| Tags: | criticality-high, information-asset-container, postgresql, relational, third-party-shared
 | Internet:         | false| Machine: | container
 | Encryption:       | none| Multi-Tenant: | false
 | Redundant:        | false| Custom-Developed: | false
@@ -412,8 +1160,8 @@ In-memory store used as session store and JWT revocation list. INTENTIONAL MISCO
 |===
 | ID:             3+| redis-cache
 | Type:             | datastore| Usage: | business
-| RAA:              | 40 %| Size: | component
-| Technology:       | database| Tags: | cache, redis, session-store
+| RAA:              | 22 %| Size: | component
+| Technology:       | database| Tags: | cache, criticality-high, information-asset-container, redis, session-store
 | Internet:         | false| Machine: | container
 | Encryption:       | none| Multi-Tenant: | false
 | Redundant:        | false| Custom-Developed: | false

@@ -1,0 +1,134 @@
+= Impact Analysis Of 75 Remaining Risks In 34 Categories
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+The most prevalent impacts of the *75 remaining risks* (distributed over *34 risk categories*) are (taking the severity ratings into account and using the highest for each category)!{fn-risk-findings}
+
+<<exposed-default-credentials,[.HighRisk]#High: *Asset Using Known Default or Hardcoded Credentials*: 1 Remaining Risk - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
+Any attacker with network access can authenticate using default credentials, exfiltrate all stored data, modify records, or pivot into adjacent systems.
+
+
+<<sql-nosql-injection,[.HighRisk]#High: *SQL/NoSQL-Injection*: 2 Remaining Risks - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.
+
+<<ai-ml-inference-endpoint-no-auth,[.ElevatedRisk]#Elevated: *AI/ML - LLM Inference Endpoint Internet-Accessible Without Authentication*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Unauthenticated callers can issue arbitrary prompts, exhausting inference budgets, extracting system-prompt content through jailbreaks, and generating policy-violating content at scale. Fine-tuned or retrieval-augmented models may leak proprietary knowledge embedded in context. Downstream applications trusting LLM output may be manipulated via malicious public prompts.
+
+
+<<ai-ml-inference-logs-pii,[.ElevatedRisk]#Elevated: *AI/ML - LLM Inference Endpoint Logging PII Without Sanitization*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+PII persisted in inference logs is exposed to every engineer with logging access, log aggregation services, and any attacker who gains read access to the logging pipeline. Log retention policies typically keep this data for months or years, creating a long-lived secondary breach surface. Under GDPR, logging PII without a legal basis for the retention period constitutes a violation even if the primary processing is lawful.
+
+
+<<ai-ml-llm-api-key-hardcoded,[.ElevatedRisk]#Elevated: *AI/ML - LLM Inference Endpoint With Custom Code and No Secrets Manager*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+A leaked LLM API key enables unlimited inference billing charges until revoked, potential access to shared fine-tuned model outputs, and exfiltration of organization-specific system prompts if the key grants access to private model deployments. Keys leaked via version control history persist even after deletion from the current codebase and can be recovered from git history.
+
+
+<<ai-ml-adversarial-input-no-shield,[.ElevatedRisk]#Elevated: *AI/ML - LLM Inference Endpoint Without Input Shield Against Adversarial Inputs*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Without input shielding, attackers can use prompt injection to override system instructions, jailbreak content policies to generate prohibited content, or craft adversarial token sequences that cause unexpected model behaviour including context manipulation and data exfiltration through model-driven actions. Publicly accessible endpoints are continuously probed for new jailbreak techniques.
+
+
+<<ai-ml-inference-endpoint-no-rate-limiting,[.ElevatedRisk]#Elevated: *AI/ML - LLM Inference Endpoint Without Rate Limiting*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+An attacker or misconfigured client can issue thousands of high-token prompts per minute, exhausting per-period inference quotas, triggering cloud cost spikes in the thousands of dollars per hour, and starving legitimate traffic. Inference-budget exhaustion can also cascade to dependent applications that rely on the model for real-time decision-making.
+
+
+<<ai-ml-prompt-injection-rag-context,[.ElevatedRisk]#Elevated: *AI/ML - RAG Pipeline Without Input Validation Enabling Prompt Injection*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+A successful prompt injection can cause the LLM to ignore safety guardrails, exfiltrate content from the retrieved context to an attacker-controlled endpoint, generate harmful or false outputs that appear authoritative, or escalate privileges in agentic workflows where the LLM drives downstream actions.
+
+
+<<ai-ml-rag-no-retrieval-filtering,[.ElevatedRisk]#Elevated: *AI/ML - RAG Pipeline Without Retrieval Filtering*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Sensitive documents — including HR records, legal contracts, financial projections, and technical specifications — may be summarized and returned to users who should not have access to the source material. Confidential information disclosed via LLM paraphrasing is still a reportable breach under GDPR and HIPAA even though the original document is not directly returned.
+
+
+<<ai-ml-vector-store-no-encryption,[.ElevatedRisk]#Elevated: *AI/ML - Vector Store Without Encryption at Rest*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+An attacker with storage-layer access (cloud support, exfiltrated keys, physical media) can recover near-plaintext content from unencrypted embeddings using text inversion techniques. In a breach scenario, unencrypted embeddings of PII-containing documents require mandatory breach notification under GDPR and HIPAA.
+
+
+<<lateral-movement-shared-runtime,[.ElevatedRisk]#Elevated: *Lateral Movement via Shared Runtime*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+An attacker who compromises any asset on the shared runtime may pivot to other co-located assets, including those in higher trust zones.
+
+<<missing-authentication,[.ElevatedRisk]#Elevated: *Missing Authentication*: 2 Remaining Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access or modify sensitive data in an unauthenticated way.
+
+<<missing-cloud-hardening,[.ElevatedRisk]#Elevated: *Missing Cloud Hardening*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Very High_ impact.#>>::
+If this risk is unmitigated, attackers might access cloud components in an unintended way.
+
+<<missing-csp-header,[.ElevatedRisk]#Elevated: *Missing Content-Security-Policy Header on Web Entry Point*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+An attacker who successfully injects client-side script can exfiltrate authentication tokens, impersonate users, and access all data the victim can access. Without CSP, there is no browser-enforced barrier against inline script execution or data exfiltration.
+
+
+<<missing-hardening,[.ElevatedRisk]#Elevated: *Missing Hardening*: 3 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk remains unmitigated, attackers might be able to easier attack high-value targets.
+
+<<path-traversal,[.ElevatedRisk]#Elevated: *Path-Traversal*: 3 Remaining Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to read sensitive files (configuration data, key/credential files, deployment files, business data files, etc.) from the filesystem of affected components.
+
+<<sql-nosql-injection,[.ElevatedRisk]#Elevated: *SQL/NoSQL-Injection*: 2 Remaining Risks - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.
+
+<<server-side-request-forgery,[.ElevatedRisk]#Elevated: *Server-Side Request Forgery (SSRF)*: 8 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.
+
+<<unencrypted-communication,[.ElevatedRisk]#Elevated: *Unencrypted Communication*: 4 Remaining Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, network attackers might be able to to eavesdrop on unencrypted sensitive data sent between components.
+
+<<unguarded-access-from-internet,[.ElevatedRisk]#Elevated: *Unguarded Access From Internet*: 5 Remaining Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive systems without any hardening components in-between due to them being directly exposed on the internet.
+
+<<unguarded-direct-datastore-access,[.ElevatedRisk]#Elevated: *Unguarded Direct Datastore Access*: 3 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.
+
+<<accidental-secret-leak,[.MediumRisk]#Medium: *Accidental Secret Leak*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers which have access to affected sourcecode repositories or artifact registries might find secrets accidentally checked-in.
+
+<<code-backdooring,[.MediumRisk]#Medium: *Code Backdooring*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk remains unmitigated, attackers might be able to execute code on and completely takeover production environments.
+
+<<container-baseimage-backdooring,[.MediumRisk]#Medium: *Container Base Image Backdooring*: 7 Remaining Risks - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to deeply persist in the target system by executing code in deployed containers.
+
+<<container-platform-escape,[.MediumRisk]#Medium: *Container Platform Escape*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers which have successfully compromised a container (via other vulnerabilities) might be able to deeply persist in the target system by executing code in many deployed containers and the container platform itself.
+
+<<missing-build-infrastructure,[.MediumRisk]#Medium: *Missing Build Infrastructure*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model due to critical build infrastructure components missing in the model.
+
+<<missing-cloud-hardening,[.MediumRisk]#Medium: *Missing Cloud Hardening*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Very High_ impact.#>>::
+If this risk is unmitigated, attackers might access cloud components in an unintended way.
+
+<<missing-identity-store,[.MediumRisk]#Medium: *Missing Identity Store*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model in the identity provider/store that is currently missing in the model.
+
+<<missing-authentication-second-factor,[.MediumRisk]#Medium: *Missing Two-Factor Authentication (2FA)*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access or modify highly sensitive data without strong authentication.
+
+<<missing-vault,[.MediumRisk]#Medium: *Missing Vault (Secret Storage)*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to easier steal config secrets (like credentials, private keys, client certificates, etc.) once a vulnerability to access files is present and exploited.
+
+<<missing-waf,[.MediumRisk]#Medium: *Missing Web Application Firewall (WAF)*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to apply standard attack pattern tests at great speed without any filtering.
+
+<<mixed-targets-on-shared-runtime,[.MediumRisk]#Medium: *Mixed Targets on Shared Runtime*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers successfully attacking other components of the system might have an easy path towards more valuable targets, as they are running on the same shared runtime.
+
+<<server-side-request-forgery,[.MediumRisk]#Medium: *Server-Side Request Forgery (SSRF)*: 8 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.
+
+<<unchecked-deployment,[.MediumRisk]#Medium: *Unchecked Deployment*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk remains unmitigated, vulnerabilities in custom-developed software or their dependencies might not be identified during continuous deployment cycles.
+
+<<unencrypted-asset,[.MediumRisk]#Medium: *Unencrypted Technical Assets*: 5 Remaining Risks - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access unencrypted data when successfully compromising sensitive components.
+
+<<unguarded-access-from-internet,[.MediumRisk]#Medium: *Unguarded Access From Internet*: 5 Remaining Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive systems without any hardening components in-between due to them being directly exposed on the internet.
+
+<<unguarded-direct-datastore-access,[.MediumRisk]#Medium: *Unguarded Direct Datastore Access*: 3 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.
+
+<<dos-risky-access-across-trust-boundary,[.LowRisk]#Low: *DoS-risky Access Across Trust-Boundary*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Low_ impact.#>>::
+If this risk remains unmitigated, attackers might be able to disturb the availability of important parts of the system.
+
+<<unchecked-deployment,[.LowRisk]#Low: *Unchecked Deployment*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk remains unmitigated, vulnerabilities in custom-developed software or their dependencies might not be identified during continuous deployment cycles.
+
+<<unnecessary-technical-asset,[.LowRisk]#Low: *Unnecessary Technical Asset*: 2 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Low_ impact.#>>::
+If this risk is unmitigated, attackers might be able to target unnecessary technical assets.
+

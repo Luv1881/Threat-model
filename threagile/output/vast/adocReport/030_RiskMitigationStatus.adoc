@@ -22,12 +22,12 @@ The following chart gives a high-level overview of the risk tracking status (inc
       {"risk": "Medium (0)", "value": 0, "status": "Mitigated", "color": "#008F00"},
       {"risk": "Medium (0)", "value": 0, "status": "FalsePositive", "color": "#666666"},
 
-      {"risk": "Elevated (11)", "value": 0, "status": "Unchecked", "color": "#FF0000"},
-      {"risk": "Elevated (11)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
-      {"risk": "Elevated (11)", "value": 6, "status": "Accepted", "color": "#FF40FF"},
-      {"risk": "Elevated (11)", "value": 5, "status": "InProgress", "color": "#0000FF"},
-      {"risk": "Elevated (11)", "value": 0, "status": "Mitigated", "color": "#008F00"},
-      {"risk": "Elevated (11)", "value": 0, "status": "FalsePositive", "color": "#666666"},
+      {"risk": "Elevated (10)", "value": 0, "status": "Unchecked", "color": "#FF0000"},
+      {"risk": "Elevated (10)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
+      {"risk": "Elevated (10)", "value": 6, "status": "Accepted", "color": "#FF40FF"},
+      {"risk": "Elevated (10)", "value": 4, "status": "InProgress", "color": "#0000FF"},
+      {"risk": "Elevated (10)", "value": 0, "status": "Mitigated", "color": "#008F00"},
+      {"risk": "Elevated (10)", "value": 0, "status": "FalsePositive", "color": "#666666"},
 
       {"risk": "High (0)", "value": 0, "status": "Unchecked", "color": "#FF0000"},
       {"risk": "High (0)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
@@ -60,7 +60,7 @@ The following chart gives a high-level overview of the risk tracking status (inc
       },
       "legend" : {
         "title": "",
-        "labelExpr": "datum.label == \"Unchecked\" ? \"0 unchecked\" : datum.label == \"InDiscussion\" ? \"0 in discussion\" : datum.label == \"Accepted\" ? \"6 accepted\" : datum.label == \"InProgress\" ? \"5 in progress\" : datum.label == \"Mitigated\" ? \"0 mitigated\" : datum.label == \"FalsePositive\" ? \"0 false positive\" : \"\""
+        "labelExpr": "datum.label == \"Unchecked\" ? \"0 unchecked\" : datum.label == \"InDiscussion\" ? \"0 in discussion\" : datum.label == \"Accepted\" ? \"6 accepted\" : datum.label == \"InProgress\" ? \"4 in progress\" : datum.label == \"Mitigated\" ? \"0 mitigated\" : datum.label == \"FalsePositive\" ? \"0 false positive\" : \"\""
       }
     }
   }
@@ -68,7 +68,7 @@ The following chart gives a high-level overview of the risk tracking status (inc
 ....
 
 
-After removal of risks with status _mitigated_ and _false positive_ the following *11 remain unmitigated*:
+After removal of risks with status _mitigated_ and _false positive_ the following *10 remain unmitigated*:
 [cols="a,a",frame=none,grid=none]
 |===
 |
@@ -78,7 +78,7 @@ After removal of risks with status _mitigated_ and _false positive_ the followin
 pie showData
   "unmitigated critical risk" : 0
   "unmitigated high risk" : 0
-  "unmitigated elevated risk" : 11
+  "unmitigated elevated risk" : 10
   "unmitigated medium risk" : 0
   "unmitigated low risk" : 0
 ....
@@ -91,7 +91,7 @@ pie showData
   "business side related" : 0
   "architecture related" : 0
   "development related" : 0
-  "operations related" : 11
+  "operations related" : 10
 ....
 |===
 

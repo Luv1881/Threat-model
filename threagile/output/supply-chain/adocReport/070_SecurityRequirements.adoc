@@ -1,0 +1,8 @@
+= Security Requirements
+This chapter lists the custom security requirements which have been defined for the modeled target.
+
+
+
+
+
+_This list is not complete and regulatory or law relevant security requirements have to be taken into account as well. Also custom individual security requirements might exist for the project._

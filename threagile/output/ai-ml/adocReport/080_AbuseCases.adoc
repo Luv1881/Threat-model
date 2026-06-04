@@ -1,0 +1,8 @@
+= Abuse Cases
+This chapter lists the custom abuse cases which have been defined for the modeled target.
+
+
+
+
+
+_This list is not complete and regulatory or law relevant abuse cases have to be taken into account as well. Also custom individual abuse cases might exist for the project._

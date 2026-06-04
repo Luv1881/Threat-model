@@ -1,12 +1,16 @@
-= Impact Analysis Of 12 Remaining Risks In 5 Categories
+= Impact Analysis Of 28 Remaining Risks In 6 Categories
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
-The most prevalent impacts of the *12 remaining risks* (distributed over *5 risk categories*) are (taking the severity ratings into account and using the highest for each category)!{fn-risk-findings}
+The most prevalent impacts of the *28 remaining risks* (distributed over *6 risk categories*) are (taking the severity ratings into account and using the highest for each category)!{fn-risk-findings}
 
 <<data-disclosure-pii-unencrypted-link,[.ElevatedRisk]#Elevated: *Data Disclosure - Personal Data Transmitted Over Unencrypted Channel*: 2 Remaining Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
 Exposure of personal data to eavesdroppers, potential data breach notification obligations under GDPR Article 33, and significant regulatory penalties.
 
-<<detecting-no-audit-logging,[.ElevatedRisk]#Elevated: *Detectability - PII Flows Without Audit Logging*: 2 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+<<detecting-no-audit-logging,[.ElevatedRisk]#Elevated: *Detectability - PII Flows Without Audit Logging*: 6 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
 Inability to detect unauthorized access to personal data, failure to meet GDPR accountability obligations, and potential inability to meet breach notification deadlines.
+
+
+<<identifying-pii-stored-unencrypted,[.ElevatedRisk]#Elevated: *Identifiability - Personal Data Stored Without Encryption at Rest*: 6 Remaining Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Physical or logical access to unencrypted volumes directly exposes personal data, enabling identification of natural persons and constituting a reportable data breach.
 
 
 <<pii-client-side-storage,[.ElevatedRisk]#Elevated: *Non-Repudiation - PII or Auth Tokens Accessible in Browser-Side Storage*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
@@ -17,7 +21,7 @@ Stolen session tokens allow account takeover and impersonation. The original use
 Data subjects cannot exercise GDPR rights. Regulatory investigation risk and class-action exposure in jurisdictions with private right of action.
 
 
-<<linking-pii-multi-boundary,[.MediumRisk]#Medium: *Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries*: 6 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+<<linking-pii-multi-boundary,[.MediumRisk]#Medium: *Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries*: 12 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
 Aggregation of personal data enables profiling, re-identification, and violations of GDPR data minimisation and purpose limitation principles (Articles 5(1)(b) and 5(1)(c)).
 
 

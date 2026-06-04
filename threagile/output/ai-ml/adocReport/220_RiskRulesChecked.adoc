@@ -1,0 +1,869 @@
+= Risk Rules Checked by Threagile
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| Threagile Version:             | 1.0.0
+| Threagile Build Timestamp:     | 
+| Threagile Execution Timestamp: | 20260604113049
+| Model Filename:                | threagile.yaml
+| Model Hash (SHA256):           | 15d123b13753140c59d8c6698da83a704aebcacf211732f0ee2ef3b5931b60ef
+|===
+
+
+
+
+Threagile (see https://threagile.io[] for more details) is an open-source toolkit for agile threat modeling, created by Christian Schneider (https://christian-schneider.net[]): It allows to model an architecture with its assets in an agile fashion as a YAML file directly inside the IDE. Upon execution of the Threagile toolkit all standard risk rules (as well as individual custom rules if present) are checked against the architecture model. At the time the Threagile toolkit was executed on the model input file the following risk rules were checked:
+
+== Path-Traversal
+[.small]#path-traversal#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | When a filesystem is accessed Path-Traversal or Local-File-Inclusion (LFI) risks might arise. The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+| Detection:   | Filesystems accessed by in-scope callers.
+| Rating:      | The risk rating depends on the sensitivity of the data stored inside the technical asset.
+|===
+
+== Push instead of Pull Deployment
+[.small]#push-instead-of-pull-deployment#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | When comparing push-based vs. pull-based deployments from a security perspective, pull-based deployments improve the overall security of the deployment targets. Every exposed interface of a production system to accept a deployment increases the attack surface of the production system, thus a pull-based approach exposes less attack surface relevant interfaces.
+| Detection:   | Models with build pipeline components accessing in-scope targets of deployment (in a non-readonly way) which are not build-related components themselves.
+| Rating:      | The risk rating depends on the highest sensitivity of the deployment targets running custom-developed parts.
+|===
+
+== Lateral Movement via Transitive Data Flow Across Trust Boundaries
+[.small]#lateral-movement-transitive-access#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Lateral Movement
+| Description: | An asset in a low-trust zone communicates to a bridging asset, which in turn communicates to an asset in a high-trust zone. The bridging asset creates a transitive path that can be abused for lateral movement without the attacker ever directly connecting to the high-trust target.
+| Detection:   | Assets that receive communication from a low-trust zone AND send communication to a high-trust zone (the bridging pattern), where the high-trust target is more sensitive than the low-trust source.
+| Rating:      | High when the destination zone contains strictly-confidential or mission-critical assets.
+|===
+
+== Missing Content-Security-Policy Header on Web Entry Point
+[.small]#missing-csp-header#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Web entry points (reverse proxies and web applications) that serve browser-based clients and process authentication tokens without a Content-Security-Policy (CSP) header are vulnerable to XSS-facilitated token theft. An attacker who achieves XSS in the browser can read localStorage/sessionStorage tokens and replay them without any client-side protection if CSP is absent.
+
+| Detection:   | In-scope technical assets with reverse-proxy or web-application technology that process PII data assets and are not tagged with has-csp. The has-csp tag serves as the in-model confirmation that CSP is deployed and verified.
+
+| Rating:      | Medium baseline. Elevated when the application uses long-lived tokens (>1 h TTL) stored in browser-accessible storage, or when no WAF is present to block reflected XSS.
+
+|===
+
+== AI/ML - RAG Pipeline Without Input Validation Enabling Prompt Injection
+[.small]#ai-ml-prompt-injection-rag-context#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | RAG (Retrieval-Augmented Generation) pipelines that pass user-supplied text to the retrieval step and then into the LLM context without sanitizing or validating inputs are susceptible to prompt injection attacks. An adversary can craft inputs that manipulate the retrieval query, poison the retrieved context, or override the system prompt via retrieved documents containing embedded instructions. Indirect prompt injection through poisoned knowledge-base documents is a growing attack vector against enterprise RAG deployments.
+
+| Detection:   | In-scope technical assets with rag_pipeline technology that are not tagged with has-input-validation.
+
+| Rating:      | High for RAG pipelines that operate in agentic or multi-step workflows where LLM output drives downstream actions. Medium for read-only question-answering pipelines.
+
+|===
+
+== AI/ML - LLM Inference Endpoint Without Input Shield Against Adversarial Inputs
+[.small]#ai-ml-adversarial-input-no-shield#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | LLM inference endpoints that receive user-controlled inputs without an input shielding or guardrail layer are vulnerable to a broad class of adversarial inputs including prompt injection, jailbreak attempts, toxicity bypass, and adversarially crafted token sequences that trigger unexpected model behaviour. An input shield (content safety classifier, guardrail model, or structured parsing layer) provides a first line of defence before potentially dangerous inputs reach the core model.
+
+| Detection:   | In-scope technical assets with llm_inference_endpoint technology that are not tagged with has-input-shield.
+
+| Rating:      | High for all internet-facing LLM endpoints. Medium for internal endpoints where all callers are trusted and authenticated employees.
+
+|===
+
+== AI/ML - Multi-Tenant Vector Store Without Access Control
+[.small]#ai-ml-vector-store-no-access-control#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Multi-tenant vector stores that serve multiple organizational units, customers, or user groups without tenant-level access controls allow one tenant to retrieve embeddings and documents belonging to another tenant. In RAG deployments, a missing row-level security or namespace-level isolation layer means that a user in Tenant A can craft retrieval queries that return documents indexed from Tenant B's corpus, constituting a cross-tenant data breach.
+
+| Detection:   | In-scope technical assets with vector_store technology that have multi_tenant set to true and are not tagged with has-access-control.
+
+| Rating:      | High for all multi-tenant vector stores. Critical when tenants include different organizations or when the store indexes confidential or regulated data.
+
+|===
+
+== Search-Query Injection
+[.small]#search-query-injection#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | When a search engine server is accessed Search-Query Injection risks might arise.
+| Detection:   | In-scope clients accessing search engine servers via typical search access protocols.
+| Rating:      | The risk rating depends on the sensitivity of the search engine server itself and of the data assets processed.
+|===
+
+== Lateral Movement via Shared Runtime
+[.small]#lateral-movement-shared-runtime#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Lateral Movement
+| Description: | Technical assets from different trust zones co-located on the same shared runtime (e.g. container platform, VM host, shared Kubernetes namespace) create a lateral movement path: a compromised low-trust asset on the runtime can escalate to high-trust neighbours without traversing a network boundary.
+| Detection:   | Shared runtimes that host technical assets belonging to at least two distinct trust boundaries are flagged.
+| Rating:      | Severity depends on the sensitivity gap between the least and most sensitive co-located assets.
+|===
+
+== AI/ML - LLM Output Consumed by Custom Code Without Sandboxed Execution
+[.small]#ai-ml-llm-output-to-code-execution#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Custom-developed components that receive output from an LLM inference endpoint and execute that output as code, shell commands, or tool invocations without a sandboxed execution environment allow adversarially crafted LLM responses to achieve arbitrary code execution on the host. This pattern is common in agentic systems where the LLM drives a code interpreter, shell executor, or function-calling framework. Prompt injection into the LLM can translate directly into remote code execution if output is executed without sandboxing.
+
+| Detection:   | In-scope technical assets with custom_developed_parts that receive data flows from an LLM inference endpoint and are not tagged with has-sandboxed-execution.
+
+| Rating:      | Critical for components that execute LLM output as code or shell commands. High for agentic systems where the LLM drives tool invocations with external side effects.
+
+|===
+
+== Accidental Secret Leak
+[.small]#accidental-secret-leak#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Sourcecode repositories (including their histories) as well as artifact registries can accidentally contain secrets like checked-in or packaged-in passwords, API tokens, certificates, crypto keys, etc.
+| Detection:   | In-scope sourcecode repositories and artifact registries.
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== Cross-Site Scripting (XSS)
+[.small]#cross-site-scripting#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | For each web application Cross-Site Scripting (XSS) risks might arise. In terms of the overall risk level take other applications running on the same domain into account as well.
+| Detection:   | In-scope web applications.
+| Rating:      | The risk rating depends on the sensitivity of the data processed in the web application.
+|===
+
+== Missing Identity Propagation
+[.small]#missing-identity-propagation#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Technical assets (especially multi-tenant systems), which usually process data for end users should authorize every request based on the identity of the end user when the data flow is authenticated (i.e. non-public). For DevOps usages at least a technical-user authorization is required.
+| Detection:   | In-scope service-like technical assets which usually process data based on end user requests, if authenticated (i.e. non-public), should authorize incoming requests based on the propagated end user identity when their rating is sensitive. This is especially the case for all multi-tenant assets (there even less-sensitive rated ones). DevOps usages are exempted from this risk.
+| Rating:      | The risk rating (medium or high) depends on the confidentiality, integrity, and availability rating of the technical asset.
+|===
+
+== Lateral Movement via Service Account Scope Creep
+[.small]#lateral-movement-service-account-scope-creep#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Lateral Movement
+| Description: | A vault, identity provider, or service-account issuer that serves assets in multiple distinct trust zones creates a high-value pivot: compromising the identity provider grants credentials that are valid across all served trust zones.
+| Detection:   | Identity-provider or vault assets that have outgoing communication links to assets in at least two different trust boundaries.
+| Rating:      | High when any served trust zone contains sensitive or mission-critical assets.
+|===
+
+== Code Backdooring
+[.small]#code-backdooring#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | For each build pipeline component Code Backdooring risks might arise where attackers compromise the build pipeline in order to let backdoored artifacts be shipped into production. Aside from direct code backdooring this includes backdooring of dependencies and even of more lower-level build infrastructure, like backdooring compilers (similar to what the XcodeGhost malware did) or dependencies.
+| Detection:   | In-scope development relevant technical assets which are either accessed by out-of-scope unmanaged developer clients and/or are directly accessed by any kind of internet-located (non-VPN) component or are themselves directly located on the internet.
+| Rating:      | The risk rating depends on the confidentiality and integrity rating of the code being handled and deployed as well as the placement/calling of this technical asset on/from the internet.
+|===
+
+== AI/ML - LLM Inference Endpoint Logging PII Without Sanitization
+[.small]#ai-ml-inference-logs-pii#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | LLM inference endpoints that process data assets containing PII and lack log sanitization controls will capture personally identifiable information in inference request and response logs. Inference logs routinely contain full prompt text including user messages, retrieved document snippets, and model responses — all of which may contain PII. Without sanitization, these logs become an uncontrolled copy of sensitive data stored in logging infrastructure with often broader access than the primary data store.
+
+| Detection:   | In-scope technical assets with llm_inference_endpoint technology that process data assets containing PII and are not tagged with has-log-sanitization.
+
+| Rating:      | High for inference endpoints that process health, financial, or sensitive-category personal data. Medium for endpoints processing general PII such as names or email addresses.
+
+|===
+
+== Container Base Image Backdooring
+[.small]#container-baseimage-backdooring#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | When a technical asset is built using container technologies, Base Image Backdooring risks might arise where base images and other layers used contain vulnerable components or backdoors.
+| Detection:   | In-scope technical assets running as containers.
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets.
+|===
+
+== Incomplete Model
+[.small]#incomplete-model#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | When the threat model contains unknown technologies or transfers data over unknown protocols, this is an indicator for an incomplete model.
+| Detection:   | All technical assets and communication links with technology type or protocol type specified as unknown.
+| Rating:      | low
+|===
+
+== Unguarded Direct Datastore Access
+[.small]#unguarded-direct-datastore-access#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Data stores accessed across trust boundaries must be guarded by some protecting service or application.
+| Detection:   | In-scope technical assets of type datastore (except identity-store-ldap when accessed from identity-provider and file-server when accessed via file transfer protocols) with confidentiality rating of confidential (or higher) or with integrity rating of critical (or higher) which have incoming data-flows from assets outside across a network trust-boundary. DevOps config and deployment access is excluded from this risk.
+| Rating:      | The matching technical assets are at low risk. When either the confidentiality rating is strictly-confidential or the integrity rating is mission-critical, the risk-rating is considered medium. For assets with RAA values higher than 40 % the risk-rating increases.
+|===
+
+== Wrong Trust Boundary Content
+[.small]#wrong-trust-boundary-content#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | When a trust boundary of type network-policy-namespace-isolation contains non-container assets it is likely to be a model failure.
+| Detection:   | Trust boundaries which should only contain containers, but have different assets inside.
+| Rating:      | low
+|===
+
+== Missing Hardening
+[.small]#missing-hardening#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | Technical assets with a Relative Attacker Attractiveness (RAA) value of 55 % or higher should be explicitly hardened taking best practices and vendor hardening guides into account.
+| Detection:   | In-scope technical assets with RAA values of 55 % or higher. Generally for high-value targets like data stores, application servers, identity providers and ERP systems this limit is reduced to 40 %
+| Rating:      | The risk rating depends on the sensitivity of the data processed in the technical asset.
+|===
+
+== Unencrypted Communication
+[.small]#unencrypted-communication#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Due to the confidentiality and/or integrity rating of the data assets transferred over the communication link this connection must be encrypted.
+| Detection:   | Unencrypted technical communication links of in-scope technical assets (excluding monitoring traffic as well as local-file-access, in-process-library-call and inter-process-communication) transferring sensitive data.
+| Rating:      | Depending on the confidentiality rating of the transferred data-assets either medium or high risk.
+|===
+
+== AI/ML - LLM Inference Endpoint Without Rate Limiting
+[.small]#ai-ml-inference-endpoint-no-rate-limiting#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Denial of Service
+| Description: | LLM inference endpoints without rate limiting are vulnerable to prompt flooding attacks that exhaust token budgets, trigger runaway inference costs, and degrade or deny service to legitimate users. Because LLM inference is significantly more expensive per request than typical API calls, the absence of rate limiting creates disproportionate cost amplification risk compared to traditional services.
+
+| Detection:   | In-scope technical assets with llm_inference_endpoint technology that are not tagged with has-rate-limiting.
+
+| Rating:      | Medium baseline. Elevated to High when the inference endpoint is internet-accessible or when inference costs are billed at usage-based rates without a spend cap.
+
+|===
+
+== Container Platform Escape
+[.small]#container-platform-escape#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Container platforms are especially interesting targets for attackers as they host big parts of a containerized runtime infrastructure. When not configured and operated with security best practices in mind, attackers might exploit a vulnerability inside an container and escape towards the platform as highly privileged users. These scenarios might give attackers capabilities to attack every other container as owning the container platform (via container escape attacks) equals to owning every container.
+| Detection:   | In-scope container platforms.
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== Unencrypted Technical Assets
+[.small]#unencrypted-asset#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Due to the confidentiality rating of the technical asset itself and/or the stored data assets this technical asset must be encrypted. The risk rating depends on the sensitivity technical asset itself and of the data assets stored.
+| Detection:   | In-scope unencrypted technical assets (excluding reverse-proxy, load-balancer, waf, ids, ips and embedded components like library) storing data assets rated at least as confidential or critical. For technical assets storing data assets rated as strictly-confidential or mission-critical the encryption must be of type data-with-end-user-individual-key.
+| Rating:      | Depending on the confidentiality rating of the stored data-assets either medium or high risk.
+|===
+
+== XML External Entity (XXE)
+[.small]#xml-external-entity#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | When a technical asset accepts data in XML format, XML External Entity (XXE) risks might arise.
+| Detection:   | In-scope technical assets accepting XML data formats.
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed. Also for cloud-based environments the exploitation impact is at least medium, as cloud backend services can be attacked via SSRF (and XXE vulnerabilities are often also SSRF vulnerabilities).
+|===
+
+== AI/ML - ML Training Pipeline Processing PII Training Data
+[.small]#ai-ml-training-data-contains-pii#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | ML training pipelines that ingest data assets classified as training data and containing personally identifiable information create significant legal and technical risk. Models trained on PII can memorize and reproduce personal data in outputs (training data extraction attacks). GDPR Article 5(1)(b) purpose limitation and Article 22 requirements for automated decision-making may be violated if PII is used for training without an explicit legal basis. The EU AI Act requires transparency about training data containing personal data.
+
+| Detection:   | In-scope technical assets with ml_training_pipeline technology that process data assets marked as training data and containing PII.
+
+| Rating:      | High for all ML pipelines that use PII-containing training data. Critical when the training data includes health, financial, or sensitive-category personal data under GDPR Article 9.
+
+|===
+
+== AI/ML - RAG Pipeline Without Retrieval Filtering
+[.small]#ai-ml-rag-no-retrieval-filtering#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | RAG pipelines that inject all retrieved documents into the LLM context without filtering based on the caller's access level can expose documents the user is not authorized to read. When the vector store contains documents from multiple security domains or sensitivity levels, absence of retrieval filtering means a low-privileged user's query can surface confidential documents in the LLM's answer. This is analogous to a broken access control at the search layer.
+
+| Detection:   | In-scope technical assets with rag_pipeline technology that are not tagged with has-retrieval-filtering.
+
+| Rating:      | High for RAG pipelines that index documents from multiple security domains or user groups. Medium for single-tenant pipelines where all users have equivalent access.
+
+|===
+
+== Missing File Validation
+[.small]#missing-file-validation#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Spoofing
+| Description: | When a technical asset accepts files, these input files should be strictly validated about filename and type.
+| Detection:   | In-scope technical assets with custom-developed code accepting file data formats.
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== Missing Identity Store
+[.small]#missing-identity-store#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Spoofing
+| Description: | The modeled architecture does not contain an identity store, which might be the risk of a model missing critical assets (and thus not seeing their risks).
+| Detection:   | Models with authenticated data-flows authorized via end user identity missing an in-scope identity store.
+| Rating:      | The risk rating depends on the sensitivity of the end user-identity authorized technical assets and their data assets processed.
+|===
+
+== Unguarded Access From Internet
+[.small]#unguarded-access-from-internet#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Internet-exposed assets must be guarded by a protecting service, application, or reverse-proxy.
+| Detection:   | In-scope technical assets (excluding load-balancer) with confidentiality rating of confidential (or higher) or with integrity rating of critical (or higher) when accessed directly from the internet. All web-server, web-application, reverse-proxy, waf, and gateway assets are exempted from this risk when they do not consist of custom developed code and the data-flow only consists of HTTP or FTP protocols. Access from monitoring systems as well as VPN-protected connections are exempted.
+| Rating:      | The matching technical assets are at low risk. When either the confidentiality rating is strictly-confidential or the integrity rating is mission-critical, the risk-rating is considered medium. For assets with RAA values higher than 40 % the risk-rating increases.
+|===
+
+== AI/ML - Vector Store Without Encryption at Rest
+[.small]#ai-ml-vector-store-no-encryption#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Vector stores that persist embedding vectors without encryption at rest expose the semantic content of the original documents to anyone with low-level storage access. Although embedding vectors are not plaintext, recent research demonstrates that text can be reconstructed from embeddings with high fidelity using inversion attacks. Vector stores frequently hold embeddings of sensitive enterprise content (contracts, medical records, source code) ingested into RAG pipelines, making unencrypted storage a significant confidentiality risk.
+
+| Detection:   | In-scope technical assets with vector_store technology that have encryption set to none.
+
+| Rating:      | High when the vector store indexes embeddings of confidential, PII-containing, or proprietary documents. Medium for stores containing only public-domain content.
+
+|===
+
+== AI/ML - LLM Inference Endpoint With Custom Code and No Secrets Manager
+[.small]#ai-ml-llm-api-key-hardcoded#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Custom-developed code that calls an LLM inference endpoint often requires an API key or service credential. When the codebase lacks a dedicated secrets manager, developers frequently hard-code these credentials in source files, environment variable defaults, or configuration files checked into version control. A single committed API key can be scraped by automated tools within minutes of repository exposure, resulting in unauthorized LLM usage billed to the organization and potential access to sensitive model outputs.
+
+| Detection:   | In-scope technical assets with llm_inference_endpoint technology that have custom_developed_parts set to true and are not tagged with has-secrets-manager.
+
+| Rating:      | High for all LLM endpoints with custom-developed client code. Critical when the API key grants access to fine-tuned or private model deployments.
+
+|===
+
+== Cross-Site Request Forgery (CSRF)
+[.small]#cross-site-request-forgery#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Spoofing
+| Description: | When a web application is accessed via web protocols Cross-Site Request Forgery (CSRF) risks might arise.
+| Detection:   | In-scope web applications accessed via typical web access protocols.
+| Rating:      | The risk rating depends on the integrity rating of the data sent across the communication link.
+|===
+
+== Unnecessary Communication Link
+[.small]#unnecessary-communication-link#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | When a technical communication link does not send or receive any data assets, this is an indicator for an unnecessary communication link (or for an incomplete model).
+| Detection:   | In-scope technical assets' technical communication links not sending or receiving any data assets.
+| Rating:      | low
+|===
+
+== Lateral Movement via Credential Reuse Across Trust Boundaries
+[.small]#lateral-movement-credential-reuse#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Lateral Movement
+| Description: | Technical assets that authenticate via the same credential type (credentials, tokens) to targets in multiple distinct trust zones enable lateral movement: compromise of one credential grants access across zone boundaries without additional authentication.
+| Detection:   | Outgoing communication links that use credentials-based authentication and target assets in at least two different trust boundaries from the same source asset.
+| Rating:      | High when the target trust zones differ significantly in sensitivity. Medium otherwise.
+|===
+
+== Missing Cloud Hardening
+[.small]#missing-cloud-hardening#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | Cloud components should be hardened according to the cloud vendor best practices. This affects their configuration, auditing, and further areas.
+| Detection:   | In-scope cloud components (either residing in cloud trust boundaries or more specifically tagged with cloud provider types).
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== Missing Identity Provider Isolation
+[.small]#missing-identity-provider-isolation#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Highly sensitive identity provider assets and their identity data stores should be isolated from other assets by their own network segmentation trust-boundary (execution-environment boundaries do not count as network isolation).
+| Detection:   | In-scope identity provider assets and their identity data stores when surrounded by other (not identity-related) assets (without a network trust-boundary in-between). This risk is especially prevalent when other non-identity related assets are within the same execution environment (i.e. same database or same application server).
+| Rating:      | Default is high impact. The impact is increased to very-high when the asset missing the trust-boundary protection is rated as strictly-confidential or mission-critical.
+|===
+
+== Service Registry Poisoning
+[.small]#service-registry-poisoning#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Spoofing
+| Description: | When a service registry used for discovery of trusted service endpoints Service Registry Poisoning risks might arise.
+| Detection:   | In-scope service registries.
+| Rating:      | The risk rating depends on the sensitivity of the technical assets accessing the service registry as well as the data assets processed.
+|===
+
+== Missing Two-Factor Authentication (2FA)
+[.small]#missing-authentication-second-factor#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Technical assets (especially multi-tenant systems) should authenticate incoming requests with two-factor (2FA) authentication when the asset processes or stores highly sensitive data (in terms of confidentiality, integrity, and availability) and is accessed by humans.
+| Detection:   | In-scope technical assets (except load-balancer, reverse-proxy, waf, ids, and ips) should authenticate incoming requests via two-factor authentication (2FA) when the asset processes or stores highly sensitive data (in terms of confidentiality, integrity, and availability) and is accessed by a client used by a human user.
+| Rating:      | medium
+|===
+
+== Missing Build Infrastructure
+[.small]#missing-build-infrastructure#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | The modeled architecture does not contain a build infrastructure (devops-client, sourcecode-repo, build-pipeline, etc.), which might be the risk of a model missing critical assets (and thus not seeing their risks). If the architecture contains custom-developed parts, the pipeline where code gets developed and built needs to be part of the model.
+| Detection:   | Models with in-scope custom-developed parts missing in-scope development (code creation) and build infrastructure components (devops-client, sourcecode-repo, build-pipeline, etc.).
+| Rating:      | The risk rating depends on the highest sensitivity of the in-scope assets running custom-developed parts.
+|===
+
+== AI/ML - ML Training Pipeline With PII Training Data and No Differential Privacy
+[.small]#ai-ml-model-inversion-pii-risk#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | ML training pipelines that train on data assets flagged as both training data and PII-containing without applying differential privacy are vulnerable to model inversion and membership inference attacks. An adversary with API access to the deployed model can use gradient-based or output-based techniques to reconstruct training examples and determine whether specific individuals' data was used in training. GDPR's right to erasure (Article 17) and data minimization principle (Article 5) are at risk when PII is memorized in model parameters.
+
+| Detection:   | In-scope technical assets with ml_training_pipeline technology that process data assets with both is_training_data and has_pii set to true, and are not tagged with has-differential-privacy.
+
+| Rating:      | High for all training pipelines processing PII. Critical for health, financial, or biometric data covered by GDPR Article 9 or HIPAA.
+
+|===
+
+== AI/ML - Multi-Tenant LLM Inference Endpoint Without Tenant Isolation
+[.small]#ai-ml-shared-inference-multi-tenant#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | LLM inference endpoints that serve multiple tenants from a shared model instance without tenant isolation controls are vulnerable to cross-tenant context leakage. Shared system prompts, shared in-context caching, and shared conversation state can allow one tenant's confidential data or system instructions to leak into another tenant's responses. Prompt injection attacks that manipulate the system prompt are particularly dangerous in multi-tenant deployments because they can affect all tenants sharing the instance.
+
+| Detection:   | In-scope technical assets with llm_inference_endpoint technology that have multi_tenant set to true and are not tagged with has-tenant-isolation.
+
+| Rating:      | High for all multi-tenant LLM inference endpoints. Critical when tenants include different organizations or when the system prompt contains confidential tenant-specific instructions.
+
+|===
+
+== LDAP-Injection
+[.small]#ldap-injection#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | When an LDAP server is accessed LDAP-Injection risks might arise. The risk rating depends on the sensitivity of the LDAP server itself and of the data assets processed.
+| Detection:   | In-scope clients accessing LDAP servers via typical LDAP access protocols.
+| Rating:      | The risk rating depends on the sensitivity of the LDAP server itself and of the data assets processed.
+|===
+
+== SQL/NoSQL-Injection
+[.small]#sql-nosql-injection#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | When a database is accessed via database access protocols SQL/NoSQL-Injection risks might arise. The risk rating depends on the sensitivity technical asset itself and of the data assets processed.
+| Detection:   | Database accessed via typical database access protocols by in-scope clients.
+| Rating:      | The risk rating depends on the sensitivity of the data stored inside the database.
+|===
+
+== Unnecessary Data Transfer
+[.small]#unnecessary-data-transfer#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | When a technical asset sends or receives data assets, which it neither processes or stores this is an indicator for unnecessarily transferred data (or for an incomplete model). When the unnecessarily transferred data assets are sensitive, this poses an unnecessary risk of an increased attack surface.
+| Detection:   | In-scope technical assets sending or receiving sensitive data assets which are neither processed nor stored by the technical asset are flagged with this risk. The risk rating (low or medium) depends on the confidentiality, integrity, and availability rating of the technical asset. Monitoring data is exempted from this risk.
+| Rating:      | The risk assessment is depending on the confidentiality and integrity rating of the transferred data asset either low or medium.
+|===
+
+== Unnecessary Technical Asset
+[.small]#unnecessary-technical-asset#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | When a technical asset does not process any data assets, this is an indicator for an unnecessary technical asset (or for an incomplete model). This is also the case if the asset has no communication links (either outgoing or incoming).
+| Detection:   | Technical assets not processing or storing any data assets.
+| Rating:      | low
+|===
+
+== AI/ML - Model Weights Stored in Internet-Accessible Object Storage
+[.small]#ai-ml-model-weights-public-access#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Object storage buckets that are accessible from the internet and contain model weight files represent a direct intellectual property exfiltration risk. Model weights encode the organization's training investment and may memorize sensitive data from training corpora. Publicly accessible weights also enable adversaries to perform offline white-box attacks, including weight extraction, membership inference, and the construction of adversarial examples that bypass production safety guardrails.
+
+| Detection:   | In-scope technical assets with object_storage technology that are internet-accessible and receive data flows from assets tagged is_model_weights, and are not tagged with has-private-acl.
+
+| Rating:      | High for proprietary fine-tuned models. Critical when training data contained confidential or personally identifiable information.
+
+|===
+
+== Missing Network Segmentation
+[.small]#missing-network-segmentation#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Highly sensitive assets and/or data stores residing in the same network segment than other lower sensitive assets (like webservers or content management systems etc.) should be better protected by a network segmentation trust-boundary.
+| Detection:   | In-scope technical assets with high sensitivity and RAA values as well as data stores when surrounded by assets (without a network trust-boundary in-between) which are of type client-system, web-server, web-application, cms, web-service-rest, web-service-soap, build-pipeline, sourcecode-repository, monitoring, or similar and there is no direct connection between these (hence no requirement to be so close to each other).
+| Rating:      | Default is low risk. The risk is increased to medium when the asset missing the trust-boundary protection is rated as strictly-confidential or mission-critical.
+|===
+
+== AI/ML - Embedding Service Processing PII Internet-Accessible Without Access Control
+[.small]#ai-ml-embedding-service-pii-exposure#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Embedding services that generate vector representations of text or other data and are both internet-accessible and process PII-containing data assets, without access control, expose personally identifiable information to any actor who can call the embedding API. Embedding APIs receive the raw input text to be embedded, meaning every request contains the source content before it is converted to a vector. An unauthenticated or improperly authorized embedding endpoint is effectively an unauthenticated API for querying raw PII.
+
+| Detection:   | In-scope technical assets with embedding_service technology that process data assets containing PII, are internet-accessible, and are not tagged with has-access-control.
+
+| Rating:      | High for all internet-accessible embedding services processing PII. Critical when the service processes health, financial, or sensitive-category personal data.
+
+|===
+
+== AI/ML - ML Training Pipeline With Custom Code and Unpinned Base Images
+[.small]#ai-ml-ml-pipeline-unpinned-dependencies#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | ML training pipelines with custom-developed components that run container images without digest-pinned base images are vulnerable to silent supply-chain substitution. ML training images commonly depend on specific framework versions (PyTorch, TensorFlow, CUDA) that are referenced by mutable tags. If an upstream image publisher is compromised or changes the tag to point to a different layer, all subsequent training runs silently use the substituted image. This can result in backdoored models, exfiltrated training data, or training divergence due to dependency version drift.
+
+| Detection:   | In-scope technical assets with ml_training_pipeline technology that have custom_developed_parts set to true and are not tagged with has-pinned-base-images.
+
+| Rating:      | Medium baseline. Elevated to High when the training pipeline processes confidential or PII-containing training data, or when the resulting models are deployed in safety-critical or regulated systems.
+
+|===
+
+== DoS-risky Access Across Trust-Boundary
+[.small]#dos-risky-access-across-trust-boundary#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Denial of Service
+| Description: | Assets accessed across trust boundaries with critical or mission-critical availability rating are more prone to Denial-of-Service (DoS) risks.
+| Detection:   | In-scope technical assets (excluding load-balancer) with availability rating of critical or higher which have incoming data-flows across a network trust-boundary (excluding devops usage).
+| Rating:      | Matching technical assets with availability rating of critical or higher are at low risk. When the availability rating is mission-critical and neither a VPN nor IP filter for the incoming data-flow nor redundancy for the asset is applied, the risk-rating is considered medium.
+|===
+
+== Missing Authentication
+[.small]#missing-authentication#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Technical assets (especially multi-tenant systems) should authenticate incoming requests when the asset processes sensitive data. 
+| Detection:   | In-scope technical assets (except load-balancer, reverse-proxy, service-registry, waf, ids, and ips and in-process calls) should authenticate incoming requests when the asset processes sensitive data. This is especially the case for all multi-tenant assets (there even non-sensitive ones).
+| Rating:      | The risk rating (medium or high) depends on the sensitivity of the data sent across the communication link. Monitoring callers are exempted from this risk.
+|===
+
+== Untrusted Deserialization
+[.small]#untrusted-deserialization#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | When a technical asset accepts data in a specific serialized form (like Java or .NET serialization), Untrusted Deserialization risks might arise.
+| Detection:   | In-scope technical assets accepting serialization data formats (including EJB and RMI protocols).
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== AI/ML - ML Training Pipeline Without Data Versioning
+[.small]#ai-ml-training-data-no-versioning#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | ML training pipelines that do not version training datasets make it impossible to reproduce model training runs, audit what data was used to train a deployed model, or roll back to a known-good dataset after data poisoning is discovered. Without immutable, versioned dataset snapshots, an attacker who modifies training data can silently degrade model behaviour across all future training runs.
+
+| Detection:   | In-scope technical assets with ml_training_pipeline technology that are not tagged with has-data-versioning.
+
+| Rating:      | Medium baseline. Elevated when the training pipeline processes confidential data or when the trained model is deployed in a regulated or safety-critical context.
+
+|===
+
+== AI/ML - LLM Inference Endpoint Internet-Accessible Without Authentication
+[.small]#ai-ml-inference-endpoint-no-auth#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | LLM inference endpoints that are accessible from the internet without authentication allow any actor to query the model without restrictions. This exposes the organization to unauthorized inference costs, model misuse, content policy violations, and potential exfiltration of system prompts or fine-tuning data through adversarial querying. Unauthenticated LLM endpoints are frequently discovered and abused within hours of exposure.
+
+| Detection:   | In-scope technical assets with llm_inference_endpoint technology that are internet-accessible and not tagged with has-authentication.
+
+| Rating:      | High for all internet-exposed LLM endpoints. Critical when the model has access to proprietary data or is integrated into automated decision-making pipelines.
+
+|===
+
+== Missing Vault (Secret Storage)
+[.small]#missing-vault#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | In order to avoid the risk of secret leakage via config files (when attacked through vulnerabilities being able to read files like Path-Traversal and others), it is best practice to use a separate hardened process with proper authentication, authorization, and audit logging to access config secrets (like credentials, private keys, client certificates, etc.). This component is usually some kind of Vault.
+| Detection:   | Models without a Vault (Secret Storage).
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== Missing Vault Isolation
+[.small]#missing-vault-isolation#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Highly sensitive vault assets and their data stores should be isolated from other assets by their own network segmentation trust-boundary (execution-environment boundaries do not count as network isolation).
+| Detection:   | In-scope vault assets when surrounded by other (not vault-related) assets (without a network trust-boundary in-between). This risk is especially prevalent when other non-vault related assets are within the same execution environment (i.e. same database or same application server).
+| Rating:      | Default is medium impact. The impact is increased to high when the asset missing the trust-boundary protection is rated as strictly-confidential or mission-critical.
+|===
+
+== Missing Web Application Firewall (WAF)
+[.small]#missing-waf#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | To have a first line of filtering defense, security architectures with web-services or web-applications should include a WAF in front of them. Even though a WAF is not a replacement for security (all components must be secure even without a WAF) it adds another layer of defense to the overall system by delaying some attacks and having easier attack alerting through it.
+| Detection:   | In-scope web-services and/or web-applications accessed across a network trust boundary not having a Web Application Firewall (WAF) in front of them.
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== Unchecked Deployment
+[.small]#unchecked-deployment#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | For each build-pipeline component Unchecked Deployment risks might arise when the build-pipeline does not include established DevSecOps best-practices. DevSecOps best-practices scan as part of CI/CD pipelines for vulnerabilities in source- or byte-code, dependencies, container layers, and dynamically against running test systems. There are several open-source and commercial tools existing in the categories DAST, SAST, and IAST.
+| Detection:   | All development-relevant technical assets.
+| Rating:      | The risk rating depends on the highest rating of the technical assets and data assets processed by deployment-receiving targets.
+|===
+
+== Unnecessary Data Asset
+[.small]#unnecessary-data-asset#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | When a data asset is not processed by any data assets and also not transferred by any communication links, this is an indicator for an unnecessary data asset (or for an incomplete model).
+| Detection:   | Modelled data assets not processed by any data assets and also not transferred by any communication links.
+| Rating:      | low
+|===
+
+== Wrong Communication Link Content
+[.small]#wrong-communication-link-content#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | When a communication link is defined as readonly, but does not receive any data asset, or when it is defined as not readonly, but does not send any data asset, it is likely to be a model failure.
+| Detection:   | Communication links with inconsistent data assets being sent/received not matching their readonly flag or otherwise inconsistent protocols not matching the target technology type.
+| Rating:      | low
+|===
+
+== Asset Using Known Default or Hardcoded Credentials
+[.small]#exposed-default-credentials#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Technical assets tagged as intentional-misconfiguration that store confidential data represent an immediately exploitable attack vector. Default credentials (e.g. minioadmin/minioadmin, admin/admin, postgres/postgres) are published in vendor documentation and are the first credentials an attacker tries after reaching the service network.
+
+| Detection:   | In-scope technical assets tagged with intentional-misconfiguration that store data assets rated at confidential or above.
+
+| Rating:      | High severity — default credentials plus confidential stored data equals a trivial full data breach with no exploitation skill required.
+
+|===
+
+== AI/ML - LLM Output Used in Custom Code Without Output Validation
+[.small]#ai-ml-no-output-validation-before-action#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | Custom-developed components that receive output from an LLM inference endpoint and act on it without validating the output structure, content, or safety properties allow adversarially crafted LLM outputs to drive unintended downstream actions. In agentic workflows where LLM output is parsed as commands, JSON, code, or tool invocations, missing output validation is a primary enabler of indirect prompt injection, jailbreak-driven privilege escalation, and unintended automation actions.
+
+| Detection:   | In-scope technical assets with custom_developed_parts that receive data flows from an LLM inference endpoint and are not tagged with has-output-validation.
+
+| Rating:      | High for custom components that parse LLM output as commands, code, or structured action plans. Critical in fully agentic workflows with external side effects.
+
+|===
+
+== Server-Side Request Forgery (SSRF)
+[.small]#server-side-request-forgery#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | When a server system (i.e. not a client) is accessing other server systems via typical web protocols Server-Side Request Forgery (SSRF) or Local-File-Inclusion (LFI) or Remote-File-Inclusion (RFI) risks might arise. 
+| Detection:   | In-scope non-client systems accessing (using outgoing communication links) targets with either HTTP or HTTPS protocol.
+| Rating:      | The risk rating (low or medium) depends on the sensitivity of the data assets receivable via web protocols from targets within the same network trust-boundary as well on the sensitivity of the data assets receivable via web protocols from the target asset itself. Also for cloud-based environments the exploitation impact is at least medium, as cloud backend services can be attacked via SSRF.
+|===
+
+== Mixed Targets on Shared Runtime
+[.small]#mixed-targets-on-shared-runtime#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Different attacker targets (like frontend and backend/datastore components) should not be running on the same shared (underlying) runtime.
+| Detection:   | Shared runtime running technical assets of different trust-boundaries is at risk. Also mixing backend/datastore with frontend components on the same shared runtime is considered a risk.
+| Rating:      | The risk rating (low or medium) depends on the confidentiality, integrity, and availability rating of the technical asset running on the shared runtime.
+|===
+

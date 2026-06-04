@@ -1,22 +1,25 @@
 = STRIDE Classification of Identified Risks
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
 
-This chapter clusters and classifies the risks by STRIDE categories: In total *5 potential risks* have been identified during the threat modeling process of which *0 in the Spoofing* category, *2 in the Tampering* category, *0 in the Repudiation* category, *0 in the Information Disclosure* category, *3 in the Denial of Service* category, and *0 in the Elevation of Privilege* category.{fn-risk-findings}
+This chapter clusters and classifies the risks by STRIDE categories: In total *12 potential risks* have been identified during the threat modeling process of which *1 in the Spoofing* category, *0 in the Tampering* category, *0 in the Repudiation* category, *2 in the Information Disclosure* category, *3 in the Denial of Service* category, and *6 in the Elevation of Privilege* category.{fn-risk-findings}
 
 == Spoofing
-No risk identified.
+<<weak-auth-on-entry-point,[.ElevatedRisk]#Elevated: *Stage VI - Weak Authentication Strength on Internet-Exposed Entry Point*: 1/1 unmitigated Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Full account takeover, lateral movement into internal systems, and data exfiltration. Credential stuffing attacks against password-only endpoints succeed at statistically predictable rates given leaked credential databases.
+
+
 
 == Tampering
-<<custom-development-no-sast,[.MediumRisk]#Medium: *Stage II - Custom-Developed Asset With No Build Pipeline Security*: 2/2 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
-Injection vulnerabilities, insecure dependencies, hardcoded secrets, and other code-level weaknesses reach production without detection, widening the attack surface.
-
-
+No risk identified.
 
 == Repudiation
 No risk identified.
 
 == Information Disclosure
-No risk identified.
+<<internet-reachable-datastore,[.ElevatedRisk]#Elevated: *Stage VII - Internet-Reachable Datastore With No Mitigation*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _Very High_ impact.#>>::
+Mass data exfiltration of all stored records, ransomware encryption of datastores, complete loss of data integrity, and regulatory breach notification obligations.
+
+
 
 == Denial of Service
 <<per-operation-rate-limiting-missing,[.ElevatedRisk]#Elevated: *Stage V - Custom-Developed Service Without Per-Operation Rate Limiting*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
@@ -29,5 +32,12 @@ Brute-force attacks against authentication endpoints, mass data harvesting via e
 
 
 == Elevation of Privilege
-No risk identified.
+<<undocumented-entry-point,[.ElevatedRisk]#Elevated: *Stage III - Undocumented Application Entry Point*: 5/5 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Undocumented entry points are excluded from threat analysis, leaving unknown attack surface that attackers can exploit without detection or mitigation.
+
+
+<<missing-threat-scenario,[.LowRisk]#Low: *Stage I - No Threat Scenarios Defined for Internet-Exposed Entry Points*: 1/1 unmitigated Risk - Exploitation likelihood is _Unlikely_ with _Low_ impact.#>>::
+Without explicit threat actor profiles and attack scenarios, mitigations are chosen reactively rather than proactively, leaving systematic threat actor capabilities unaddressed.
+
+
 

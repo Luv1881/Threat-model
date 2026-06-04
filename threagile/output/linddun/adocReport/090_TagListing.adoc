@@ -2,23 +2,80 @@
 This chapter lists what tags are used by which elements.
 
 
+ai::
+  LLM Note Summarizer, Note RAG Pipeline, VaultNote Vector Store, AI Model Responses, Embedding Vectors, AI Services
+
+api-gateway::
+  AWS API Gateway
+
+aws::
+  AWS API Gateway, AWS ECR Container Registry, AWS RDS PostgreSQL, AWS S3 Notes Bucket, AWS SES, ECS Container Platform, Lambda Email Notifier, AWS Cloud
+
 cache::
   Redis Cache
+
+ci::
+  GitHub Actions Build Pipeline
+
+cloud-native::
+  AWS API Gateway, AWS RDS PostgreSQL, AWS S3 Notes Bucket, AWS SES, ECS Container Platform, LLM Note Summarizer, Lambda Email Notifier, AWS Cloud
 
 container-runtime::
   Docker Host
 
+criticality-high::
+  AWS RDS PostgreSQL, AWS S3 Notes Bucket, MinIO Object Storage, PostgreSQL Database, Redis Cache, VaultNote Vector Store
+
 docker::
   Docker Host
 
+ecr::
+  AWS ECR Container Registry
+
+ecs::
+  ECS Container Platform
+
+email::
+  AWS SES
+
+embeddings::
+  VaultNote Vector Store, Embedding Vectors
+
 express::
   API Server
+
+fargate::
+  ECS Container Platform
+
+git::
+  VaultNote Source Repository
+
+github::
+  VaultNote Source Repository
+
+github-actions::
+  GitHub Actions Build Pipeline
+
+has-automated-backup::
+  AWS RDS PostgreSQL
+
+information-asset-container::
+  AWS RDS PostgreSQL, AWS S3 Notes Bucket, MinIO Object Storage, PostgreSQL Database, Redis Cache, VaultNote Vector Store
 
 intentional-misconfiguration::
   MinIO File Storage, MinIO Object Storage, HTTP to API Server
 
 jwt::
   API Server
+
+lambda::
+  Lambda Email Notifier
+
+langchain::
+  Note RAG Pipeline
+
+llm::
+  LLM Note Summarizer
 
 minio::
   MinIO Object Storage
@@ -29,11 +86,29 @@ nginx::
 nodejs::
   API Server
 
+notifications::
+  Lambda Email Notifier
+
 object-storage::
   MinIO Object Storage
 
+openai::
+  LLM Note Summarizer
+
+pii::
+  Notification Payloads
+
 postgresql::
-  PostgreSQL Database
+  AWS RDS PostgreSQL, PostgreSQL Database
+
+qdrant::
+  VaultNote Vector Store
+
+rag::
+  Note RAG Pipeline
+
+rds::
+  AWS RDS PostgreSQL
 
 react::
   Browser SPA
@@ -45,7 +120,10 @@ relational::
   PostgreSQL Database
 
 s3::
-  MinIO Object Storage
+  AWS S3 Notes Bucket, MinIO Object Storage
+
+ses::
+  AWS SES
 
 session-store::
   Redis Cache
@@ -53,6 +131,21 @@ session-store::
 spa::
   Browser SPA
 
+supply-chain::
+  AWS ECR Container Registry, GitHub Actions Build Pipeline, VaultNote Source Repository, Build Artifacts, External CI/CD
+
+third-party-shared::
+  AWS S3 Notes Bucket, MinIO Object Storage, PostgreSQL Database
+
 tls-termination::
   Nginx Reverse Proxy
+
+trike-actor::
+  Browser SPA
+
+trike-actor-untrusted::
+  Browser SPA
+
+trike-trust-level-admin::
+  API Server
 

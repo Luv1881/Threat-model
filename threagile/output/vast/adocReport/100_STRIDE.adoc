@@ -1,7 +1,7 @@
 = STRIDE Classification of Identified Risks
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
 
-This chapter clusters and classifies the risks by STRIDE categories: In total *11 potential risks* have been identified during the threat modeling process of which *0 in the Spoofing* category, *0 in the Tampering* category, *3 in the Repudiation* category, *2 in the Information Disclosure* category, *3 in the Denial of Service* category, and *3 in the Elevation of Privilege* category.{fn-risk-findings}
+This chapter clusters and classifies the risks by STRIDE categories: In total *10 potential risks* have been identified during the threat modeling process of which *0 in the Spoofing* category, *0 in the Tampering* category, *2 in the Repudiation* category, *2 in the Information Disclosure* category, *3 in the Denial of Service* category, and *3 in the Elevation of Privilege* category.{fn-risk-findings}
 
 == Spoofing
 No risk identified.
@@ -10,7 +10,7 @@ No risk identified.
 No risk identified.
 
 == Repudiation
-<<operational-unmonitored-critical-process,[.ElevatedRisk]#Elevated: *Operational Threat - Critical Business Process Without Operational Monitoring*: 3/3 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+<<operational-unmonitored-critical-process,[.ElevatedRisk]#Elevated: *Operational Threat - Critical Business Process Without Operational Monitoring*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
 Undetected breaches, inability to investigate incidents, compliance failures, and violation of SLA accountability requirements.
 
 

@@ -1,7 +1,7 @@
 = Assignment by Function
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
 
-This chapter clusters and assigns the risks by functions which are most likely able to check and mitigate them: In total *11 potential risks* have been identified during the threat modeling process of which *0 should be checked by Business Side*, *0 should be checked by Architecture*, *0 should be checked by Development*, and *11 should be checked by Operations*.{fn-risk-findings}
+This chapter clusters and assigns the risks by functions which are most likely able to check and mitigate them: In total *10 potential risks* have been identified during the threat modeling process of which *0 should be checked by Business Side*, *0 should be checked by Architecture*, *0 should be checked by Development*, and *10 should be checked by Operations*.{fn-risk-findings}
 
 == Business Side
 
@@ -18,7 +18,7 @@ Credential exposure in any one process context compromises all other processes t
 Complete outage of a critical business process due to failure or targeted attack against the sole supporting technical asset. No failover path means maximum downtime.
 
 
-<<operational-unmonitored-critical-process,[.ElevatedRisk]#Elevated: *Operational Threat - Critical Business Process Without Operational Monitoring*: 3/3 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+<<operational-unmonitored-critical-process,[.ElevatedRisk]#Elevated: *Operational Threat - Critical Business Process Without Operational Monitoring*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
 Undetected breaches, inability to investigate incidents, compliance failures, and violation of SLA accountability requirements.
 
 
