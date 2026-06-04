@@ -172,11 +172,12 @@ jobs:
             }
 
       # ── 6. Full sync: create / close / reopen GitHub Issues ──────────────────
-      # Runs on every push to main so the issue tracker stays in sync with the
-      # current threat model state. KEV and EPSS data is fetched for any CVE IDs
-      # referenced in risk explanations and included in each issue body.
+      # Syncs issues on push to main and on manual workflow_dispatch runs.
+      # Skipped on pull_request events (those only get the diff comment).
       - name: Sync GitHub Issues for threat model findings
-        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        if: >
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           python3 scripts/create-tickets.py \
             --risks        threagile/output/risks.json \
