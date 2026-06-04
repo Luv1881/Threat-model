@@ -1,4 +1,4 @@
-= [ModelFailure]#Potential Model Failures: 3/3 unmitigated Risks#
+= [ModelFailure]#Potential Model Failures: 5/5 unmitigated Risks#
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
 
 
@@ -14,4 +14,7 @@ If this risk is unmitigated, attackers might be able to exploit risks unseen in 
 
 <<missing-vault,[.MediumRisk]#Medium: *Missing Vault (Secret Storage)*: 1/1 unmitigated Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
 If this risk is unmitigated, attackers might be able to easier steal config secrets (like credentials, private keys, client certificates, etc.) once a vulnerability to access files is present and exploited.
+
+<<unnecessary-technical-asset,[.LowRisk]#Low: *Unnecessary Technical Asset*: 2/2 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Low_ impact.#>>::
+If this risk is unmitigated, attackers might be able to target unnecessary technical assets.
 

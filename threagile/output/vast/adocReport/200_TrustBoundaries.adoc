@@ -1,5 +1,33 @@
 = Trust Boundaries
-In total *4 trust boundaries* have been modeled during the threat modeling process.
+In total *7 trust boundaries* have been modeled during the threat modeling process.
+
+[[ai-services]]
+== [.Twilight]#AI Services#
+[.Twilight]#Internal network housing the AI/ML components (vector store, RAG pipeline). The LLM inference endpoint is internet-accessible — it is in the Internet trust boundary. AI components have outbound access to the vector store and receive note content from the API server.#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| ID:                | ai-services
+| Type:              | [.Twilight]#network-on-prem#
+| Tags:              | ai
+| Assets inside:     | rag-pipeline, vector-store
+| Boundaries nested: | [GrayText]#none#
+|===
+
+[[aws-cloud]]
+== [.Twilight]#AWS Cloud#
+[.Twilight]#AWS production environment (VPC). Contains managed services (RDS, S3, ECS, Lambda, API Gateway). Separated from the dev Docker environment by an air gap — production traffic flows through the API Gateway, never through the Docker compose setup.#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| ID:                | aws-cloud
+| Type:              | [.Twilight]#network-cloud-provider#
+| Tags:              | aws, cloud-native
+| Assets inside:     | aws-api-gateway, aws-ses, ecs-platform, lambda-notifier, rds-postgresql, s3-notes-bucket
+| Boundaries nested: | [GrayText]#none#
+|===
 
 [[application-network]]
 == [.Twilight]#Application Network#
@@ -40,6 +68,20 @@ In total *4 trust boundaries* have been modeled during the threat modeling proce
 | Type:              | [.Twilight]#network-on-prem#
 | Tags:              | [GrayText]#none#
 | Assets inside:     | minio-storage, postgresql-db, redis-cache
+| Boundaries nested: | [GrayText]#none#
+|===
+
+[[external-cicd]]
+== [.Twilight]#External CI/CD#
+[.Twilight]#GitHub-hosted CI/CD infrastructure and AWS ECR registry. External to the application runtime but directly connected to it via image pull at deploy time. Trust boundary represents the entire supply chain attack surface.#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| ID:                | external-cicd
+| Type:              | [.Twilight]#network-cloud-provider#
+| Tags:              | supply-chain
+| Assets inside:     | build-pipeline, container-registry, source-repo
 | Boundaries nested: | [GrayText]#none#
 |===
 

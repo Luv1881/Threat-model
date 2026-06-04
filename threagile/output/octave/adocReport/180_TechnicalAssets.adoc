@@ -1,0 +1,2206 @@
+= Identified Risks by Technical Asset
+In total *99 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *2 as high*, *53 as elevated*, *38 as medium*, and *6 as low*. 
+
+These risks are distributed across *18 in-scope technical assets*. 
+The following sub-chapters of this section describe each identified risk grouped by technical asset. 
+The RAA value of a technical asset is the calculated "Relative Attacker Attractiveness" value in percent.
+[[api-server]]
+== [.HighRisk]#API Server: 16/16 unmitigated Risks#
+=== Description
+Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD on notes, file uploads to MinIO. Bridges the frontend and backend networks. Single most security-critical component — compromise equals full data access.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.HighRisk]#High Risk Severity#
+
+[.HighRisk]#*SQL/NoSQL-Injection* risk at *API Server* against database *PostgreSQL Database* via *PostgreSQL Connection*: Exploitation likelihood is _Very Likely_ with _High_ impact.#
+
+<<sql-nosql-injection,[SmallGrey]#sql-nosql-injection@api-server@postgresql-db@api-server>postgresql-connection#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Missing Authentication* covering communication link *HTTP to API Server* from *Nginx Reverse Proxy* to *API Server*: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<missing-authentication,[SmallGrey]#missing-authentication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Missing Authentication* covering communication link *Route to ECS API* from *AWS API Gateway* to *API Server*: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<missing-authentication,[SmallGrey]#missing-authentication@aws-api-gateway>route-to-ecs-api@aws-api-gateway@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Unencrypted Communication* named *MinIO File Storage* between *API Server* and *MinIO Object Storage* transferring authentication data (like credentials, token, session-id, etc.): Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<unencrypted-communication,[SmallGrey]#unencrypted-communication@api-server>minio-file-storage@api-server@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Unencrypted Communication* named *PostgreSQL Connection* between *API Server* and *PostgreSQL Database* transferring authentication data (like credentials, token, session-id, etc.): Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<unencrypted-communication,[SmallGrey]#unencrypted-communication@api-server>postgresql-connection@api-server@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Unencrypted Communication* named *Redis Session Store* between *API Server* and *Redis Cache* transferring authentication data (like credentials, token, session-id, etc.): Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<unencrypted-communication,[SmallGrey]#unencrypted-communication@api-server>redis-session-store@api-server@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Path-Traversal* risk at *API Server* against filesystem *MinIO Object Storage* via *MinIO File Storage*: Exploitation likelihood is _Very Likely_ with _Medium_ impact.#
+
+<<path-traversal,[SmallGrey]#path-traversal@api-server@minio-storage@api-server>minio-file-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*SQL/NoSQL-Injection* risk at *API Server* against database *Redis Cache* via *Redis Session Store*: Exploitation likelihood is _Very Likely_ with _Medium_ impact.#
+
+<<sql-nosql-injection,[SmallGrey]#sql-nosql-injection@api-server@redis-cache@api-server>redis-session-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Unguarded Access from Internet* of *API Server* by *AWS API Gateway* via *Route to ECS API*: Exploitation likelihood is _Very Likely_ with _Medium_ impact.#
+
+<<unguarded-access-from-internet,[SmallGrey]#unguarded-access-from-internet@api-server@aws-api-gateway@aws-api-gateway>route-to-ecs-api#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Server-Side Request Forgery (SSRF)* risk at *API Server* server-side web-requesting the target *MinIO Object Storage* via *MinIO File Storage*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<server-side-request-forgery,[SmallGrey]#server-side-request-forgery@api-server@minio-storage@api-server>minio-file-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Container Base Image Backdooring* risk at *API Server*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Missing Build Infrastructure* in the threat model (referencing asset *API Server* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<missing-build-infrastructure,[SmallGrey]#missing-build-infrastructure@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Missing Two-Factor Authentication* covering communication link *HTTP to API Server* from *Browser SPA* forwarded via *Nginx Reverse Proxy* to *API Server*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<missing-authentication-second-factor,[SmallGrey]#missing-authentication-second-factor@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Missing Vault (Secret Storage)* in the threat model (referencing asset *API Server* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<missing-vault,[SmallGrey]#missing-vault@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Missing Web Application Firewall (WAF)* risk at *API Server*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<missing-waf,[SmallGrey]#missing-waf@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Low Risk Severity#
+
+[.HighRisk]#*Denial-of-Service* risky access of *API Server* by *Browser SPA* via *HTTPS to Nginx* forwarded via *Nginx Reverse Proxy*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<dos-risky-access-across-trust-boundary,[SmallGrey]#dos-risky-access-across-trust-boundary@api-server@browser-spa@browser-spa>https-to-nginx->nginx-proxy>http-to-api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| api-server
+| Type:             | process| Usage: | business
+| RAA:              | 44 %| Size: | service
+| Technology:       | web-service-rest| Tags: | express, jwt, nodejs, trike-trust-level-admin
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| File Attachments, Note Content, Session Tokens, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | The API processes all user data. It bridges both Docker networks — a compromised API container can pivot into the internal data tier.
+
+|===
+
+=== Outgoing Communication Links: 3
+==== Redis Session Store (outgoing)
+Session token storage and JWT revocation list. Password-protected (requirepass) but no TLS.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<redis-cache,Redis Cache>>| Protocol:       | nosql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Session Tokens| Data Received:  | Session Tokens
+|===
+
+==== PostgreSQL Connection (outgoing)
+Application-level SQL queries for user auth, notes CRUD. Uses parameterized queries (pg library) to prevent SQL injection. No TLS on the connection — traffic is plaintext within backend-net.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<postgresql-db,PostgreSQL Database>>| Protocol:       | sql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Note Content, User Credentials| Data Received:  | Note Content, User Credentials
+|===
+
+==== MinIO File Storage (outgoing)
+INTENTIONAL MISCONFIGURATION: S3 API calls to MinIO over plain HTTP. Default minioadmin/minioadmin credentials are hardcoded in compose. Any container on backend-net can read all stored files.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<minio-storage,MinIO Object Storage>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments| Data Received:  | File Attachments
+|===
+
+=== Incoming Communication Links: 2
+==== HTTP to API Server (incoming)
+INTENTIONAL MISCONFIGURATION: Traffic between Nginx and the API server uses plaintext HTTP. An attacker with access to the Docker network (container escape, compromised sidecar) can intercept credentials, session tokens, and note content in transit.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<nginx-proxy,Nginx Reverse Proxy>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | none
+| Authorization:  | none| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+==== Route to ECS API (incoming)
+HTTP forward from API Gateway to the ECS-hosted API containers via ALB. Traffic is within the AWS VPC — no public routing for backend traffic.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<aws-api-gateway,AWS API Gateway>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | none
+| Authorization:  | none| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | true
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+[[minio-storage]]
+== [.HighRisk]#MinIO Object Storage: 10/10 unmitigated Risks#
+=== Description
+S3-compatible object store for file attachments. INTENTIONAL MISCONFIGURATION: Uses default minioadmin/minioadmin credentials (visible in docker-compose.yml) and stores files without encryption at rest. HTTP-only (no TLS) within the Docker network.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.HighRisk]#High Risk Severity#
+
+[.HighRisk]#*Exposed Default Credentials*: *MinIO Object Storage* is tagged as intentional-misconfiguration and stores confidential data: Exploitation likelihood is _Very Likely_ with _High_ impact.#
+
+<<exposed-default-credentials,[SmallGrey]#exposed-default-credentials@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*No Access Control*: information asset container *MinIO Object Storage* lacks access control mechanisms: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-access-control,[SmallGrey]#octave-no-access-control@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*No Automated Backup*: high-criticality information asset container *MinIO Object Storage* lacks automated backup: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-backup,[SmallGrey]#octave-no-backup@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*No Recovery Plan*: high-criticality information asset container *MinIO Object Storage* lacks a disaster recovery plan: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-recovery-plan,[SmallGrey]#octave-no-recovery-plan@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Third-Party Exposure Without DPA*: information asset container *MinIO Object Storage* is shared with a third party without a Data Processing Agreement: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-third-party-exposure,[SmallGrey]#octave-third-party-exposure@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Unencrypted Transport*: information asset container *MinIO Object Storage* has encryption set to none: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-unencrypted-transport,[SmallGrey]#octave-unencrypted-transport@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Elevated Risk Severity#
+
+[.HighRisk]#*Insufficient Logging*: information asset container *MinIO Object Storage* lacks audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<octave-insufficient-logging,[SmallGrey]#octave-insufficient-logging@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Container Base Image Backdooring* risk at *MinIO Object Storage*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Unguarded Direct Datastore Access* of *MinIO Object Storage* by *API Server* via *MinIO File Storage*: Exploitation likelihood is _Likely_ with _Low_ impact.#
+
+<<unguarded-direct-datastore-access,[SmallGrey]#unguarded-direct-datastore-access@api-server>minio-file-storage@api-server@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.HighRisk]#Medium Risk Severity#
+
+[.HighRisk]#*Unencrypted Technical Asset* named *MinIO Object Storage*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<unencrypted-asset,[SmallGrey]#unencrypted-asset@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-18#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-110#
+
+4+|[.small]#MinIO server-side encryption (SSE-S3) is being evaluated. Default minioadmin credentials will be rotated before production deployment. This finding is a CRITICAL blocker for launch. Tracked in VAULT-110.
+#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| minio-storage
+| Type:             | datastore| Usage: | business
+| RAA:              | 21 %| Size: | service
+| Technology:       | object-storage| Tags: | criticality-high, information-asset-container, intentional-misconfiguration, minio, object-storage, s3, third-party-shared
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | File
+| Data Processed: 3+| File Attachments
+| Data Stored:    3+| File Attachments
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Stores user file uploads which may contain sensitive documents. Default credentials + no encryption = trivial exfiltration by any process on backend-net.
+
+|===
+
+=== Incoming Communication Links: 1
+==== MinIO File Storage (incoming)
+INTENTIONAL MISCONFIGURATION: S3 API calls to MinIO over plain HTTP. Default minioadmin/minioadmin credentials are hardcoded in compose. Any container on backend-net can read all stored files.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<api-server,API Server>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments| Data Received:  | File Attachments
+|===
+
+[[rds-postgresql]]
+== [.ElevatedRisk]#AWS RDS PostgreSQL: 7/7 unmitigated Risks#
+=== Description
+AWS RDS PostgreSQL instance (production). Replaces the Docker-based PostgreSQL in production deployments. Automated backups enabled (7-day retention). INTENTIONAL: Encryption at rest is disabled (storage_encrypted = false in Terraform). Public accessibility is off but subnet group is in app subnet (not data subnet), creating potential exposure via compromised app instances.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Access Control*: information asset container *AWS RDS PostgreSQL* lacks access control mechanisms: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-access-control,[SmallGrey]#octave-no-access-control@rds-postgresql#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Recovery Plan*: high-criticality information asset container *AWS RDS PostgreSQL* lacks a disaster recovery plan: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-recovery-plan,[SmallGrey]#octave-no-recovery-plan@rds-postgresql#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Transport*: information asset container *AWS RDS PostgreSQL* has encryption set to none: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-unencrypted-transport,[SmallGrey]#octave-unencrypted-transport@rds-postgresql#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Insufficient Logging*: information asset container *AWS RDS PostgreSQL* lacks audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<octave-insufficient-logging,[SmallGrey]#octave-insufficient-logging@rds-postgresql#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Missing Hardening* risk at *AWS RDS PostgreSQL*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<missing-hardening,[SmallGrey]#missing-hardening@rds-postgresql#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Technical Asset* named *AWS RDS PostgreSQL* missing end user individual encryption with data-with-end-user-individual-key: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<unencrypted-asset,[SmallGrey]#unencrypted-asset@rds-postgresql#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Low Risk Severity#
+
+[.ElevatedRisk]#*Unnecessary Technical Asset* named *AWS RDS PostgreSQL*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<unnecessary-technical-asset,[SmallGrey]#unnecessary-technical-asset@rds-postgresql#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| rds-postgresql
+| Type:             | datastore| Usage: | business
+| RAA:              | 54 %| Size: | service
+| Technology:       | managed-database| Tags: | aws, cloud-native, criticality-high, has-automated-backup, information-asset-container, postgresql, rds
+| Internet:         | false| Machine: | virtual
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | true| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Note Content, User Credentials
+| Data Stored:    3+| Note Content, User Credentials
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | Production database stores all user PII and note content. Encryption disabled means RDS snapshot exfiltration exposes all data in plaintext. Snapshot sharing misconfiguration (a common AWS incident) bypasses all access controls.
+
+|===
+
+[[s3-notes-bucket]]
+== [.ElevatedRisk]#AWS S3 Notes Bucket: 8/8 unmitigated Risks#
+=== Description
+AWS S3 bucket storing file attachments for production deployments. Replaces MinIO S3-compatible storage in the cloud environment. Bucket is private (Block Public Access enabled) but server-side encryption is not configured. INTENTIONAL: SSE-S3 or SSE-KMS not enabled. Objects are stored unencrypted at the storage layer — provider-side access exposes raw data.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Access Control*: information asset container *AWS S3 Notes Bucket* lacks access control mechanisms: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-access-control,[SmallGrey]#octave-no-access-control@s3-notes-bucket#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Automated Backup*: high-criticality information asset container *AWS S3 Notes Bucket* lacks automated backup: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-backup,[SmallGrey]#octave-no-backup@s3-notes-bucket#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Recovery Plan*: high-criticality information asset container *AWS S3 Notes Bucket* lacks a disaster recovery plan: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-recovery-plan,[SmallGrey]#octave-no-recovery-plan@s3-notes-bucket#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Third-Party Exposure Without DPA*: information asset container *AWS S3 Notes Bucket* is shared with a third party without a Data Processing Agreement: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-third-party-exposure,[SmallGrey]#octave-third-party-exposure@s3-notes-bucket#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Transport*: information asset container *AWS S3 Notes Bucket* has encryption set to none: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-unencrypted-transport,[SmallGrey]#octave-unencrypted-transport@s3-notes-bucket#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Insufficient Logging*: information asset container *AWS S3 Notes Bucket* lacks audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<octave-insufficient-logging,[SmallGrey]#octave-insufficient-logging@s3-notes-bucket#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Technical Asset* named *AWS S3 Notes Bucket*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<unencrypted-asset,[SmallGrey]#unencrypted-asset@s3-notes-bucket#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Low Risk Severity#
+
+[.ElevatedRisk]#*Unnecessary Technical Asset* named *AWS S3 Notes Bucket*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<unnecessary-technical-asset,[SmallGrey]#unnecessary-technical-asset@s3-notes-bucket#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| s3-notes-bucket
+| Type:             | datastore| Usage: | business
+| RAA:              | 21 %| Size: | service
+| Technology:       | object-storage| Tags: | aws, cloud-native, criticality-high, information-asset-container, s3, third-party-shared
+| Internet:         | false| Machine: | virtual
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | true| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | File
+| Data Processed: 3+| File Attachments
+| Data Stored:    3+| File Attachments
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | S3 stores user-uploaded files which may contain sensitive documents. No SSE means provider-side access (support channel, storage engineer) reads raw data. third-party-shared because S3 is operated by AWS and subject to subprocessor data protection requirements. No DPA review completed.
+
+|===
+
+[[ecs-platform]]
+== [.ElevatedRisk]#ECS Container Platform: 4/4 unmitigated Risks#
+=== Description
+AWS ECS (Fargate) running the API and Nginx containers in production. INTENTIONAL: ECR Enhanced Scanning (Inspector v2) is not enabled. Running containers are not scanned post-deployment for newly disclosed CVEs. Container images are pulled from ECR without signature verification.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Missing Hardening* risk at *ECS Container Platform*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<missing-hardening,[SmallGrey]#missing-hardening@ecs-platform#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Path-Traversal* risk at *ECS Container Platform* against filesystem *AWS ECR Container Registry* via *Pull Images from ECR*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<path-traversal,[SmallGrey]#path-traversal@ecs-platform@container-registry@ecs-platform>pull-images-from-ecr#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Container Platform Escape* risk at *ECS Container Platform*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<container-platform-escape,[SmallGrey]#container-platform-escape@ecs-platform#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Server-Side Request Forgery (SSRF)* risk at *ECS Container Platform* server-side web-requesting the target *AWS ECR Container Registry* via *Pull Images from ECR*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<server-side-request-forgery,[SmallGrey]#server-side-request-forgery@ecs-platform@container-registry@ecs-platform>pull-images-from-ecr#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| ecs-platform
+| Type:             | process| Usage: | business
+| RAA:              | 100 %| Size: | service
+| Technology:       | container-platform| Tags: | aws, cloud-native, ecs, fargate
+| Internet:         | false| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | true| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Build Artifacts, Note Content, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | ECS runs the production API containers. Container escape or image tampering grants access to the application runtime and its mounted secrets. No image scanning means known CVEs in base images are undetected until exploitation.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== Pull Images from ECR (outgoing)
+ECS task pulls Docker images from ECR at task launch. Images are not verified against signatures before execution.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<container-registry,AWS ECR Container Registry>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | true
+| Data Sent:      | [GrayText]#none#| Data Received:  | Build Artifacts
+|===
+
+[[build-pipeline]]
+== [.ElevatedRisk]#GitHub Actions Build Pipeline: 5/5 unmitigated Risks#
+=== Description
+GitHub Actions CI/CD pipeline. Builds Docker images, runs tests, pushes to ECR. INTENTIONAL: No SBOM generation (no Syft or CycloneDX step configured). No build provenance attestation (no SLSA provenance step). Hardcoded AWS_SECRET_ACCESS_KEY in workflow environment variables.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Path-Traversal* risk at *GitHub Actions Build Pipeline* against filesystem *AWS ECR Container Registry* via *Push Image to Registry*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<path-traversal,[SmallGrey]#path-traversal@build-pipeline@container-registry@build-pipeline>push-image-to-registry#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Code Backdooring* risk at *GitHub Actions Build Pipeline*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<code-backdooring,[SmallGrey]#code-backdooring@build-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Server-Side Request Forgery (SSRF)* risk at *GitHub Actions Build Pipeline* server-side web-requesting the target *AWS ECR Container Registry* via *Push Image to Registry*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<server-side-request-forgery,[SmallGrey]#server-side-request-forgery@build-pipeline@container-registry@build-pipeline>push-image-to-registry#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Unchecked Deployment* risk at *GitHub Actions Build Pipeline*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<unchecked-deployment,[SmallGrey]#unchecked-deployment@build-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Unguarded Access from Internet* of *GitHub Actions Build Pipeline* by *VaultNote Source Repository* via *Push to Pipeline*: Exploitation likelihood is _Very Likely_ with _Low_ impact.#
+
+<<unguarded-access-from-internet,[SmallGrey]#unguarded-access-from-internet@build-pipeline@source-repo@source-repo>push-to-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| build-pipeline
+| Type:             | process| Usage: | devops
+| RAA:              | 12 %| Size: | service
+| Technology:       | build-pipeline| Tags: | ci, github-actions, supply-chain
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | File
+| Data Processed: 3+| Build Artifacts
+| Data Stored:    3+| Build Artifacts
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Build pipeline is a privileged component — it has read access to secrets and write access to the container registry. Compromise = full supply chain injection. No SBOM means post-build vulnerability tracking is impossible.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== Push Image to Registry (outgoing)
+docker push to AWS ECR after build completes. Images are tagged with the git commit SHA and pushed without cryptographic signing (no Cosign step).
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<container-registry,AWS ECR Container Registry>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Build Artifacts| Data Received:  | [GrayText]#none#
+|===
+
+=== Incoming Communication Links: 1
+==== Push to Pipeline (incoming)
+Git push triggers GitHub Actions workflow. The webhook carries the commit SHA and branch reference to the CI runner.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<source-repo,VaultNote Source Repository>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Build Artifacts| Data Received:  | [GrayText]#none#
+|===
+
+[[lambda-notifier]]
+== [.ElevatedRisk]#Lambda Email Notifier: 1/1 unmitigated Risk#
+=== Description
+AWS Lambda function that sends transactional emails (note-share invitations, account verification) triggered by SQS messages from the API server. Processes user email addresses (PII) and note titles in notification payloads. INTENTIONAL: No dead letter queue (DLQ) configured on the SQS event source. Failed notifications are silently dropped after 3 retries with no audit trail.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Server-Side Request Forgery (SSRF)* risk at *Lambda Email Notifier* server-side web-requesting the target *AWS SES* via *SES Email Send*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<server-side-request-forgery,[SmallGrey]#server-side-request-forgery@lambda-notifier@aws-ses@lambda-notifier>ses-email-send#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| lambda-notifier
+| Type:             | process| Usage: | business
+| RAA:              | 2 %| Size: | component
+| Technology:       | serverless-function| Tags: | aws, cloud-native, lambda, notifications
+| Internet:         | false| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Notification Payloads
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | operational<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Lambda processes email addresses and note titles. PII loss due to silent failure creates compliance issues (incomplete processing records). Overpermissive IAM role could be exploited to access other AWS resources.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== SES Email Send (outgoing)
+Lambda calls AWS SES to deliver transactional emails. IAM role grants ses:SendEmail only; no SendRawEmail permission. No SES sending rate limit configured on the IAM policy — a compromised Lambda could exhaust the SES daily quota.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<aws-ses,AWS SES>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Notification Payloads| Data Received:  | [GrayText]#none#
+|===
+
+[[nginx-proxy]]
+== [.ElevatedRisk]#Nginx Reverse Proxy: 6/6 unmitigated Risks#
+=== Description
+Nginx terminates TLS and forwards all API traffic to the Express server over plain HTTP (port 3000). This is the DMZ entry point.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Lateral Movement via Shared Runtime* on *Docker Host*: assets from 3 trust zones co-located: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<lateral-movement-shared-runtime,[SmallGrey]#lateral-movement-shared-runtime@docker-host#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Missing Content-Security-Policy*: *Nginx Reverse Proxy* serves browser clients handling auth tokens without a verified CSP header: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<missing-csp-header,[SmallGrey]#missing-csp-header@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Communication* named *HTTP to API Server* between *Nginx Reverse Proxy* and *API Server*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<unencrypted-communication,[SmallGrey]#unencrypted-communication@nginx-proxy>http-to-api-server@nginx-proxy@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-18#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-102#
+
+4+|[.small]#Migrating Nginx-to-API communication to mTLS. A separate CA will be provisioned inside the Docker network. PR #47 is in review; target completion sprint 22.
+#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Container Base Image Backdooring* risk at *Nginx Reverse Proxy*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Missing Identity Store* in the threat model (referencing asset *Nginx Reverse Proxy* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<missing-identity-store,[SmallGrey]#missing-identity-store@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Low Risk Severity#
+
+[.ElevatedRisk]#*Denial-of-Service* risky access of *Nginx Reverse Proxy* by *Browser SPA* via *HTTPS to Nginx*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<dos-risky-access-across-trust-boundary,[SmallGrey]#dos-risky-access-across-trust-boundary@nginx-proxy@browser-spa@browser-spa>https-to-nginx->#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| nginx-proxy
+| Type:             | process| Usage: | business
+| RAA:              | 1 %| Size: | service
+| Technology:       | reverse-proxy| Tags: | nginx, tls-termination
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| File Attachments, Note Content, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | Nginx is the single external entry point. Its compromise exposes all downstream services. Availability is critical — outage = full service outage.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== HTTP to API Server (outgoing)
+INTENTIONAL MISCONFIGURATION: Traffic between Nginx and the API server uses plaintext HTTP. An attacker with access to the Docker network (container escape, compromised sidecar) can intercept credentials, session tokens, and note content in transit.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<api-server,API Server>>| Protocol:       | http
+| Encrypted:      | false| Authentication: | none
+| Authorization:  | none| Read-Only:      | false
+| Usage:          | business| Tags:           | intentional-misconfiguration
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+=== Incoming Communication Links: 1
+==== HTTPS to Nginx (incoming)
+User-initiated HTTPS requests carrying credentials (login) and note content (create/edit). This is the only encrypted link in the chain.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<browser-spa,Browser SPA>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | end-user-identity-propagation| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+[[postgresql-db]]
+== [.ElevatedRisk]#PostgreSQL Database: 11/11 unmitigated Risks#
+=== Description
+Primary relational datastore. Contains users table (email + bcrypt password hash), notes table (title + content), and attachments metadata. INTENTIONAL MISCONFIGURATION: No encryption at rest (encryption: none).
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Access Control*: information asset container *PostgreSQL Database* lacks access control mechanisms: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-access-control,[SmallGrey]#octave-no-access-control@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Automated Backup*: high-criticality information asset container *PostgreSQL Database* lacks automated backup: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-backup,[SmallGrey]#octave-no-backup@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Recovery Plan*: high-criticality information asset container *PostgreSQL Database* lacks a disaster recovery plan: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-recovery-plan,[SmallGrey]#octave-no-recovery-plan@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Third-Party Exposure Without DPA*: information asset container *PostgreSQL Database* is shared with a third party without a Data Processing Agreement: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-third-party-exposure,[SmallGrey]#octave-third-party-exposure@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Transport*: information asset container *PostgreSQL Database* has encryption set to none: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-unencrypted-transport,[SmallGrey]#octave-unencrypted-transport@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Insufficient Logging*: information asset container *PostgreSQL Database* lacks audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<octave-insufficient-logging,[SmallGrey]#octave-insufficient-logging@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Missing Hardening* risk at *PostgreSQL Database*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<missing-hardening,[SmallGrey]#missing-hardening@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unguarded Direct Datastore Access* of *PostgreSQL Database* by *API Server* via *PostgreSQL Connection*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<unguarded-direct-datastore-access,[SmallGrey]#unguarded-direct-datastore-access@api-server>postgresql-connection@api-server@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Container Base Image Backdooring* risk at *PostgreSQL Database*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Technical Asset* named *PostgreSQL Database* missing end user individual encryption with data-with-end-user-individual-key: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<unencrypted-asset,[SmallGrey]#unencrypted-asset@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-04-15#
+| [.GreyText.small]#Infrastructure Team#
+| [.GreyText.small]#VAULT-89#
+
+4+|[.small]#The PostgreSQL volume runs on a host-level LUKS-encrypted partition in all production deployments. The Threagile finding is acknowledged as informational for this demo environment which uses unencrypted storage. Production database TDE via pgcrypto will be evaluated in Q3.
+#
+|===
+
+
+==== [.ElevatedRisk]#Low Risk Severity#
+
+[.ElevatedRisk]#*Denial-of-Service* risky access of *PostgreSQL Database* by *API Server* via *PostgreSQL Connection*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<dos-risky-access-across-trust-boundary,[SmallGrey]#dos-risky-access-across-trust-boundary@postgresql-db@api-server@api-server>postgresql-connection->#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| postgresql-db
+| Type:             | datastore| Usage: | business
+| RAA:              | 54 %| Size: | service
+| Technology:       | database| Tags: | criticality-high, information-asset-container, postgresql, relational, third-party-shared
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Note Content, User Credentials
+| Data Stored:    3+| Note Content, User Credentials
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | Holds all user PII (email, hashed passwords) and all note content. Strictly confidential — unencrypted disk access exposes all data.
+
+|===
+
+=== Incoming Communication Links: 1
+==== PostgreSQL Connection (incoming)
+Application-level SQL queries for user auth, notes CRUD. Uses parameterized queries (pg library) to prevent SQL injection. No TLS on the connection — traffic is plaintext within backend-net.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<api-server,API Server>>| Protocol:       | sql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Note Content, User Credentials| Data Received:  | Note Content, User Credentials
+|===
+
+[[redis-cache]]
+== [.ElevatedRisk]#Redis Cache: 8/8 unmitigated Risks#
+=== Description
+In-memory store used as session store and JWT revocation list. INTENTIONAL MISCONFIGURATION: No encryption at rest. If Redis persistence is enabled and the RDB file is exfiltrated, session tokens are exposed.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Access Control*: information asset container *Redis Cache* lacks access control mechanisms: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-access-control,[SmallGrey]#octave-no-access-control@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Automated Backup*: high-criticality information asset container *Redis Cache* lacks automated backup: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-backup,[SmallGrey]#octave-no-backup@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Recovery Plan*: high-criticality information asset container *Redis Cache* lacks a disaster recovery plan: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-recovery-plan,[SmallGrey]#octave-no-recovery-plan@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Transport*: information asset container *Redis Cache* has encryption set to none: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-unencrypted-transport,[SmallGrey]#octave-unencrypted-transport@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Insufficient Logging*: information asset container *Redis Cache* lacks audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<octave-insufficient-logging,[SmallGrey]#octave-insufficient-logging@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Container Base Image Backdooring* risk at *Redis Cache*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Technical Asset* named *Redis Cache*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<unencrypted-asset,[SmallGrey]#unencrypted-asset@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Unguarded Direct Datastore Access* of *Redis Cache* by *API Server* via *Redis Session Store*: Exploitation likelihood is _Likely_ with _Low_ impact.#
+
+<<unguarded-direct-datastore-access,[SmallGrey]#unguarded-direct-datastore-access@api-server>redis-session-store@api-server@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| redis-cache
+| Type:             | datastore| Usage: | business
+| RAA:              | 22 %| Size: | component
+| Technology:       | database| Tags: | cache, criticality-high, information-asset-container, redis, session-store
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | [GrayText]#none of the special data formats accepted#
+| Data Processed: 3+| Session Tokens
+| Data Stored:    3+| Session Tokens
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | important<<ref-criticality-values,*>>
+| CIA-Justification: | Session token exposure enables account takeover. Non-persistent by default but the container volume could persist RDB snapshots.
+
+|===
+
+=== Incoming Communication Links: 1
+==== Redis Session Store (incoming)
+Session token storage and JWT revocation list. Password-protected (requirepass) but no TLS.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<api-server,API Server>>| Protocol:       | nosql-access-protocol
+| Encrypted:      | false| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Session Tokens| Data Received:  | Session Tokens
+|===
+
+[[vector-store]]
+== [.ElevatedRisk]#VaultNote Vector Store: 7/7 unmitigated Risks#
+=== Description
+Qdrant vector database storing embedding vectors for semantic search and RAG context retrieval. Vectors are generated by the embedding service from user note content. INTENTIONAL: No encryption at rest configured (encryption: none). The vector store is queryable by the LLM pipeline and the API server without row-level isolation — all user embeddings share the same collection. No access control list separates per-user embedding queries.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Access Control*: information asset container *VaultNote Vector Store* lacks access control mechanisms: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-access-control,[SmallGrey]#octave-no-access-control@vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Automated Backup*: high-criticality information asset container *VaultNote Vector Store* lacks automated backup: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-backup,[SmallGrey]#octave-no-backup@vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*No Recovery Plan*: high-criticality information asset container *VaultNote Vector Store* lacks a disaster recovery plan: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-no-recovery-plan,[SmallGrey]#octave-no-recovery-plan@vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Unencrypted Transport*: information asset container *VaultNote Vector Store* has encryption set to none: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<octave-unencrypted-transport,[SmallGrey]#octave-unencrypted-transport@vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Elevated Risk Severity#
+
+[.ElevatedRisk]#*Insufficient Logging*: information asset container *VaultNote Vector Store* lacks audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<octave-insufficient-logging,[SmallGrey]#octave-insufficient-logging@vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Container Base Image Backdooring* risk at *VaultNote Vector Store*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#Medium Risk Severity#
+
+[.ElevatedRisk]#*Unguarded Access from Internet* of *VaultNote Vector Store* by *LLM Note Summarizer* via *Query Vector Store*: Exploitation likelihood is _Very Likely_ with _Low_ impact.#
+
+<<unguarded-access-from-internet,[SmallGrey]#unguarded-access-from-internet@vector-store@llm-summarizer@llm-summarizer>query-vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| vector-store
+| Type:             | datastore| Usage: | business
+| RAA:              | 26 %| Size: | service
+| Technology:       | vector-store| Tags: | ai, criticality-high, embeddings, information-asset-container, qdrant
+| Internet:         | false| Machine: | container
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Embedding Vectors, Note Content
+| Data Stored:    3+| Embedding Vectors
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | operational<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Embedding vectors encode semantic information from user notes. Even without raw text, vectors can be used to infer content via inversion attacks. Unencrypted storage and lack of per-user access control create cross-tenant leakage risk.
+
+|===
+
+=== Incoming Communication Links: 2
+==== Retrieve from Vector Store (incoming)
+RAG pipeline queries the vector store for nearest-neighbor embeddings to build context chunks. Returns raw embedding text — no content filtering before injection into LLM context.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<rag-pipeline,Note RAG Pipeline>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Embedding Vectors| Data Received:  | Note Content
+|===
+
+==== Query Vector Store (incoming)
+LLM retrieves relevant note chunks from the vector store to build RAG context. Similarity search over user-owned embeddings.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<llm-summarizer,LLM Note Summarizer>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Embedding Vectors| Data Received:  | Note Content
+|===
+
+[[container-registry]]
+== [.MediumRisk]#AWS ECR Container Registry: 3/3 unmitigated Risks#
+=== Description
+AWS Elastic Container Registry storing VaultNote Docker images (api, nginx). INTENTIONAL: Image vulnerability scanning is disabled (ECR Basic scanning only, not Enhanced/Inspector). Images are not signed — no Cosign/Sigstore policy enforced. Repository is private but no admission controller validates signatures at deploy time.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.MediumRisk]#Medium Risk Severity#
+
+[.MediumRisk]#*Code Backdooring* risk at *AWS ECR Container Registry*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<code-backdooring,[SmallGrey]#code-backdooring@container-registry#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#Medium Risk Severity#
+
+[.MediumRisk]#*Unguarded Access from Internet* of *AWS ECR Container Registry* by *GitHub Actions Build Pipeline* via *Push Image to Registry*: Exploitation likelihood is _Very Likely_ with _Low_ impact.#
+
+<<unguarded-access-from-internet,[SmallGrey]#unguarded-access-from-internet@container-registry@build-pipeline@build-pipeline>push-image-to-registry#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#Low Risk Severity#
+
+[.MediumRisk]#*Unchecked Deployment* risk at *AWS ECR Container Registry*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<unchecked-deployment,[SmallGrey]#unchecked-deployment@container-registry#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| container-registry
+| Type:             | datastore| Usage: | devops
+| RAA:              | 9 %| Size: | service
+| Technology:       | container-registry| Tags: | aws, ecr, supply-chain
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | File
+| Data Processed: 3+| Build Artifacts
+| Data Stored:    3+| Build Artifacts
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Container registry is the final source of truth for deployed images. Tampering with registry contents (image swap or layer injection) propagates malicious code to every deployment. No signing verification means a registry compromise is undetectable until damage is done.
+
+|===
+
+=== Incoming Communication Links: 2
+==== Pull Images from ECR (incoming)
+ECS task pulls Docker images from ECR at task launch. Images are not verified against signatures before execution.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<ecs-platform,ECS Container Platform>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | true
+| Data Sent:      | [GrayText]#none#| Data Received:  | Build Artifacts
+|===
+
+==== Push Image to Registry (incoming)
+docker push to AWS ECR after build completes. Images are tagged with the git commit SHA and pushed without cryptographic signing (no Cosign step).
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<build-pipeline,GitHub Actions Build Pipeline>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Build Artifacts| Data Received:  | [GrayText]#none#
+|===
+
+[[llm-summarizer]]
+== [.MediumRisk]#LLM Note Summarizer: 2/2 unmitigated Risks#
+=== Description
+OpenAI-compatible LLM inference endpoint used to generate AI summaries of user notes on demand. Deployed as a containerised model proxy (LiteLLM) with a public API endpoint for testing. INTENTIONAL: Endpoint is internet-accessible and lacks authentication — the has-authentication tag is intentionally absent to demonstrate the finding. No adversarial input shield (Llama Guard or guardrails) is configured. System prompt contains internal business context visible to adversarial probing.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.MediumRisk]#Medium Risk Severity#
+
+[.MediumRisk]#*Server-Side Request Forgery (SSRF)* risk at *LLM Note Summarizer* server-side web-requesting the target *Note RAG Pipeline* via *Call RAG Pipeline*: Exploitation likelihood is _Likely_ with _Low_ impact.#
+
+<<server-side-request-forgery,[SmallGrey]#server-side-request-forgery@llm-summarizer@rag-pipeline@llm-summarizer>call-rag-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#Medium Risk Severity#
+
+[.MediumRisk]#*Server-Side Request Forgery (SSRF)* risk at *LLM Note Summarizer* server-side web-requesting the target *VaultNote Vector Store* via *Query Vector Store*: Exploitation likelihood is _Likely_ with _Low_ impact.#
+
+<<server-side-request-forgery,[SmallGrey]#server-side-request-forgery@llm-summarizer@vector-store@llm-summarizer>query-vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| llm-summarizer
+| Type:             | process| Usage: | business
+| RAA:              | 20 %| Size: | service
+| Technology:       | llm-inference-endpoint| Tags: | ai, cloud-native, llm, openai
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| AI Model Responses, Embedding Vectors, Note Content
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | LLM endpoint processes user note content. Unauthenticated internet exposure allows arbitrary prompt submission, system prompt extraction via jailbreaks, and inference cost abuse. No guardrails means malicious inputs could generate harmful content or exfiltrate context window data.
+
+|===
+
+=== Outgoing Communication Links: 2
+==== Query Vector Store (outgoing)
+LLM retrieves relevant note chunks from the vector store to build RAG context. Similarity search over user-owned embeddings.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<vector-store,VaultNote Vector Store>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Embedding Vectors| Data Received:  | Note Content
+|===
+
+==== Call RAG Pipeline (outgoing)
+LLM inference endpoint triggers the RAG pipeline to build context from stored note embeddings before generating a summary response.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<rag-pipeline,Note RAG Pipeline>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Note Content| Data Received:  | Note Content
+|===
+
+[[rag-pipeline]]
+== [.MediumRisk]#Note RAG Pipeline: 3/3 unmitigated Risks#
+=== Description
+Retrieval-Augmented Generation pipeline that assembles context chunks from the vector store before forwarding to the LLM. Built on LangChain. INTENTIONAL: No input validation or injection guard on retrieved chunks (has-input-validation absent). A note containing prompt injection payloads could be retrieved as context and alter LLM behavior. No retrieval filtering — all results from the vector store are injected into context without relevance threshold or content sanitisation.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.MediumRisk]#Medium Risk Severity#
+
+[.MediumRisk]#*Container Base Image Backdooring* risk at *Note RAG Pipeline*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<container-baseimage-backdooring,[SmallGrey]#container-baseimage-backdooring@rag-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#Medium Risk Severity#
+
+[.MediumRisk]#*Unguarded Access from Internet* of *Note RAG Pipeline* by *LLM Note Summarizer* via *Call RAG Pipeline*: Exploitation likelihood is _Very Likely_ with _Low_ impact.#
+
+<<unguarded-access-from-internet,[SmallGrey]#unguarded-access-from-internet@rag-pipeline@llm-summarizer@llm-summarizer>call-rag-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#Medium Risk Severity#
+
+[.MediumRisk]#*Server-Side Request Forgery (SSRF)* risk at *Note RAG Pipeline* server-side web-requesting the target *VaultNote Vector Store* via *Retrieve from Vector Store*: Exploitation likelihood is _Likely_ with _Low_ impact.#
+
+<<server-side-request-forgery,[SmallGrey]#server-side-request-forgery@rag-pipeline@vector-store@rag-pipeline>retrieve-from-vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| rag-pipeline
+| Type:             | process| Usage: | business
+| RAA:              | 11 %| Size: | component
+| Technology:       | rag-pipeline| Tags: | ai, langchain, rag
+| Internet:         | false| Machine: | container
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Embedding Vectors, Note Content
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | RAG pipeline is the injection point between user-controlled note content and the LLM context window. Without input validation, a malicious note can manipulate the LLM into ignoring instructions, leaking system prompts, or generating harmful content on behalf of an attacker.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== Retrieve from Vector Store (outgoing)
+RAG pipeline queries the vector store for nearest-neighbor embeddings to build context chunks. Returns raw embedding text — no content filtering before injection into LLM context.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<vector-store,VaultNote Vector Store>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | true
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Embedding Vectors| Data Received:  | Note Content
+|===
+
+=== Incoming Communication Links: 1
+==== Call RAG Pipeline (incoming)
+LLM inference endpoint triggers the RAG pipeline to build context from stored note embeddings before generating a summary response.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<llm-summarizer,LLM Note Summarizer>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Note Content| Data Received:  | Note Content
+|===
+
+[[source-repo]]
+== [.MediumRisk]#VaultNote Source Repository: 4/4 unmitigated Risks#
+=== Description
+GitHub repository hosting the VaultNote monorepo (API, frontend, Terraform). Contains application secrets in compose files (minioadmin credentials visible in git history) and Terraform state references. INTENTIONAL: No branch protection rules configured — developers push directly to main, bypassing review and signed-commit requirements.
+
+=== Identified Risks of Asset
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+==== [.MediumRisk]#Medium Risk Severity#
+
+[.MediumRisk]#*Code Backdooring* risk at *VaultNote Source Repository*: Exploitation likelihood is _Unlikely_ with _High_ impact.#
+
+<<code-backdooring,[SmallGrey]#code-backdooring@source-repo#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#Medium Risk Severity#
+
+[.MediumRisk]#*Accidental Secret Leak(Git)* risk at *VaultNote Source Repository*: [.underline]#Git Leak Prevention#: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<accidental-secret-leak,[SmallGrey]#accidental-secret-leak@source-repo#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#Medium Risk Severity#
+
+[.MediumRisk]#*Server-Side Request Forgery (SSRF)* risk at *VaultNote Source Repository* server-side web-requesting the target *GitHub Actions Build Pipeline* via *Push to Pipeline*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<server-side-request-forgery,[SmallGrey]#server-side-request-forgery@source-repo@build-pipeline@source-repo>push-to-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#Medium Risk Severity#
+
+[.MediumRisk]#*Unchecked Deployment* risk at *VaultNote Source Repository*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<unchecked-deployment,[SmallGrey]#unchecked-deployment@source-repo#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| source-repo
+| Type:             | process| Usage: | business
+| RAA:              | 12 %| Size: | service
+| Technology:       | sourcecode-repository| Tags: | git, github, supply-chain
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | File
+| Data Processed: 3+| Build Artifacts
+| Data Stored:    3+| Build Artifacts
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Source code is the root of the supply chain. Integrity is critical — malicious code injected here propagates to every built artifact. May contain leaked secrets.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== Push to Pipeline (outgoing)
+Git push triggers GitHub Actions workflow. The webhook carries the commit SHA and branch reference to the CI runner.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<build-pipeline,GitHub Actions Build Pipeline>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | devops| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Build Artifacts| Data Received:  | [GrayText]#none#
+|===
+
+[[aws-api-gateway]]
+== AWS API Gateway: 0 mitigated Risks
+=== Description
+AWS API Gateway (HTTP API) fronting the ECS API containers in production. Routes traffic from the ALB to backend ECS tasks. INTENTIONAL: No usage plan or throttling policy configured. No WAF association on the API gateway stage. Auth relies entirely on the API server (JWT) — no gateway-level auth enforcement.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| aws-api-gateway
+| Type:             | process| Usage: | business
+| RAA:              | 30 %| Size: | service
+| Technology:       | cloud-api-gateway| Tags: | api-gateway, aws, cloud-native
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | true| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| File Attachments, Note Content, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | critical<<ref-criticality-values,*>>
+| CIA-Justification: | API gateway is the single internet entry point in production. No rate limiting = credential stuffing and cost amplification risk. WAF absence leaves XSS/SQLi traffic unfiltered before it reaches the API.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== Route to ECS API (outgoing)
+HTTP forward from API Gateway to the ECS-hosted API containers via ALB. Traffic is within the AWS VPC — no public routing for backend traffic.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<api-server,API Server>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | none
+| Authorization:  | none| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | true
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+
+[[aws-ses]]
+== AWS SES: 0 mitigated Risks
+=== Description
+AWS Simple Email Service used for transactional email delivery (note-share invitations, account verification). Managed service — not custom-developed. SES sending identity (domain) is verified; DKIM and SPF records are configured. No dedicated sending quota alarm; a compromised Lambda could exhaust the daily send limit and cause notification delivery failure.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| aws-ses
+| Type:             | process| Usage: | business
+| RAA:              | 0 %| Size: | service
+| Technology:       | mail-server| Tags: | aws, cloud-native, email, ses
+| Internet:         | true| Machine: | virtual
+| Encryption:       | transparent| Multi-Tenant: | false
+| Redundant:        | true| Custom-Developed: | false
+| Client by Human:  | false| Formats Accepted: | JSON
+| Data Processed: 3+| Notification Payloads
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | VaultNote Team
+| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:         | operational<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | SES handles PII (email addresses). Sending quota exhaustion prevents delivery of account verification emails, blocking user registration. Email spoofing via insufficient SPF/DKIM/DMARC alignment is possible if domain records are misconfigured.
+
+|===
+
+=== Incoming Communication Links: 1
+==== SES Email Send (incoming)
+Lambda calls AWS SES to deliver transactional emails. IAM role grants ses:SendEmail only; no SendRawEmail permission. No SES sending rate limit configured on the IAM policy — a compromised Lambda could exhaust the SES daily quota.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Source:         | <<lambda-notifier,Lambda Email Notifier>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | technical-user| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | Notification Payloads| Data Received:  | [GrayText]#none#
+|===
+
+[[browser-spa]]
+== Browser SPA: 0 mitigated Risks
+=== Description
+React Single Page Application served from Nginx. Users authenticate, manage notes, and upload files through this interface.
+
+=== Identified Risks of Asset
+[GrayText]#No risksStr were identified.#
+
+<<<
+
+=== Asset Information
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:             3+| browser-spa
+| Type:             | external-entity| Usage: | business
+| RAA:              | 29 %| Size: | application
+| Technology:       | browser| Tags: | react, spa, trike-actor, trike-actor-untrusted
+| Internet:         | true| Machine: | physical
+| Encryption:       | none| Multi-Tenant: | false
+| Redundant:        | false| Custom-Developed: | true
+| Client by Human:  | true| Formats Accepted: | JSON
+| Data Processed: 3+| File Attachments, Note Content, User Credentials
+| Data Stored:    3+| [GrayText]#none#
+|===
+
+=== Asset Rating
+
+[cols="h,2",frame=none,grid=none]
+|===
+| Owner:             | End Users
+| Confidentiality:   | strictly-confidential<<ref-confidentiality-values,*>>
+| Integrity:         | critical<<ref-criticality-values,*>>
+| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: | Client-side code is public; the trust boundary here is user data entered into the browser. XSS would allow an attacker to exfiltrate session tokens.
+
+|===
+
+=== Outgoing Communication Links: 1
+==== HTTPS to Nginx (outgoing)
+User-initiated HTTPS requests carrying credentials (login) and note content (create/edit). This is the only encrypted link in the chain.
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| Target:         | <<nginx-proxy,Nginx Reverse Proxy>>| Protocol:       | https
+| Encrypted:      | true| Authentication: | credentials
+| Authorization:  | end-user-identity-propagation| Read-Only:      | false
+| Usage:          | business| Tags:           | [GrayText]#none#
+| VPN:            | false| IP-Filtered:    | false
+| Data Sent:      | File Attachments, Note Content, User Credentials| Data Received:  | File Attachments, Note Content
+|===
+

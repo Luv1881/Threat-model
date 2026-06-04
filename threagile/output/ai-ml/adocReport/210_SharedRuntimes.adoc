@@ -1,0 +1,15 @@
+= Shared Runtimes
+In total *1 shared runtime* has been modeled during the threat modeling process.
+
+[[docker-host]]
+== Docker Host
+All containers run on the same Docker host. A container escape or privileged container could access the host filesystem including Docker socket and database volumes.
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| ID:             | docker-host
+| Tags:           | container-runtime, docker
+| Assets running: | api-server, minio-storage, nginx-proxy, postgresql-db, redis-cache
+|===
+

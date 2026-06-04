@@ -1,7 +1,7 @@
 = Identified Risks by Vulnerability category
-In total *12 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *6 as elevated*, *6 as medium*, and *0 as low*. 
+In total *28 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *16 as elevated*, *12 as medium*, and *0 as low*. 
 
-These risks are distributed across *5 vulnerability categories*. 
+These risks are distributed across *6 vulnerability categories*. 
 The following sub-chapters of this section describe each identified risk category.
 
 [[data-disclosure-pii-unencrypted-link]]
@@ -73,7 +73,7 @@ The risk *Data Disclosure - Personal Data Transmitted Over Unencrypted Channel* 
 |===
 
 [[detecting-no-audit-logging]]
-== [.ElevatedRisk]#Detectability - PII Flows Without Audit Logging: 2/2 unmitigated Risks#
+== [.ElevatedRisk]#Detectability - PII Flows Without Audit Logging: 6/6 unmitigated Risks#
 
 *Description* (Repudiation): https://cwe.mitre.org/data/definitions/778.html[CWE 778]::
 Communication links that carry personal data without audit logging enabled mean that access to and use of personal data cannot be detected or reviewed after the fact. GDPR Article 5(2) requires demonstrable accountability.
@@ -109,7 +109,51 @@ Are all communication links that carry personal data audit-logged?
 === Risk Findings
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
 
-The risk *Detectability - PII Flows Without Audit Logging* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+The risk *Detectability - PII Flows Without Audit Logging* was found *6 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Detectability*: *ECS Container Platform* processes PII and has communication links without audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<ecs-platform,[SmallGrey]#detecting-no-audit-logging@ecs-platform#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Detectability*: *LLM Note Summarizer* processes PII and has communication links without audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<llm-summarizer,[SmallGrey]#detecting-no-audit-logging@llm-summarizer#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Detectability*: *Lambda Email Notifier* processes PII and has communication links without audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<lambda-notifier,[SmallGrey]#detecting-no-audit-logging@lambda-notifier#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Detectability*: *Note RAG Pipeline* processes PII and has communication links without audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<rag-pipeline,[SmallGrey]#detecting-no-audit-logging@rag-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
 
 ==== [.ElevatedRisk]#_Elevated Risk Severity_#
 [.ElevatedRisk]#*Detectability*: *Nginx Reverse Proxy* processes PII and has communication links without audit logging: Exploitation likelihood is _Likely_ with _Medium_ impact.#
@@ -142,6 +186,112 @@ The risk *Detectability - PII Flows Without Audit Logging* was found *2 times* i
 
 4+|[.small]#Structured request/response audit logging (Morgan + Winston) is implemented for authenticated endpoints but coverage is incomplete for internal data-access events. Full audit trail covering all PII-processing operations is tracked in VAULT-116. Target: sprint 23.
 #
+|===
+
+[[identifying-pii-stored-unencrypted]]
+== [.ElevatedRisk]#Identifiability - Personal Data Stored Without Encryption at Rest: 6/6 unmitigated Risks#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/312.html[CWE 312]::
+Datastores holding personal data without encryption at rest allow anyone with access to the underlying storage to read and identify data subjects. GDPR Article 32 requires appropriate security measures including encryption at rest.
+
+
+*Impact*::
+Physical or logical access to unencrypted volumes directly exposes personal data, enabling identification of natural persons and constituting a reportable data breach.
+
+
+*Detection Logic*::
+In-scope datastore technical assets storing at least one PII data asset with the encryption field set to none.
+
+
+*Risk Rating*::
+Severity matches the confidentiality classification of the PII stored. Strictly confidential PII warrants Critical.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Datastores on a host protected by full-disk encryption with a documented configuration; document and accept with justification.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Enable encryption at rest on all datastores holding personal data::
+Enable disk-level or database-level encryption on every datastore asset that stores PII data assets. Use full-disk encryption (LUKS, AWS EBS encryption, Azure SSE) or database-level TDE (pgcrypto, SQL Server TDE).
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V6 - Stored Cryptography Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html[Cryptographic_Storage_Cheat_Sheet]
+
+
+*Check*
+
+Is every datastore that holds personal data encrypted at rest?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Identifiability - Personal Data Stored Without Encryption at Rest* was found *6 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Identifiability*: datastore *AWS RDS PostgreSQL* stores personal data without encryption at rest: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<rds-postgresql,[SmallGrey]#identifying-pii-stored-unencrypted@rds-postgresql#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Identifiability*: datastore *AWS S3 Notes Bucket* stores personal data without encryption at rest: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<s3-notes-bucket,[SmallGrey]#identifying-pii-stored-unencrypted@s3-notes-bucket#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Identifiability*: datastore *MinIO Object Storage* stores personal data without encryption at rest: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<minio-storage,[SmallGrey]#identifying-pii-stored-unencrypted@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Identifiability*: datastore *PostgreSQL Database* stores personal data without encryption at rest: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<postgresql-db,[SmallGrey]#identifying-pii-stored-unencrypted@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Identifiability*: datastore *Redis Cache* stores personal data without encryption at rest: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<redis-cache,[SmallGrey]#identifying-pii-stored-unencrypted@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Identifiability*: datastore *VaultNote Vector Store* stores personal data without encryption at rest: Exploitation likelihood is _Likely_ with _High_ impact.#
+
+<<vector-store,[SmallGrey]#identifying-pii-stored-unencrypted@vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
 |===
 
 [[pii-client-side-storage]]
@@ -252,7 +402,7 @@ The risk *Unawareness - PII Processed Without a Consent Management Component* wa
 |===
 
 [[linking-pii-multi-boundary]]
-== [.MediumRisk]#Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries: 6/6 unmitigated Risks#
+== [.MediumRisk]#Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries: 12/12 unmitigated Risks#
 
 *Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/359.html[CWE 359]::
 When the same personal-data asset is processed by technical assets in two or more different trust boundaries, an attacker who compromises any one boundary gains linkability across all others, enabling cross-context profiling.
@@ -288,7 +438,73 @@ Does each PII data asset appear in assets across more than one trust boundary?
 === Risk Findings
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
 
-The risk *Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries* was found *6 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+The risk *Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries* was found *12 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *AWS API Gateway* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<aws-api-gateway,[SmallGrey]#linking-pii-multi-boundary@aws-api-gateway#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *AWS RDS PostgreSQL* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<rds-postgresql,[SmallGrey]#linking-pii-multi-boundary@rds-postgresql#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *AWS S3 Notes Bucket* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<s3-notes-bucket,[SmallGrey]#linking-pii-multi-boundary@s3-notes-bucket#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *ECS Container Platform* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<ecs-platform,[SmallGrey]#linking-pii-multi-boundary@ecs-platform#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *Note RAG Pipeline* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<rag-pipeline,[SmallGrey]#linking-pii-multi-boundary@rag-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Linkability*: *VaultNote Vector Store* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<vector-store,[SmallGrey]#linking-pii-multi-boundary@vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
 
 ==== [.MediumRisk]#_Medium Risk Severity_#
 [.MediumRisk]#*Linkability*: *API Server* processes a PII data asset also flowing into another trust boundary: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#

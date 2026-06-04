@@ -1,0 +1,9 @@
+= Out-of-Scope Assets: 0 Asset
+:fn-tech-assets: footnote:techAssets[Technical asset paragraphs are clickable and link to the corresponding chapter.]
+
+
+This chapter lists all technical assets that have been defined as out-of-scope.
+Each one should be checked in the model whether it should better be included in the overall risk analysis{fn-tech-assets}:
+
+
+[GreyText]#No technical assets have been defined as out-of-scope.#

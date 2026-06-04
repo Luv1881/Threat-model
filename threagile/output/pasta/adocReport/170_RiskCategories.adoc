@@ -1,8 +1,103 @@
 = Identified Risks by Vulnerability category
-In total *5 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *3 as elevated*, *2 as medium*, and *0 as low*. 
+In total *12 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *11 as elevated*, *0 as medium*, and *1 as low*. 
 
-These risks are distributed across *3 vulnerability categories*. 
+These risks are distributed across *6 vulnerability categories*. 
 The following sub-chapters of this section describe each identified risk category.
+
+[[undocumented-entry-point]]
+== [.ElevatedRisk]#Stage III - Undocumented Application Entry Point: 5/5 unmitigated Risks#
+
+*Description* (Elevation of Privilege): https://cwe.mitre.org/data/definitions/693.html[CWE 693]::
+PASTA Stage III requires decomposing the application into entry points so that threats can be mapped against known attack surfaces. A technical asset reachable from the internet or marked as internet-exposed that has no entry_point_type declared represents an undocumented entry point that cannot be systematically analysed for threats.
+
+
+*Impact*::
+Undocumented entry points are excluded from threat analysis, leaving unknown attack surface that attackers can exploit without detection or mitigation.
+
+
+*Detection Logic*::
+In-scope technical assets marked internet=true or reachable from an internet trust boundary that do not have an entry_point_type field declared.
+
+
+*Risk Rating*::
+Medium baseline; elevated when the asset processes sensitive data or requires no authentication.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Internal infrastructure assets (databases, caches) that happen to be reachable across a network perimeter but are not themselves application entry points.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Document all application entry points::
+Declare entry_point_type on every internet-exposed technical asset (api, web_ui, cli, file_upload, webhook, cron, or internal_rpc). Maintain an entry point register and review it as part of each release cycle.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html[Attack_Surface_Analysis_Cheat_Sheet]
+
+
+*Check*
+
+Do all internet-exposed technical assets have an entry_point_type declared?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Stage III - Undocumented Application Entry Point* was found *5 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Undocumented Entry Point*: *AWS API Gateway* is internet-exposed but has no entry_point_type declared: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<aws-api-gateway,[SmallGrey]#undocumented-entry-point@aws-api-gateway#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Undocumented Entry Point*: *AWS ECR Container Registry* is internet-exposed but has no entry_point_type declared: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<container-registry,[SmallGrey]#undocumented-entry-point@container-registry#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Undocumented Entry Point*: *AWS SES* is internet-exposed but has no entry_point_type declared: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<aws-ses,[SmallGrey]#undocumented-entry-point@aws-ses#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Undocumented Entry Point*: *GitHub Actions Build Pipeline* is internet-exposed but has no entry_point_type declared: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<build-pipeline,[SmallGrey]#undocumented-entry-point@build-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Undocumented Entry Point*: *VaultNote Source Repository* is internet-exposed but has no entry_point_type declared: Exploitation likelihood is _Likely_ with _Medium_ impact.#
+
+<<source-repo,[SmallGrey]#undocumented-entry-point@source-repo#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
 
 [[per-operation-rate-limiting-missing]]
 == [.ElevatedRisk]#Stage V - Custom-Developed Service Without Per-Operation Rate Limiting: 2/2 unmitigated Risks#
@@ -125,78 +220,169 @@ The risk *Stage V - No Rate Limiting on Internet-Exposed API* was found *1 time*
 #
 |===
 
-[[custom-development-no-sast]]
-== [.MediumRisk]#Stage II - Custom-Developed Asset With No Build Pipeline Security: 2/2 unmitigated Risks#
+[[weak-auth-on-entry-point]]
+== [.ElevatedRisk]#Stage VI - Weak Authentication Strength on Internet-Exposed Entry Point: 1/1 unmitigated Risk#
 
-*Description* (Tampering): https://cwe.mitre.org/data/definitions/693.html[CWE 693]::
-PASTA Stage II defines the technical scope and identifies custom-developed components that require code-level security analysis. A custom-developed technical asset without a build pipeline performing Static Application Security Testing (SAST) means that code vulnerabilities are not caught before deployment, increasing the probability that known vulnerability classes survive to production.
+*Description* (Spoofing): https://cwe.mitre.org/data/definitions/287.html[CWE 287]::
+PASTA Stage VI models how attackers simulate attacks against identified entry points. Internet-exposed entry points with weak authentication (none or password-only) are prime targets for credential stuffing, phishing, and account takeover attacks. High-value or sensitive entry points should require MFA or hardware tokens.
 
 
 *Impact*::
-Injection vulnerabilities, insecure dependencies, hardcoded secrets, and other code-level weaknesses reach production without detection, widening the attack surface.
+Full account takeover, lateral movement into internal systems, and data exfiltration. Credential stuffing attacks against password-only endpoints succeed at statistically predictable rates given leaked credential databases.
 
 
 *Detection Logic*::
-In-scope custom-developed technical assets where no sourcecode repository or build-pipeline asset exists in the model to provide build security controls.
+Internet-exposed technical assets classified as entry points where requires_authentication_strength is not mfa or hardware and the asset handles confidential or strictly-confidential data.
 
 
 *Risk Rating*::
-Medium baseline; elevated for internet-exposed custom-developed assets processing sensitive data.
+High for entry points storing or processing strictly-confidential data with no MFA. Elevated for confidential data with password-only authentication.
 
 
 [RiskStatusFalsePositive]#*False Positives*#::
-[RiskStatusFalsePositive]#Assets where the build pipeline is managed outside this model; document with a reference to the external CI/CD system.
+[RiskStatusFalsePositive]#Public APIs serving non-sensitive, non-authenticated data (e.g., public search) do not require strong authentication; ensure confidentiality is set to public.
 #
 
-[RiskStatusMitigated]#*Mitigation*# (Development): Add SAST and dependency scanning to the CI/CD pipeline::
-Integrate static analysis (e.g., Semgrep, SonarQube, CodeQL) and dependency scanning (e.g., Dependabot, OWASP Dependency-Check) into the build pipeline for every custom-developed asset. Fail builds on high-severity findings.
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Strengthen authentication on all internet-exposed entry points::
+Require MFA for all user-facing internet entry points handling sensitive data. Declare requires_authentication_strength as mfa or hardware on the technical asset. Consider phishing-resistant authentication (WebAuthn, FIDO2) for high-value assets.
 
 
 
-* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V14 - Configuration Verification Requirements]
-* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html[Vulnerable_Dependency_Management_Cheat_Sheet]
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V2 - Authentication Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html[Authentication_Cheat_Sheet]
 
 
 *Check*
 
-Does every custom-developed technical asset have a build pipeline with SAST and dependency scanning?
+Do all internet-exposed entry points with confidential or higher data have requires_authentication_strength set to mfa or hardware?
 
 
 === Risk Findings
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
 
-The risk *Stage II - Custom-Developed Asset With No Build Pipeline Security* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+The risk *Stage VI - Weak Authentication Strength on Internet-Exposed Entry Point* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
 
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*No Build Pipeline Security*: custom-developed asset *API Server* has no SAST or dependency scanning: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Weak Authentication*: internet-exposed entry point *LLM Note Summarizer* lacks strong authentication for confidential data: Exploitation likelihood is _Likely_ with _High_ impact.#
 
-<<api-server,[SmallGrey]#custom-development-no-sast@api-server#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-| [.RiskStatusInProgress.small]#In Progress#
-| [.GreyText.small]#2026-04-25#
-| [.GreyText.small]#Security Team#
-| [.GreyText.small]#VAULT-121#
-
-4+|[.small]#SAST tooling (Semgrep with Node.js ruleset) is integrated into the GitHub Actions pipeline but the full security rule set is not yet enabled. Remaining rule categories (injection, secrets, SSRF) are being evaluated for false-positive rates. Target: sprint 21.
-#
-|===
-
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*No Build Pipeline Security*: custom-developed asset *Browser SPA* has no SAST or dependency scanning: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
-
-<<browser-spa,[SmallGrey]#custom-development-no-sast@browser-spa#>>
+<<llm-summarizer,[SmallGrey]#weak-auth-on-entry-point@llm-summarizer#>>
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-| [.RiskStatusInProgress.small]#In Progress#
-| [.GreyText.small]#2026-04-25#
-| [.GreyText.small]#Security Team#
-| [.GreyText.small]#VAULT-121#
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
 
-4+|[.small]#Same Semgrep pipeline as api-server covers the React SPA source. ESLint security plugin (eslint-plugin-security) is configured but not yet enforced as a blocking check. Planned for sprint 21.
+[[internet-reachable-datastore]]
+== [.ElevatedRisk]#Stage VII - Internet-Reachable Datastore With No Mitigation: 2/2 unmitigated Risks#
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/284.html[CWE 284]::
+PASTA Stage VII evaluates residual risk. A datastore (database, cache, object store) that can be reached from the internet, either directly or via a chain of HTTP/plain protocol hops, with no network segmentation represents one of the highest-risk configurations in any architecture. Attackers who compromise any internet-facing component gain a direct path to sensitive stored data.
+
+
+*Impact*::
+Mass data exfiltration of all stored records, ransomware encryption of datastores, complete loss of data integrity, and regulatory breach notification obligations.
+
+
+*Detection Logic*::
+In-scope datastore technical assets that have any incoming communication link originating from an internet-exposed technical asset.
+
+
+*Risk Rating*::
+Critical when the datastore holds strictly-confidential data; high otherwise.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Edge datastores intentionally internet-accessible (e.g., CDN origin) with documented justification, no sensitive data, and comprehensive access controls.
 #
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Segment datastores from internet-facing components::
+Place all datastores in a dedicated backend trust boundary with no direct internet access. Ensure all communication links between internet-facing assets and datastores go through the application tier (no direct datastore exposure). Apply defense-in-depth with connection-level authentication and network ACLs.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Database_Security_Cheat_Sheet.html[Database_Security_Cheat_Sheet]
+
+
+*Check*
+
+Are all datastores behind at least one application-tier trust boundary?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Stage VII - Internet-Reachable Datastore With No Mitigation* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Internet-Reachable Datastore*: *AWS ECR Container Registry* can be reached from an internet-exposed asset with no application-tier separation: Exploitation likelihood is _Likely_ with _Very High_ impact.#
+
+<<container-registry,[SmallGrey]#internet-reachable-datastore@container-registry#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+[.ElevatedRisk]#*Internet-Reachable Datastore*: *VaultNote Vector Store* can be reached from an internet-exposed asset with no application-tier separation: Exploitation likelihood is _Likely_ with _Very High_ impact.#
+
+<<vector-store,[SmallGrey]#internet-reachable-datastore@vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+|===
+
+[[missing-threat-scenario]]
+== [.LowRisk]#Stage I - No Threat Scenarios Defined for Internet-Exposed Entry Points: 1/1 unmitigated Risk#
+
+*Description* (Elevation of Privilege): https://cwe.mitre.org/data/definitions/693.html[CWE 693]::
+PASTA Stage I defines business and security objectives and maps them to threat actors. An architecture with internet-exposed entry points but no documented threat scenarios means that adversarial thinking has not been applied: the team has not specified who might attack, how, and with what capabilities.
+
+
+*Impact*::
+Without explicit threat actor profiles and attack scenarios, mitigations are chosen reactively rather than proactively, leaving systematic threat actor capabilities unaddressed.
+
+
+*Detection Logic*::
+Internet-exposed technical assets with a declared entry_point_type but no matching threat scenario that lists them as an entry asset.
+
+
+*Risk Rating*::
+Low severity from a technical standpoint but indicates a process gap that increases risk of systematic coverage omissions.
+
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Models in early development where threat scenario documentation is tracked externally in a threat register; provide a reference in the management summary.
+#
+
+[RiskStatusMitigated]#*Mitigation*# (Operations): Define threat scenarios for all internet-exposed entry points::
+Add a threat_scenarios section to the model with at least one scenario per distinct threat actor type (e.g., script-kiddie, insider, nation-state). Each scenario should document entry_assets, kill_chain_steps, and mitigated_by controls.
+
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html[Threat_Modeling_Cheat_Sheet]
+
+
+*Check*
+
+Does the model have at least one threat_scenarios entry for each internet-facing entry point?
+
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Stage I - No Threat Scenarios Defined for Internet-Exposed Entry Points* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.LowRisk]#_Low Risk Severity_#
+[.LowRisk]#*Missing Threat Scenario*: internet entry point *LLM Note Summarizer* has no documented threat scenario: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+
+<<llm-summarizer,[SmallGrey]#missing-threat-scenario@llm-summarizer#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+4+| [.RiskStatusUnchecked.small]#*Unchecked*#
 |===
 

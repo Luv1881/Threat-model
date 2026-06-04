@@ -13,7 +13,7 @@ Additionally, for each risk finding a link towards a matching OWASP Cheat Sheet 
 
 
 
-In total *35 initial risks* in *19 categories* have been identified during the threat modeling process:
+In total *67 initial risks* in *26 categories* have been identified during the threat modeling process:
 
 
 
@@ -26,9 +26,9 @@ In total *35 initial risks* in *19 categories* have been identified during the t
 pie showData
   "critical risk" : 0
   "high risk" : 2
-  "elevated risk" : 14
-  "medium risk" : 16
-  "low risk" : 3
+  "elevated risk" : 21
+  "medium risk" : 38
+  "low risk" : 6
 ....
 
 |
@@ -36,7 +36,7 @@ pie showData
 ....
 %%{init: {'pie' : {'textPosition' : 0.5}, 'theme': 'base', 'themeVariables': { 'pie1': '#FF0000', 'pie2': '#FF9300', 'pie3': '#FF40FF', 'pie4': '#0000FF', 'pie5': '#008F00', 'pie5': '#666666'}}}%%
 pie showData
-  "unchecked" : 31
+  "unchecked" : 63
   "in discussion" : 0
   "accepted" : 2
   "in progress" : 2

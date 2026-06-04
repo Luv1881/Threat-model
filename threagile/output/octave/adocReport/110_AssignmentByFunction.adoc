@@ -1,0 +1,135 @@
+= Assignment by Function
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+This chapter clusters and assigns the risks by functions which are most likely able to check and mitigate them: In total *99 potential risks* have been identified during the threat modeling process of which *10 should be checked by Business Side*, *31 should be checked by Architecture*, *13 should be checked by Development*, and *45 should be checked by Operations*.{fn-risk-findings}
+
+== Business Side
+<<octave-no-recovery-plan,[.ElevatedRisk]#Elevated: *OCTAVE Allegro - High-Criticality Information Asset Container Without Disaster Recovery Plan*: 6/6 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Without a disaster recovery plan, loss of a high-criticality information asset container can result in extended operational outages, permanent data loss, breach of service level agreements, and significant financial and reputational damage. Regulated industries may face enforcement action for failure to demonstrate business continuity for critical data systems.
+
+
+<<octave-third-party-exposure,[.ElevatedRisk]#Elevated: *OCTAVE Allegro - Information Asset Shared With Third Party Without Data Processing Agreement*: 3/3 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Without a DPA, the third party is free to process organisational information assets in ways that may violate confidentiality, data protection law (GDPR Art. 28), and the organisation's own security policies. A third-party breach directly exposes organisational data with no contractual recourse or notification obligation.
+
+
+<<missing-authentication-second-factor,[.MediumRisk]#Medium: *Missing Two-Factor Authentication (2FA)*: 1/1 unmitigated Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access or modify highly sensitive data without strong authentication.
+
+
+== Architecture
+<<lateral-movement-shared-runtime,[.ElevatedRisk]#Elevated: *Lateral Movement via Shared Runtime*: 1/1 unmitigated Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+An attacker who compromises any asset on the shared runtime may pivot to other co-located assets, including those in higher trust zones.
+
+<<missing-authentication,[.ElevatedRisk]#Elevated: *Missing Authentication*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access or modify sensitive data in an unauthenticated way.
+
+<<octave-unencrypted-transport,[.ElevatedRisk]#Elevated: *OCTAVE Allegro - Information Asset Container Transmits Data Without Encryption*: 6/6 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Interception of unencrypted traffic carrying organisational information assets enables data exfiltration without any access-control bypass. Sensitive business data, credentials, and personal records can be captured passively from the network. This constitutes a reportable breach under GDPR and other privacy regulations.
+
+
+<<octave-no-access-control,[.ElevatedRisk]#Elevated: *OCTAVE Allegro - Information Asset Container Without Access Control*: 6/6 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Unrestricted access to the information asset container enables data exfiltration, unauthorised modification, and destruction of organisational information assets. Depending on the criticality of the asset, this may result in operational disruption, regulatory breach notifications, and significant reputational harm.
+
+
+<<unguarded-access-from-internet,[.ElevatedRisk]#Elevated: *Unguarded Access From Internet*: 5/5 unmitigated Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive systems without any hardening components in-between due to them being directly exposed on the internet.
+
+<<unguarded-direct-datastore-access,[.ElevatedRisk]#Elevated: *Unguarded Direct Datastore Access*: 3/3 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.
+
+<<missing-build-infrastructure,[.MediumRisk]#Medium: *Missing Build Infrastructure*: 1/1 unmitigated Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model due to critical build infrastructure components missing in the model.
+
+<<missing-identity-store,[.MediumRisk]#Medium: *Missing Identity Store*: 1/1 unmitigated Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model in the identity provider/store that is currently missing in the model.
+
+<<missing-vault,[.MediumRisk]#Medium: *Missing Vault (Secret Storage)*: 1/1 unmitigated Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to easier steal config secrets (like credentials, private keys, client certificates, etc.) once a vulnerability to access files is present and exploited.
+
+<<unchecked-deployment,[.MediumRisk]#Medium: *Unchecked Deployment*: 3/3 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk remains unmitigated, vulnerabilities in custom-developed software or their dependencies might not be identified during continuous deployment cycles.
+
+<<unguarded-access-from-internet,[.MediumRisk]#Medium: *Unguarded Access From Internet*: 5/5 unmitigated Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive systems without any hardening components in-between due to them being directly exposed on the internet.
+
+<<unguarded-direct-datastore-access,[.MediumRisk]#Medium: *Unguarded Direct Datastore Access*: 3/3 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.
+
+<<unchecked-deployment,[.LowRisk]#Low: *Unchecked Deployment*: 3/3 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk remains unmitigated, vulnerabilities in custom-developed software or their dependencies might not be identified during continuous deployment cycles.
+
+<<unnecessary-technical-asset,[.LowRisk]#Low: *Unnecessary Technical Asset*: 2/2 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Low_ impact.#>>::
+If this risk is unmitigated, attackers might be able to target unnecessary technical assets.
+
+
+== Development
+<<sql-nosql-injection,[.HighRisk]#High: *SQL/NoSQL-Injection*: 2/2 unmitigated Risks - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.
+
+<<path-traversal,[.ElevatedRisk]#Elevated: *Path-Traversal*: 3/3 unmitigated Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to read sensitive files (configuration data, key/credential files, deployment files, business data files, etc.) from the filesystem of affected components.
+
+<<sql-nosql-injection,[.ElevatedRisk]#Elevated: *SQL/NoSQL-Injection*: 2/2 unmitigated Risks - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.
+
+<<server-side-request-forgery,[.ElevatedRisk]#Elevated: *Server-Side Request Forgery (SSRF)*: 8/8 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.
+
+<<server-side-request-forgery,[.MediumRisk]#Medium: *Server-Side Request Forgery (SSRF)*: 8/8 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.
+
+
+== Operations
+<<exposed-default-credentials,[.HighRisk]#High: *Asset Using Known Default or Hardcoded Credentials*: 1/1 unmitigated Risk - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
+Any attacker with network access can authenticate using default credentials, exfiltrate all stored data, modify records, or pivot into adjacent systems.
+
+
+<<missing-cloud-hardening,[.ElevatedRisk]#Elevated: *Missing Cloud Hardening*: 3/3 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Very High_ impact.#>>::
+If this risk is unmitigated, attackers might access cloud components in an unintended way.
+
+<<missing-csp-header,[.ElevatedRisk]#Elevated: *Missing Content-Security-Policy Header on Web Entry Point*: 1/1 unmitigated Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+An attacker who successfully injects client-side script can exfiltrate authentication tokens, impersonate users, and access all data the victim can access. Without CSP, there is no browser-enforced barrier against inline script execution or data exfiltration.
+
+
+<<missing-hardening,[.ElevatedRisk]#Elevated: *Missing Hardening*: 3/3 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+If this risk remains unmitigated, attackers might be able to easier attack high-value targets.
+
+<<octave-no-backup,[.ElevatedRisk]#Elevated: *OCTAVE Allegro - High-Criticality Information Asset Container Without Automated Backup*: 5/5 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Permanent loss of high-criticality information assets causes operational disruption, financial harm, and potential regulatory penalties. Recovery without backups may be impossible, leading to extended downtime and loss of business continuity.
+
+
+<<octave-insufficient-logging,[.ElevatedRisk]#Elevated: *OCTAVE Allegro - Information Asset Container Without Audit Logging*: 6/6 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Absence of audit logs means unauthorised access and data exfiltration go undetected and uninvestigated. Incident response is severely impaired. Regulatory bodies (GDPR, HIPAA, SOC 2) require demonstrable audit trails for systems storing sensitive or personal data, and their absence can result in fines and sanctions.
+
+
+<<unencrypted-communication,[.ElevatedRisk]#Elevated: *Unencrypted Communication*: 4/4 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+If this risk is unmitigated, network attackers might be able to to eavesdrop on unencrypted sensitive data sent between components.
+
+<<accidental-secret-leak,[.MediumRisk]#Medium: *Accidental Secret Leak*: 1/1 unmitigated Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers which have access to affected sourcecode repositories or artifact registries might find secrets accidentally checked-in.
+
+<<code-backdooring,[.MediumRisk]#Medium: *Code Backdooring*: 3/3 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk remains unmitigated, attackers might be able to execute code on and completely takeover production environments.
+
+<<container-baseimage-backdooring,[.MediumRisk]#Medium: *Container Base Image Backdooring*: 7/7 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to deeply persist in the target system by executing code in deployed containers.
+
+<<container-platform-escape,[.MediumRisk]#Medium: *Container Platform Escape*: 1/1 unmitigated Risk - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers which have successfully compromised a container (via other vulnerabilities) might be able to deeply persist in the target system by executing code in many deployed containers and the container platform itself.
+
+<<missing-cloud-hardening,[.MediumRisk]#Medium: *Missing Cloud Hardening*: 3/3 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Very High_ impact.#>>::
+If this risk is unmitigated, attackers might access cloud components in an unintended way.
+
+<<missing-waf,[.MediumRisk]#Medium: *Missing Web Application Firewall (WAF)*: 1/1 unmitigated Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers might be able to apply standard attack pattern tests at great speed without any filtering.
+
+<<mixed-targets-on-shared-runtime,[.MediumRisk]#Medium: *Mixed Targets on Shared Runtime*: 1/1 unmitigated Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+If this risk is unmitigated, attackers successfully attacking other components of the system might have an easy path towards more valuable targets, as they are running on the same shared runtime.
+
+<<unencrypted-asset,[.MediumRisk]#Medium: *Unencrypted Technical Assets*: 5/5 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
+If this risk is unmitigated, attackers might be able to access unencrypted data when successfully compromising sensitive components.
+
+<<dos-risky-access-across-trust-boundary,[.LowRisk]#Low: *DoS-risky Access Across Trust-Boundary*: 3/3 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Low_ impact.#>>::
+If this risk remains unmitigated, attackers might be able to disturb the availability of important parts of the system.
+
+

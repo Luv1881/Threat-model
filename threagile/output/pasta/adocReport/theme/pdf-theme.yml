@@ -6,8 +6,6 @@ title-page:
   authors:
     content: "{author}, {author-homepage}[]"
 
-  logo:
-    image: image:logo.png[]
 header:
   height: 2cm
   line-height: 1

@@ -15,19 +15,19 @@ The following chart gives a high-level overview of the risk tracking status (inc
       {"risk": "Low (0)", "value": 0, "status": "Mitigated", "color": "#008F00"},
       {"risk": "Low (0)", "value": 0, "status": "FalsePositive", "color": "#666666"},
 
-      {"risk": "Medium (6)", "value": 0, "status": "Unchecked", "color": "#FF0000"},
-      {"risk": "Medium (6)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
-      {"risk": "Medium (6)", "value": 6, "status": "Accepted", "color": "#FF40FF"},
-      {"risk": "Medium (6)", "value": 0, "status": "InProgress", "color": "#0000FF"},
-      {"risk": "Medium (6)", "value": 0, "status": "Mitigated", "color": "#008F00"},
-      {"risk": "Medium (6)", "value": 0, "status": "FalsePositive", "color": "#666666"},
+      {"risk": "Medium (12)", "value": 6, "status": "Unchecked", "color": "#FF0000"},
+      {"risk": "Medium (12)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
+      {"risk": "Medium (12)", "value": 6, "status": "Accepted", "color": "#FF40FF"},
+      {"risk": "Medium (12)", "value": 0, "status": "InProgress", "color": "#0000FF"},
+      {"risk": "Medium (12)", "value": 0, "status": "Mitigated", "color": "#008F00"},
+      {"risk": "Medium (12)", "value": 0, "status": "FalsePositive", "color": "#666666"},
 
-      {"risk": "Elevated (6)", "value": 1, "status": "Unchecked", "color": "#FF0000"},
-      {"risk": "Elevated (6)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
-      {"risk": "Elevated (6)", "value": 1, "status": "Accepted", "color": "#FF40FF"},
-      {"risk": "Elevated (6)", "value": 4, "status": "InProgress", "color": "#0000FF"},
-      {"risk": "Elevated (6)", "value": 0, "status": "Mitigated", "color": "#008F00"},
-      {"risk": "Elevated (6)", "value": 0, "status": "FalsePositive", "color": "#666666"},
+      {"risk": "Elevated (16)", "value": 11, "status": "Unchecked", "color": "#FF0000"},
+      {"risk": "Elevated (16)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
+      {"risk": "Elevated (16)", "value": 1, "status": "Accepted", "color": "#FF40FF"},
+      {"risk": "Elevated (16)", "value": 4, "status": "InProgress", "color": "#0000FF"},
+      {"risk": "Elevated (16)", "value": 0, "status": "Mitigated", "color": "#008F00"},
+      {"risk": "Elevated (16)", "value": 0, "status": "FalsePositive", "color": "#666666"},
 
       {"risk": "High (0)", "value": 0, "status": "Unchecked", "color": "#FF0000"},
       {"risk": "High (0)", "value": 0, "status": "InDiscussion", "color": "#FF9300"},
@@ -60,7 +60,7 @@ The following chart gives a high-level overview of the risk tracking status (inc
       },
       "legend" : {
         "title": "",
-        "labelExpr": "datum.label == \"Unchecked\" ? \"1 unchecked\" : datum.label == \"InDiscussion\" ? \"0 in discussion\" : datum.label == \"Accepted\" ? \"7 accepted\" : datum.label == \"InProgress\" ? \"4 in progress\" : datum.label == \"Mitigated\" ? \"0 mitigated\" : datum.label == \"FalsePositive\" ? \"0 false positive\" : \"\""
+        "labelExpr": "datum.label == \"Unchecked\" ? \"17 unchecked\" : datum.label == \"InDiscussion\" ? \"0 in discussion\" : datum.label == \"Accepted\" ? \"7 accepted\" : datum.label == \"InProgress\" ? \"4 in progress\" : datum.label == \"Mitigated\" ? \"0 mitigated\" : datum.label == \"FalsePositive\" ? \"0 false positive\" : \"\""
       }
     }
   }
@@ -68,7 +68,7 @@ The following chart gives a high-level overview of the risk tracking status (inc
 ....
 
 
-After removal of risks with status _mitigated_ and _false positive_ the following *12 remain unmitigated*:
+After removal of risks with status _mitigated_ and _false positive_ the following *28 remain unmitigated*:
 [cols="a,a",frame=none,grid=none]
 |===
 |
@@ -78,8 +78,8 @@ After removal of risks with status _mitigated_ and _false positive_ the followin
 pie showData
   "unmitigated critical risk" : 0
   "unmitigated high risk" : 0
-  "unmitigated elevated risk" : 6
-  "unmitigated medium risk" : 6
+  "unmitigated elevated risk" : 16
+  "unmitigated medium risk" : 12
   "unmitigated low risk" : 0
 ....
 
@@ -89,9 +89,9 @@ pie showData
 %%{init: {'pie' : {'textPosition' : 0.5}, 'theme': 'base', 'themeVariables': { 'pie1': '#531B93', 'pie2': '#005493', 'pie3': '#DE9223', 'pie4': '#947F50'}}}%%
 pie showData
   "business side related" : 0
-  "architecture related" : 9
+  "architecture related" : 21
   "development related" : 1
-  "operations related" : 2
+  "operations related" : 6
 ....
 |===
 

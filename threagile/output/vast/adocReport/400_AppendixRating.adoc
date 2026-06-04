@@ -7,11 +7,11 @@
 |===
 | Name | Value | Description
 
+| public | 1 | Public available information
 | internal | 2 | (Company) internal information - but all people in the institution can access it
 | restricted | 3 | Internal and with restricted access
 | confidential | 4 | Only a few selected people have access
 | strictly-confidential | 5 | Highest secrecy level
-| public | 1 | Public available information
 |===
 
 [[ref-criticality-values]]

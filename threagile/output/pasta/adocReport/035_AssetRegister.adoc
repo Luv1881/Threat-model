@@ -5,8 +5,35 @@
 <<api-server,*API Server*>>::
   Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD on notes, file uploads to MinIO. Bridges the frontend and backend networks. Single most security-critical component — compromise equals full data access.
 
+<<aws-api-gateway,*AWS API Gateway*>>::
+  AWS API Gateway (HTTP API) fronting the ECS API containers in production. Routes traffic from the ALB to backend ECS tasks. INTENTIONAL: No usage plan or throttling policy configured. No WAF association on the API gateway stage. Auth relies entirely on the API server (JWT) — no gateway-level auth enforcement.
+
+<<container-registry,*AWS ECR Container Registry*>>::
+  AWS Elastic Container Registry storing VaultNote Docker images (api, nginx). INTENTIONAL: Image vulnerability scanning is disabled (ECR Basic scanning only, not Enhanced/Inspector). Images are not signed — no Cosign/Sigstore policy enforced. Repository is private but no admission controller validates signatures at deploy time.
+
+<<rds-postgresql,*AWS RDS PostgreSQL*>>::
+  AWS RDS PostgreSQL instance (production). Replaces the Docker-based PostgreSQL in production deployments. Automated backups enabled (7-day retention). INTENTIONAL: Encryption at rest is disabled (storage_encrypted = false in Terraform). Public accessibility is off but subnet group is in app subnet (not data subnet), creating potential exposure via compromised app instances.
+
+<<s3-notes-bucket,*AWS S3 Notes Bucket*>>::
+  AWS S3 bucket storing file attachments for production deployments. Replaces MinIO S3-compatible storage in the cloud environment. Bucket is private (Block Public Access enabled) but server-side encryption is not configured. INTENTIONAL: SSE-S3 or SSE-KMS not enabled. Objects are stored unencrypted at the storage layer — provider-side access exposes raw data.
+
+<<aws-ses,*AWS SES*>>::
+  AWS Simple Email Service used for transactional email delivery (note-share invitations, account verification). Managed service — not custom-developed. SES sending identity (domain) is verified; DKIM and SPF records are configured. No dedicated sending quota alarm; a compromised Lambda could exhaust the daily send limit and cause notification delivery failure.
+
 <<browser-spa,*Browser SPA*>>::
   React Single Page Application served from Nginx. Users authenticate, manage notes, and upload files through this interface.
+
+<<ecs-platform,*ECS Container Platform*>>::
+  AWS ECS (Fargate) running the API and Nginx containers in production. INTENTIONAL: ECR Enhanced Scanning (Inspector v2) is not enabled. Running containers are not scanned post-deployment for newly disclosed CVEs. Container images are pulled from ECR without signature verification.
+
+<<build-pipeline,*GitHub Actions Build Pipeline*>>::
+  GitHub Actions CI/CD pipeline. Builds Docker images, runs tests, pushes to ECR. INTENTIONAL: No SBOM generation (no Syft or CycloneDX step configured). No build provenance attestation (no SLSA provenance step). Hardcoded AWS_SECRET_ACCESS_KEY in workflow environment variables.
+
+<<llm-summarizer,*LLM Note Summarizer*>>::
+  OpenAI-compatible LLM inference endpoint used to generate AI summaries of user notes on demand. Deployed as a containerised model proxy (LiteLLM) with a public API endpoint for testing. INTENTIONAL: Endpoint is internet-accessible and lacks authentication — the has-authentication tag is intentionally absent to demonstrate the finding. No adversarial input shield (Llama Guard or guardrails) is configured. System prompt contains internal business context visible to adversarial probing.
+
+<<lambda-notifier,*Lambda Email Notifier*>>::
+  AWS Lambda function that sends transactional emails (note-share invitations, account verification) triggered by SQS messages from the API server. Processes user email addresses (PII) and note titles in notification payloads. INTENTIONAL: No dead letter queue (DLQ) configured on the SQS event source. Failed notifications are silently dropped after 3 retries with no audit trail.
 
 <<minio-storage,*MinIO Object Storage*>>::
   S3-compatible object store for file attachments. INTENTIONAL MISCONFIGURATION: Uses default minioadmin/minioadmin credentials (visible in docker-compose.yml) and stores files without encryption at rest. HTTP-only (no TLS) within the Docker network.
@@ -14,19 +41,40 @@
 <<nginx-proxy,*Nginx Reverse Proxy*>>::
   Nginx terminates TLS and forwards all API traffic to the Express server over plain HTTP (port 3000). This is the DMZ entry point.
 
+<<rag-pipeline,*Note RAG Pipeline*>>::
+  Retrieval-Augmented Generation pipeline that assembles context chunks from the vector store before forwarding to the LLM. Built on LangChain. INTENTIONAL: No input validation or injection guard on retrieved chunks (has-input-validation absent). A note containing prompt injection payloads could be retrieved as context and alter LLM behavior. No retrieval filtering — all results from the vector store are injected into context without relevance threshold or content sanitisation.
+
 <<postgresql-db,*PostgreSQL Database*>>::
   Primary relational datastore. Contains users table (email + bcrypt password hash), notes table (title + content), and attachments metadata. INTENTIONAL MISCONFIGURATION: No encryption at rest (encryption: none).
 
 <<redis-cache,*Redis Cache*>>::
   In-memory store used as session store and JWT revocation list. INTENTIONAL MISCONFIGURATION: No encryption at rest. If Redis persistence is enabled and the RDB file is exfiltrated, session tokens are exposed.
 
+<<source-repo,*VaultNote Source Repository*>>::
+  GitHub repository hosting the VaultNote monorepo (API, frontend, Terraform). Contains application secrets in compose files (minioadmin credentials visible in git history) and Terraform state references. INTENTIONAL: No branch protection rules configured — developers push directly to main, bypassing review and signed-commit requirements.
+
+<<vector-store,*VaultNote Vector Store*>>::
+  Qdrant vector database storing embedding vectors for semantic search and RAG context retrieval. Vectors are generated by the embedding service from user note content. INTENTIONAL: No encryption at rest configured (encryption: none). The vector store is queryable by the LLM pipeline and the API server without row-level isolation — all user embeddings share the same collection. No access control list separates per-user embedding queries.
+
 == Data Assets
+
+<<dataAsset:ai-model-responses,*AI Model Responses*>>::
+  LLM-generated summaries and explanations of user notes. May contain paraphrased versions of sensitive note content. Cached temporarily in the API response layer.
+
+<<dataAsset:build-artifacts,*Build Artifacts*>>::
+  Docker container images, compiled source bundles, and dependency lockfiles produced by the CI/CD pipeline. Integrity is critical — these are the deployable units of the application.
+
+<<dataAsset:embedding-vectors,*Embedding Vectors*>>::
+  High-dimensional vector representations of user note content generated by the embedding service. Semantically encodes note information even without storing the original text.
 
 <<dataAsset:file-attachments,*File Attachments*>>::
   Binary file uploads attached to notes. May include documents, images, or other sensitive files depending on note usage.
 
 <<dataAsset:note-content,*Note Content*>>::
   User-authored note text — may include personal, financial, or health information depending on how users employ the application.
+
+<<dataAsset:notification-payloads,*Notification Payloads*>>::
+  Email notification payloads containing user email addresses and note titles sent via Lambda to AWS SES. Contains PII (email address) and indirect note content references.
 
 <<dataAsset:session-tokens,*Session Tokens*>>::
   JWT tokens and Redis session keys used to maintain authenticated state. Theft allows session hijacking without knowing the user's password.

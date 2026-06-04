@@ -1,7 +1,7 @@
 = Assignment by Function
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
 
-This chapter clusters and assigns the risks by functions which are most likely able to check and mitigate them: In total *12 potential risks* have been identified during the threat modeling process of which *0 should be checked by Business Side*, *9 should be checked by Architecture*, *1 should be checked by Development*, and *2 should be checked by Operations*.{fn-risk-findings}
+This chapter clusters and assigns the risks by functions which are most likely able to check and mitigate them: In total *28 potential risks* have been identified during the threat modeling process of which *0 should be checked by Business Side*, *21 should be checked by Architecture*, *1 should be checked by Development*, and *6 should be checked by Operations*.{fn-risk-findings}
 
 == Business Side
 
@@ -9,11 +9,15 @@ This chapter clusters and assigns the risks by functions which are most likely a
 <<data-disclosure-pii-unencrypted-link,[.ElevatedRisk]#Elevated: *Data Disclosure - Personal Data Transmitted Over Unencrypted Channel*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
 Exposure of personal data to eavesdroppers, potential data breach notification obligations under GDPR Article 33, and significant regulatory penalties.
 
+<<identifying-pii-stored-unencrypted,[.ElevatedRisk]#Elevated: *Identifiability - Personal Data Stored Without Encryption at Rest*: 6/6 unmitigated Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Physical or logical access to unencrypted volumes directly exposes personal data, enabling identification of natural persons and constituting a reportable data breach.
+
+
 <<unawareness-no-consent-technology,[.ElevatedRisk]#Elevated: *Unawareness - PII Processed Without a Consent Management Component*: 1/1 unmitigated Risk - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
 Data subjects cannot exercise GDPR rights. Regulatory investigation risk and class-action exposure in jurisdictions with private right of action.
 
 
-<<linking-pii-multi-boundary,[.MediumRisk]#Medium: *Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries*: 6/6 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
+<<linking-pii-multi-boundary,[.MediumRisk]#Medium: *Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries*: 12/12 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
 Aggregation of personal data enables profiling, re-identification, and violations of GDPR data minimisation and purpose limitation principles (Articles 5(1)(b) and 5(1)(c)).
 
 
@@ -25,7 +29,7 @@ Stolen session tokens allow account takeover and impersonation. The original use
 
 
 == Operations
-<<detecting-no-audit-logging,[.ElevatedRisk]#Elevated: *Detectability - PII Flows Without Audit Logging*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+<<detecting-no-audit-logging,[.ElevatedRisk]#Elevated: *Detectability - PII Flows Without Audit Logging*: 6/6 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
 Inability to detect unauthorized access to personal data, failure to meet GDPR accountability obligations, and potential inability to meet breach notification deadlines.
 
 

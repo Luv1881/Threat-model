@@ -1,12 +1,12 @@
 = Identified Data Breach Probabilities by Data Asset
-In total *11 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *11 as elevated*, *0 as medium*, and *0 as low*. 
+In total *10 potential risks* have been identified during the threat modeling process of which *0 are rated as critical*, *0 as high*, *10 as elevated*, *0 as medium*, and *0 as low*. 
 
-These risks are distributed across *4 data assets*. 
+These risks are distributed across *8 data assets*. 
 The following sub-chapters of this section describe the derived data breach probabilities grouped by data asset.
 
 <<<
 [[dataAsset:file-attachments]]
-== [.HighRisk]#File Attachments: 4/4 unmitigated Risks#
+== [.HighRisk]#File Attachments: 3/3 unmitigated Risks#
 Binary file uploads attached to notes. May include documents, images, or other sensitive files depending on note usage.
 
 
@@ -20,21 +20,20 @@ Binary file uploads attached to notes. May include documents, images, or other s
 | Integrity:           | critical<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
 | CIA-Justification: 3+| Files may contain sensitive documents. Integrity is critical because tampered attachments corrupt evidence or business records. MinIO's default credentials (minioadmin) make all stored files accessible to anyone on the network — intentional misconfiguration for demo purposes.
 
-| Processed by:      3+| API Server, Browser SPA, MinIO Object Storage, Nginx Reverse Proxy
-| Stored by:         3+| MinIO Object Storage
-| Sent via:            | HTTP to API Server, HTTPS to Nginx, MinIO File Storage| Received via:        | HTTP to API Server, HTTPS to Nginx, MinIO File Storage
+| Processed by:      3+| API Server, AWS API Gateway, AWS S3 Notes Bucket, Browser SPA, MinIO Object Storage, Nginx Reverse Proxy
+| Stored by:         3+| AWS S3 Notes Bucket, MinIO Object Storage
+| Sent via:            | HTTP to API Server, HTTPS to Nginx, MinIO File Storage, Route to ECS API| Received via:        | HTTP to API Server, HTTPS to Nginx, MinIO File Storage, Route to ECS API
 | Data Breach:       3+| [.HighRisk]#probable#
-| Data Breach Risks: 3+| This data asset has data breach potential because of 4 remaining risks:
+| Data Breach Risks: 3+| This data asset has data breach potential because of 3 remaining risks:
 |                    2+| <<operational-shared-runtime-critical-process,[.HighRisk.small]#Probable: operational-shared-runtime-critical-process@api-server#>>
 |                    2+| <<application-secrets-across-processes,[.HighRisk.small]#Probable: application-secrets-across-processes@api-server#>>
 |                    2+| <<operational-critical-process-no-redundancy,[.LowRisk.small]#Improbable: operational-critical-process-no-redundancy@api-server#>>
-|                    2+| <<operational-unmonitored-critical-process,[.LowRisk.small]#Improbable: operational-unmonitored-critical-process@api-server#>>
 
 |===
 
 <<<
 [[dataAsset:note-content]]
-== [.HighRisk]#Note Content: 8/8 unmitigated Risks#
+== [.HighRisk]#Note Content: 7/7 unmitigated Risks#
 User-authored note text — may include personal, financial, or health information depending on how users employ the application.
 
 
@@ -48,25 +47,24 @@ User-authored note text — may include personal, financial, or health informati
 | Integrity:           | critical<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
 | CIA-Justification: 3+| Notes may contain highly sensitive personal information. Integrity is critical because corrupted notes lose user trust.
 
-| Processed by:      3+| API Server, Browser SPA, Nginx Reverse Proxy, PostgreSQL Database
-| Stored by:         3+| PostgreSQL Database
-| Sent via:            | HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection| Received via:        | HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection
+| Processed by:      3+| API Server, AWS API Gateway, AWS RDS PostgreSQL, Browser SPA, ECS Container Platform, LLM Note Summarizer, Nginx Reverse Proxy, Note RAG Pipeline, PostgreSQL Database, VaultNote Vector Store
+| Stored by:         3+| AWS RDS PostgreSQL, PostgreSQL Database
+| Sent via:            | Call RAG Pipeline, HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection, Route to ECS API| Received via:        | Call RAG Pipeline, HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection, Query Vector Store, Retrieve from Vector Store, Route to ECS API
 | Data Breach:       3+| [.HighRisk]#probable#
-| Data Breach Risks: 3+| This data asset has data breach potential because of 8 remaining risks:
+| Data Breach Risks: 3+| This data asset has data breach potential because of 7 remaining risks:
 |                    2+| <<operational-shared-runtime-critical-process,[.HighRisk.small]#Probable: operational-shared-runtime-critical-process@api-server#>>
 |                    2+| <<operational-shared-runtime-critical-process,[.HighRisk.small]#Probable: operational-shared-runtime-critical-process@postgresql-db#>>
 |                    2+| <<application-secrets-across-processes,[.HighRisk.small]#Probable: application-secrets-across-processes@api-server#>>
 |                    2+| <<application-secrets-across-processes,[.HighRisk.small]#Probable: application-secrets-across-processes@postgresql-db#>>
 |                    2+| <<operational-critical-process-no-redundancy,[.LowRisk.small]#Improbable: operational-critical-process-no-redundancy@api-server#>>
 |                    2+| <<operational-critical-process-no-redundancy,[.LowRisk.small]#Improbable: operational-critical-process-no-redundancy@postgresql-db#>>
-|                    2+| <<operational-unmonitored-critical-process,[.LowRisk.small]#Improbable: operational-unmonitored-critical-process@api-server#>>
 |                    2+| <<operational-unmonitored-critical-process,[.LowRisk.small]#Improbable: operational-unmonitored-critical-process@postgresql-db#>>
 
 |===
 
 <<<
 [[dataAsset:session-tokens]]
-== [.HighRisk]#Session Tokens: 7/7 unmitigated Risks#
+== [.HighRisk]#Session Tokens: 6/6 unmitigated Risks#
 JWT tokens and Redis session keys used to maintain authenticated state. Theft allows session hijacking without knowing the user's password.
 
 
@@ -84,20 +82,19 @@ JWT tokens and Redis session keys used to maintain authenticated state. Theft al
 | Stored by:         3+| Redis Cache
 | Sent via:            | Redis Session Store| Received via:        | Redis Session Store
 | Data Breach:       3+| [.HighRisk]#probable#
-| Data Breach Risks: 3+| This data asset has data breach potential because of 7 remaining risks:
+| Data Breach Risks: 3+| This data asset has data breach potential because of 6 remaining risks:
 |                    2+| <<operational-shared-runtime-critical-process,[.HighRisk.small]#Probable: operational-shared-runtime-critical-process@api-server#>>
 |                    2+| <<operational-shared-runtime-critical-process,[.HighRisk.small]#Probable: operational-shared-runtime-critical-process@redis-cache#>>
 |                    2+| <<application-secrets-across-processes,[.HighRisk.small]#Probable: application-secrets-across-processes@api-server#>>
 |                    2+| <<operational-critical-process-no-redundancy,[.LowRisk.small]#Improbable: operational-critical-process-no-redundancy@api-server#>>
 |                    2+| <<operational-critical-process-no-redundancy,[.LowRisk.small]#Improbable: operational-critical-process-no-redundancy@redis-cache#>>
-|                    2+| <<operational-unmonitored-critical-process,[.LowRisk.small]#Improbable: operational-unmonitored-critical-process@api-server#>>
 |                    2+| <<operational-unmonitored-critical-process,[.LowRisk.small]#Improbable: operational-unmonitored-critical-process@redis-cache#>>
 
 |===
 
 <<<
 [[dataAsset:user-credentials]]
-== [.HighRisk]#User Credentials: 8/8 unmitigated Risks#
+== [.HighRisk]#User Credentials: 7/7 unmitigated Risks#
 Email addresses and bcrypt-hashed passwords used for authentication. Compromise allows full account takeover.
 
 
@@ -111,19 +108,114 @@ Email addresses and bcrypt-hashed passwords used for authentication. Compromise 
 | Integrity:           | critical<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
 | CIA-Justification: 3+| Credentials grant full account access. A breach leaks all users' identities and enables account takeover across every note and attachment.
 
-| Processed by:      3+| API Server, Browser SPA, Nginx Reverse Proxy, PostgreSQL Database
-| Stored by:         3+| PostgreSQL Database
-| Sent via:            | HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection| Received via:        | PostgreSQL Connection
+| Processed by:      3+| API Server, AWS API Gateway, AWS RDS PostgreSQL, Browser SPA, ECS Container Platform, Nginx Reverse Proxy, PostgreSQL Database
+| Stored by:         3+| AWS RDS PostgreSQL, PostgreSQL Database
+| Sent via:            | HTTP to API Server, HTTPS to Nginx, PostgreSQL Connection, Route to ECS API| Received via:        | PostgreSQL Connection
 | Data Breach:       3+| [.HighRisk]#probable#
-| Data Breach Risks: 3+| This data asset has data breach potential because of 8 remaining risks:
+| Data Breach Risks: 3+| This data asset has data breach potential because of 7 remaining risks:
 |                    2+| <<operational-shared-runtime-critical-process,[.HighRisk.small]#Probable: operational-shared-runtime-critical-process@api-server#>>
 |                    2+| <<operational-shared-runtime-critical-process,[.HighRisk.small]#Probable: operational-shared-runtime-critical-process@postgresql-db#>>
 |                    2+| <<application-secrets-across-processes,[.HighRisk.small]#Probable: application-secrets-across-processes@api-server#>>
 |                    2+| <<application-secrets-across-processes,[.HighRisk.small]#Probable: application-secrets-across-processes@postgresql-db#>>
 |                    2+| <<operational-critical-process-no-redundancy,[.LowRisk.small]#Improbable: operational-critical-process-no-redundancy@api-server#>>
 |                    2+| <<operational-critical-process-no-redundancy,[.LowRisk.small]#Improbable: operational-critical-process-no-redundancy@postgresql-db#>>
-|                    2+| <<operational-unmonitored-critical-process,[.LowRisk.small]#Improbable: operational-unmonitored-critical-process@api-server#>>
 |                    2+| <<operational-unmonitored-critical-process,[.LowRisk.small]#Improbable: operational-unmonitored-critical-process@postgresql-db#>>
+
+|===
+
+<<<
+[[dataAsset:ai-model-responses]]
+== AI Model Responses: 0 mitigated Risks
+LLM-generated summaries and explanations of user notes. May contain paraphrased versions of sensitive note content. Cached temporarily in the API response layer.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| ai-model-responses
+| Usage:               | business| Quantity:          | many
+| Tags:                | ai| Origin:            | internal
+| Owner:               | VaultNote Team| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:           | operational<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| LLM responses summarise user note content. If the model was manipulated via prompt injection, responses may leak or alter content from other notes.
+
+| Processed by:      3+| LLM Note Summarizer
+| Stored by:         3+| [GrayText]#none#
+| Sent via:            | [GrayText]#none#| Received via:        | [GrayText]#none#
+| Data Breach:       3+| none
+| Data Breach Risks: 3+| This data asset has no data breach potential.
+
+|===
+
+<<<
+[[dataAsset:build-artifacts]]
+== Build Artifacts: 0 mitigated Risks
+Docker container images, compiled source bundles, and dependency lockfiles produced by the CI/CD pipeline. Integrity is critical — these are the deployable units of the application.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| build-artifacts
+| Usage:               | devops| Quantity:          | few
+| Tags:                | supply-chain| Origin:            | internal
+| Owner:               | VaultNote Team| Confidentiality:   | internal<<ref-confidentiality-values,*>>
+| Integrity:           | critical<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| Build artifacts are the final deliverable of the supply chain. Integrity is critical — tampered artifacts compromise every environment they are deployed to.
+
+| Processed by:      3+| AWS ECR Container Registry, ECS Container Platform, GitHub Actions Build Pipeline, VaultNote Source Repository
+| Stored by:         3+| AWS ECR Container Registry, GitHub Actions Build Pipeline, VaultNote Source Repository
+| Sent via:            | Push Image to Registry, Push to Pipeline| Received via:        | Pull Images from ECR
+| Data Breach:       3+| none
+| Data Breach Risks: 3+| This data asset has no data breach potential.
+
+|===
+
+<<<
+[[dataAsset:embedding-vectors]]
+== Embedding Vectors: 0 mitigated Risks
+High-dimensional vector representations of user note content generated by the embedding service. Semantically encodes note information even without storing the original text.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| embedding-vectors
+| Usage:               | business| Quantity:          | many
+| Tags:                | ai, embeddings| Origin:            | internal
+| Owner:               | VaultNote Team| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:           | operational<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| Embedding vectors can be used in model inversion attacks to reconstruct approximate original text. Cross-user embedding access leaks semantic note content.
+
+| Processed by:      3+| LLM Note Summarizer, Note RAG Pipeline, VaultNote Vector Store
+| Stored by:         3+| VaultNote Vector Store
+| Sent via:            | Query Vector Store, Retrieve from Vector Store| Received via:        | [GrayText]#none#
+| Data Breach:       3+| none
+| Data Breach Risks: 3+| This data asset has no data breach potential.
+
+|===
+
+<<<
+[[dataAsset:notification-payloads]]
+== Notification Payloads: 0 mitigated Risks
+Email notification payloads containing user email addresses and note titles sent via Lambda to AWS SES. Contains PII (email address) and indirect note content references.
+
+
+
+[cols="h,1,h,1",frame=none,grid=none]
+|===
+| ID:                3+| notification-payloads
+| Usage:               | business| Quantity:          | many
+| Tags:                | pii| Origin:            | internal
+| Owner:               | VaultNote Team| Confidentiality:   | confidential<<ref-confidentiality-values,*>>
+| Integrity:           | operational<<ref-criticality-values,*>>| Availability:      | operational<<ref-criticality-values,*>>
+| CIA-Justification: 3+| Email addresses are PII. Note titles may be sensitive. Loss via DLQ absence creates unauditable data processing gaps.
+
+| Processed by:      3+| AWS SES, Lambda Email Notifier
+| Stored by:         3+| [GrayText]#none#
+| Sent via:            | SES Email Send| Received via:        | [GrayText]#none#
+| Data Breach:       3+| none
+| Data Breach Risks: 3+| This data asset has no data breach potential.
 
 |===
 

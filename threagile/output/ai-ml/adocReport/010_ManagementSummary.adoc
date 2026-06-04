@@ -1,0 +1,52 @@
+= Management Summary
+
+Threagile toolkit was used to model the architecture of "VaultNote Threat Model" and derive risks by analyzing the components and data flows.
+The risks identified during this analysis are shown in the following chapters.
+Identified risks during threat modeling do not necessarily mean that the vulnerability associated with this risk actually exists: it is more to be seen as a list of potential risks and threats, which should be individually reviewed and reduced by removing false positives.
+For the remaining risks it should be checked in the design and implementation of "VaultNote Threat Model" whether the mitigation advices have been applied or not.
+
+
+
+Each risk finding references a chapter of the OWASP ASVS (Application Security Verification Standard) audit checklist.
+The OWASP ASVS checklist should be considered as an inspiration by architects and developers to further harden the application in a Defense-in-Depth approach.
+Additionally, for each risk finding a link towards a matching OWASP Cheat Sheet or similar with technical details about how to implement a mitigation is given.
+
+
+
+In total *75 initial risks* in *34 categories* have been identified during the threat modeling process:
+
+
+
+[cols="a,a",frame=none,grid=none]
+|===
+|
+[mermaid]
+....
+%%{init: {'pie' : {'textPosition' : 0.5}, 'theme': 'base', 'themeVariables': { 'pie1': '#FF2600', 'pie2': '#A0281E', 'pie3': '#FF8E00', 'pie4': '#C87832', 'pie5': '#23465F'}}}%%
+pie showData
+  "critical risk" : 0
+  "high risk" : 2
+  "elevated risk" : 29
+  "medium risk" : 38
+  "low risk" : 6
+....
+
+|
+[mermaid]
+....
+%%{init: {'pie' : {'textPosition' : 0.5}, 'theme': 'base', 'themeVariables': { 'pie1': '#FF0000', 'pie2': '#FF9300', 'pie3': '#FF40FF', 'pie4': '#0000FF', 'pie5': '#008F00', 'pie5': '#666666'}}}%%
+pie showData
+  "unchecked" : 66
+  "in discussion" : 0
+  "accepted" : 2
+  "in progress" : 7
+  "mitigated" : 0
+  "false positive" : 0
+....
+|===
+
+
+
+
+VaultNote is a containerized note-taking application comprised of a React SPA, Nginx reverse proxy, Node.js/Express REST API, PostgreSQL database, Redis session store, and MinIO object storage. The architecture deliberately contains several intentional misconfigurations (unencrypted internal HTTP, no encryption at rest, hardcoded credentials) to demonstrate automated threat detection via Threagile. All findings below are expected and serve as demonstration targets.
+

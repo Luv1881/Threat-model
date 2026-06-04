@@ -5,9 +5,9 @@
 |===
 | Threagile Version:             | 1.0.0
 | Threagile Build Timestamp:     | 
-| Threagile Execution Timestamp: | 20260524151524
-| Model Filename:                | /home/coder221/Desktop/coding/Threat-model/threagile/threagile.yaml
-| Model Hash (SHA256):           | d7bfa142abb73e5d3cd46eac265cb228675b53c92a8d976eddf1abb34b52c1d1
+| Threagile Execution Timestamp: | 20260604113020
+| Model Filename:                | threagile.yaml
+| Model Hash (SHA256):           | 15d123b13753140c59d8c6698da83a704aebcacf211732f0ee2ef3b5931b60ef
 |===
 
 
@@ -15,167 +15,42 @@
 
 Threagile (see https://threagile.io[] for more details) is an open-source toolkit for agile threat modeling, created by Christian Schneider (https://christian-schneider.net[]): It allows to model an architecture with its assets in an agile fashion as a YAML file directly inside the IDE. Upon execution of the Threagile toolkit all standard risk rules (as well as individual custom rules if present) are checked against the architecture model. At the time the Threagile toolkit was executed on the model input file the following risk rules were checked:
 
-== Non-Repudiation - PII Datastore Lacks Audit-Logged Ingress
-[.small]#non-repudiation-missing-access-log#
+== Detectability - PII Flows Without Audit Logging
+[.small]#detecting-no-audit-logging#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
 | STRIDE:      | Repudiation
-| Description: | A datastore that holds personal data whose incoming communication links lack audit logging allows access to personal data without any tamper-evident record. This violates the GDPR accountability principle (Article 5(2)).
+| Description: | Communication links that carry personal data without audit logging enabled mean that access to and use of personal data cannot be detected or reviewed after the fact. GDPR Article 5(2) requires demonstrable accountability.
 
-| Detection:   | In-scope datastore technical assets storing PII data assets that also have at least one incoming communication link without audit logging enabled.
+| Detection:   | In-scope technical assets that process PII AND have at least one outgoing link without audit logging enabled.
 
-| Rating:      | Medium baseline; elevated for highly sensitive or regulated personal data.
+| Rating:      | Medium severity baseline; elevated if the data includes sensitive categories.
 |===
 
-== Unawareness - PII Processed Without a Consent Management Component
-[.small]#unawareness-no-consent-technology#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Information Disclosure
-| Description: | When a system processes personal data from end users but has no consent-management technology in the architecture, data subjects are likely unaware of the nature and extent of processing. GDPR Articles 13 and 14 require transparent disclosure.
-
-| Detection:   | In-scope user-facing technical assets that process PII data assets where no other asset carries a consent_collector technology attribute.
-
-| Rating:      | Medium baseline; elevated for consumer-facing applications or special-category data.
-|===
-
-== Container Base Image Backdooring
-[.small]#container-baseimage-backdooring#
+== Search-Query Injection
+[.small]#search-query-injection#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
 | STRIDE:      | Tampering
-| Description: | When a technical asset is built using container technologies, Base Image Backdooring risks might arise where base images and other layers used contain vulnerable components or backdoors.
-| Detection:   | In-scope technical assets running as containers.
-| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets.
+| Description: | When a search engine server is accessed Search-Query Injection risks might arise.
+| Detection:   | In-scope clients accessing search engine servers via typical search access protocols.
+| Rating:      | The risk rating depends on the sensitivity of the search engine server itself and of the data assets processed.
 |===
 
-== Missing Two-Factor Authentication (2FA)
-[.small]#missing-authentication-second-factor#
+== Lateral Movement via Service Account Scope Creep
+[.small]#lateral-movement-service-account-scope-creep#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
-| STRIDE:      | Elevation of Privilege
-| Description: | Technical assets (especially multi-tenant systems) should authenticate incoming requests with two-factor (2FA) authentication when the asset processes or stores highly sensitive data (in terms of confidentiality, integrity, and availability) and is accessed by humans.
-| Detection:   | In-scope technical assets (except load-balancer, reverse-proxy, waf, ids, and ips) should authenticate incoming requests via two-factor authentication (2FA) when the asset processes or stores highly sensitive data (in terms of confidentiality, integrity, and availability) and is accessed by a client used by a human user.
-| Rating:      | medium
-|===
-
-== Missing Identity Store
-[.small]#missing-identity-store#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Spoofing
-| Description: | The modeled architecture does not contain an identity store, which might be the risk of a model missing critical assets (and thus not seeing their risks).
-| Detection:   | Models with authenticated data-flows authorized via end user identity missing an in-scope identity store.
-| Rating:      | The risk rating depends on the sensitivity of the end user-identity authorized technical assets and their data assets processed.
-|===
-
-== Unchecked Deployment
-[.small]#unchecked-deployment#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Tampering
-| Description: | For each build-pipeline component Unchecked Deployment risks might arise when the build-pipeline does not include established DevSecOps best-practices. DevSecOps best-practices scan as part of CI/CD pipelines for vulnerabilities in source- or byte-code, dependencies, container layers, and dynamically against running test systems. There are several open-source and commercial tools existing in the categories DAST, SAST, and IAST.
-| Detection:   | All development-relevant technical assets.
-| Rating:      | The risk rating depends on the highest rating of the technical assets and data assets processed by deployment-receiving targets.
-|===
-
-== Unencrypted Communication
-[.small]#unencrypted-communication#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Information Disclosure
-| Description: | Due to the confidentiality and/or integrity rating of the data assets transferred over the communication link this connection must be encrypted.
-| Detection:   | Unencrypted technical communication links of in-scope technical assets (excluding monitoring traffic as well as local-file-access, in-process-library-call and inter-process-communication) transferring sensitive data.
-| Rating:      | Depending on the confidentiality rating of the transferred data-assets either medium or high risk.
-|===
-
-== Unguarded Access From Internet
-[.small]#unguarded-access-from-internet#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Elevation of Privilege
-| Description: | Internet-exposed assets must be guarded by a protecting service, application, or reverse-proxy.
-| Detection:   | In-scope technical assets (excluding load-balancer) with confidentiality rating of confidential (or higher) or with integrity rating of critical (or higher) when accessed directly from the internet. All web-server, web-application, reverse-proxy, waf, and gateway assets are exempted from this risk when they do not consist of custom developed code and the data-flow only consists of HTTP or FTP protocols. Access from monitoring systems as well as VPN-protected connections are exempted.
-| Rating:      | The matching technical assets are at low risk. When either the confidentiality rating is strictly-confidential or the integrity rating is mission-critical, the risk-rating is considered medium. For assets with RAA values higher than 40 % the risk-rating increases.
-|===
-
-== Wrong Trust Boundary Content
-[.small]#wrong-trust-boundary-content#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Elevation of Privilege
-| Description: | When a trust boundary of type network-policy-namespace-isolation contains non-container assets it is likely to be a model failure.
-| Detection:   | Trust boundaries which should only contain containers, but have different assets inside.
-| Rating:      | low
-|===
-
-== Asset Using Known Default or Hardcoded Credentials
-[.small]#exposed-default-credentials#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Information Disclosure
-| Description: | Technical assets tagged as intentional-misconfiguration that store confidential data represent an immediately exploitable attack vector. Default credentials (e.g. minioadmin/minioadmin, admin/admin, postgres/postgres) are published in vendor documentation and are the first credentials an attacker tries after reaching the service network.
-
-| Detection:   | In-scope technical assets tagged with intentional-misconfiguration that store data assets rated at confidential or above.
-
-| Rating:      | High severity — default credentials plus confidential stored data equals a trivial full data breach with no exploitation skill required.
-
-|===
-
-== Code Backdooring
-[.small]#code-backdooring#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Tampering
-| Description: | For each build pipeline component Code Backdooring risks might arise where attackers compromise the build pipeline in order to let backdoored artifacts be shipped into production. Aside from direct code backdooring this includes backdooring of dependencies and even of more lower-level build infrastructure, like backdooring compilers (similar to what the XcodeGhost malware did) or dependencies.
-| Detection:   | In-scope development relevant technical assets which are either accessed by out-of-scope unmanaged developer clients and/or are directly accessed by any kind of internet-located (non-VPN) component or are themselves directly located on the internet.
-| Rating:      | The risk rating depends on the confidentiality and integrity rating of the code being handled and deployed as well as the placement/calling of this technical asset on/from the internet.
-|===
-
-== Missing Vault (Secret Storage)
-[.small]#missing-vault#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Information Disclosure
-| Description: | In order to avoid the risk of secret leakage via config files (when attacked through vulnerabilities being able to read files like Path-Traversal and others), it is best practice to use a separate hardened process with proper authentication, authorization, and audit logging to access config secrets (like credentials, private keys, client certificates, etc.). This component is usually some kind of Vault.
-| Detection:   | Models without a Vault (Secret Storage).
-| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
-|===
-
-== Wrong Communication Link Content
-[.small]#wrong-communication-link-content#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Information Disclosure
-| Description: | When a communication link is defined as readonly, but does not receive any data asset, or when it is defined as not readonly, but does not send any data asset, it is likely to be a model failure.
-| Detection:   | Communication links with inconsistent data assets being sent/received not matching their readonly flag or otherwise inconsistent protocols not matching the target technology type.
-| Rating:      | low
+| STRIDE:      | Lateral Movement
+| Description: | A vault, identity provider, or service-account issuer that serves assets in multiple distinct trust zones creates a high-value pivot: compromising the identity provider grants credentials that are valid across all served trust zones.
+| Detection:   | Identity-provider or vault assets that have outgoing communication links to assets in at least two different trust boundaries.
+| Rating:      | High when any served trust zone contains sensitive or mission-critical assets.
 |===
 
 == Missing Content-Security-Policy Header on Web Entry Point
@@ -193,30 +68,6 @@ Threagile (see https://threagile.io[] for more details) is an open-source toolki
 
 |===
 
-== Non-Compliance - Personal Data Processed Without Lawful Basis
-[.small]#non-compliance-no-lawful-basis#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Information Disclosure
-| Description: | GDPR Article 6 requires that every processing activity for personal data has a declared lawful basis. A technical asset that processes PII data assets with no declared lawful_basis on any of those data assets is non-compliant.
-| Detection:   | In-scope technical assets that process at least one data asset with declared pii_categories but empty lawful_basis.
-| Rating:      | Processing without a lawful basis is a strict GDPR violation; severity scales with the sensitivity of the personal data.
-|===
-
-== Missing Web Application Firewall (WAF)
-[.small]#missing-waf#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Tampering
-| Description: | To have a first line of filtering defense, security architectures with web-services or web-applications should include a WAF in front of them. Even though a WAF is not a replacement for security (all components must be secure even without a WAF) it adds another layer of defense to the overall system by delaying some attacks and having easier attack alerting through it.
-| Detection:   | In-scope web-services and/or web-applications accessed across a network trust boundary not having a Web Application Firewall (WAF) in front of them.
-| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
-|===
-
 == Server-Side Request Forgery (SSRF)
 [.small]#server-side-request-forgery#
 
@@ -229,52 +80,28 @@ Threagile (see https://threagile.io[] for more details) is an open-source toolki
 | Rating:      | The risk rating (low or medium) depends on the sensitivity of the data assets receivable via web protocols from targets within the same network trust-boundary as well on the sensitivity of the data assets receivable via web protocols from the target asset itself. Also for cloud-based environments the exploitation impact is at least medium, as cloud backend services can be attacked via SSRF.
 |===
 
-== Unguarded Direct Datastore Access
-[.small]#unguarded-direct-datastore-access#
+== Service Registry Poisoning
+[.small]#service-registry-poisoning#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
-| STRIDE:      | Elevation of Privilege
-| Description: | Data stores accessed across trust boundaries must be guarded by some protecting service or application.
-| Detection:   | In-scope technical assets of type datastore (except identity-store-ldap when accessed from identity-provider and file-server when accessed via file transfer protocols) with confidentiality rating of confidential (or higher) or with integrity rating of critical (or higher) which have incoming data-flows from assets outside across a network trust-boundary. DevOps config and deployment access is excluded from this risk.
-| Rating:      | The matching technical assets are at low risk. When either the confidentiality rating is strictly-confidential or the integrity rating is mission-critical, the risk-rating is considered medium. For assets with RAA values higher than 40 % the risk-rating increases.
+| STRIDE:      | Spoofing
+| Description: | When a service registry used for discovery of trusted service endpoints Service Registry Poisoning risks might arise.
+| Detection:   | In-scope service registries.
+| Rating:      | The risk rating depends on the sensitivity of the technical assets accessing the service registry as well as the data assets processed.
 |===
 
-== Untrusted Deserialization
-[.small]#untrusted-deserialization#
+== Container Base Image Backdooring
+[.small]#container-baseimage-backdooring#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
 | STRIDE:      | Tampering
-| Description: | When a technical asset accepts data in a specific serialized form (like Java or .NET serialization), Untrusted Deserialization risks might arise.
-| Detection:   | In-scope technical assets accepting serialization data formats (including EJB and RMI protocols).
-| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
-|===
-
-== Accidental Secret Leak
-[.small]#accidental-secret-leak#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Information Disclosure
-| Description: | Sourcecode repositories (including their histories) as well as artifact registries can accidentally contain secrets like checked-in or packaged-in passwords, API tokens, certificates, crypto keys, etc.
-| Detection:   | In-scope sourcecode repositories and artifact registries.
-| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
-|===
-
-== Container Platform Escape
-[.small]#container-platform-escape#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Elevation of Privilege
-| Description: | Container platforms are especially interesting targets for attackers as they host big parts of a containerized runtime infrastructure. When not configured and operated with security best practices in mind, attackers might exploit a vulnerability inside an container and escape towards the platform as highly privileged users. These scenarios might give attackers capabilities to attack every other container as owning the container platform (via container escape attacks) equals to owning every container.
-| Detection:   | In-scope container platforms.
-| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+| Description: | When a technical asset is built using container technologies, Base Image Backdooring risks might arise where base images and other layers used contain vulnerable components or backdoors.
+| Detection:   | In-scope technical assets running as containers.
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets.
 |===
 
 == Cross-Site Request Forgery (CSRF)
@@ -289,40 +116,16 @@ Threagile (see https://threagile.io[] for more details) is an open-source toolki
 | Rating:      | The risk rating depends on the integrity rating of the data sent across the communication link.
 |===
 
-== DoS-risky Access Across Trust-Boundary
-[.small]#dos-risky-access-across-trust-boundary#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Denial of Service
-| Description: | Assets accessed across trust boundaries with critical or mission-critical availability rating are more prone to Denial-of-Service (DoS) risks.
-| Detection:   | In-scope technical assets (excluding load-balancer) with availability rating of critical or higher which have incoming data-flows across a network trust-boundary (excluding devops usage).
-| Rating:      | Matching technical assets with availability rating of critical or higher are at low risk. When the availability rating is mission-critical and neither a VPN nor IP filter for the incoming data-flow nor redundancy for the asset is applied, the risk-rating is considered medium.
-|===
-
-== Missing Build Infrastructure
-[.small]#missing-build-infrastructure#
+== LDAP-Injection
+[.small]#ldap-injection#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
 | STRIDE:      | Tampering
-| Description: | The modeled architecture does not contain a build infrastructure (devops-client, sourcecode-repo, build-pipeline, etc.), which might be the risk of a model missing critical assets (and thus not seeing their risks). If the architecture contains custom-developed parts, the pipeline where code gets developed and built needs to be part of the model.
-| Detection:   | Models with in-scope custom-developed parts missing in-scope development (code creation) and build infrastructure components (devops-client, sourcecode-repo, build-pipeline, etc.).
-| Rating:      | The risk rating depends on the highest sensitivity of the in-scope assets running custom-developed parts.
-|===
-
-== Missing Identity Propagation
-[.small]#missing-identity-propagation#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Elevation of Privilege
-| Description: | Technical assets (especially multi-tenant systems), which usually process data for end users should authorize every request based on the identity of the end user when the data flow is authenticated (i.e. non-public). For DevOps usages at least a technical-user authorization is required.
-| Detection:   | In-scope service-like technical assets which usually process data based on end user requests, if authenticated (i.e. non-public), should authorize incoming requests based on the propagated end user identity when their rating is sensitive. This is especially the case for all multi-tenant assets (there even less-sensitive rated ones). DevOps usages are exempted from this risk.
-| Rating:      | The risk rating (medium or high) depends on the confidentiality, integrity, and availability rating of the technical asset.
+| Description: | When an LDAP server is accessed LDAP-Injection risks might arise. The risk rating depends on the sensitivity of the LDAP server itself and of the data assets processed.
+| Detection:   | In-scope clients accessing LDAP servers via typical LDAP access protocols.
+| Rating:      | The risk rating depends on the sensitivity of the LDAP server itself and of the data assets processed.
 |===
 
 == Missing Identity Provider Isolation
@@ -337,6 +140,30 @@ Threagile (see https://threagile.io[] for more details) is an open-source toolki
 | Rating:      | Default is high impact. The impact is increased to very-high when the asset missing the trust-boundary protection is rated as strictly-confidential or mission-critical.
 |===
 
+== Missing Identity Store
+[.small]#missing-identity-store#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Spoofing
+| Description: | The modeled architecture does not contain an identity store, which might be the risk of a model missing critical assets (and thus not seeing their risks).
+| Detection:   | Models with authenticated data-flows authorized via end user identity missing an in-scope identity store.
+| Rating:      | The risk rating depends on the sensitivity of the end user-identity authorized technical assets and their data assets processed.
+|===
+
+== Mixed Targets on Shared Runtime
+[.small]#mixed-targets-on-shared-runtime#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Different attacker targets (like frontend and backend/datastore components) should not be running on the same shared (underlying) runtime.
+| Detection:   | Shared runtime running technical assets of different trust-boundaries is at risk. Also mixing backend/datastore with frontend components on the same shared runtime is considered a risk.
+| Rating:      | The risk rating (low or medium) depends on the confidentiality, integrity, and availability rating of the technical asset running on the shared runtime.
+|===
+
 == Path-Traversal
 [.small]#path-traversal#
 
@@ -349,28 +176,102 @@ Threagile (see https://threagile.io[] for more details) is an open-source toolki
 | Rating:      | The risk rating depends on the sensitivity of the data stored inside the technical asset.
 |===
 
-== Missing Network Segmentation
-[.small]#missing-network-segmentation#
+== Lateral Movement via Transitive Data Flow Across Trust Boundaries
+[.small]#lateral-movement-transitive-access#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
-| STRIDE:      | Elevation of Privilege
-| Description: | Highly sensitive assets and/or data stores residing in the same network segment than other lower sensitive assets (like webservers or content management systems etc.) should be better protected by a network segmentation trust-boundary.
-| Detection:   | In-scope technical assets with high sensitivity and RAA values as well as data stores when surrounded by assets (without a network trust-boundary in-between) which are of type client-system, web-server, web-application, cms, web-service-rest, web-service-soap, build-pipeline, sourcecode-repository, monitoring, or similar and there is no direct connection between these (hence no requirement to be so close to each other).
-| Rating:      | Default is low risk. The risk is increased to medium when the asset missing the trust-boundary protection is rated as strictly-confidential or mission-critical.
+| STRIDE:      | Lateral Movement
+| Description: | An asset in a low-trust zone communicates to a bridging asset, which in turn communicates to an asset in a high-trust zone. The bridging asset creates a transitive path that can be abused for lateral movement without the attacker ever directly connecting to the high-trust target.
+| Detection:   | Assets that receive communication from a low-trust zone AND send communication to a high-trust zone (the bridging pattern), where the high-trust target is more sensitive than the low-trust source.
+| Rating:      | High when the destination zone contains strictly-confidential or mission-critical assets.
 |===
 
-== Search-Query Injection
-[.small]#search-query-injection#
+== Lateral Movement via Shared Runtime
+[.small]#lateral-movement-shared-runtime#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Lateral Movement
+| Description: | Technical assets from different trust zones co-located on the same shared runtime (e.g. container platform, VM host, shared Kubernetes namespace) create a lateral movement path: a compromised low-trust asset on the runtime can escalate to high-trust neighbours without traversing a network boundary.
+| Detection:   | Shared runtimes that host technical assets belonging to at least two distinct trust boundaries are flagged.
+| Rating:      | Severity depends on the sensitivity gap between the least and most sensitive co-located assets.
+|===
+
+== Unawareness - PII Processed Without a Consent Management Component
+[.small]#unawareness-no-consent-technology#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | When a system processes personal data from end users but has no consent-management technology in the architecture, data subjects are likely unaware of the nature and extent of processing. GDPR Articles 13 and 14 require transparent disclosure.
+
+| Detection:   | In-scope user-facing technical assets that process PII data assets where no other asset carries a consent_collector technology attribute.
+
+| Rating:      | Medium baseline; elevated for consumer-facing applications or special-category data.
+|===
+
+== Cross-Site Scripting (XSS)
+[.small]#cross-site-scripting#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
 | STRIDE:      | Tampering
-| Description: | When a search engine server is accessed Search-Query Injection risks might arise.
-| Detection:   | In-scope clients accessing search engine servers via typical search access protocols.
-| Rating:      | The risk rating depends on the sensitivity of the search engine server itself and of the data assets processed.
+| Description: | For each web application Cross-Site Scripting (XSS) risks might arise. In terms of the overall risk level take other applications running on the same domain into account as well.
+| Detection:   | In-scope web applications.
+| Rating:      | The risk rating depends on the sensitivity of the data processed in the web application.
+|===
+
+== Missing Vault Isolation
+[.small]#missing-vault-isolation#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Highly sensitive vault assets and their data stores should be isolated from other assets by their own network segmentation trust-boundary (execution-environment boundaries do not count as network isolation).
+| Detection:   | In-scope vault assets when surrounded by other (not vault-related) assets (without a network trust-boundary in-between). This risk is especially prevalent when other non-vault related assets are within the same execution environment (i.e. same database or same application server).
+| Rating:      | Default is medium impact. The impact is increased to high when the asset missing the trust-boundary protection is rated as strictly-confidential or mission-critical.
+|===
+
+== SQL/NoSQL-Injection
+[.small]#sql-nosql-injection#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | When a database is accessed via database access protocols SQL/NoSQL-Injection risks might arise. The risk rating depends on the sensitivity technical asset itself and of the data assets processed.
+| Detection:   | Database accessed via typical database access protocols by in-scope clients.
+| Rating:      | The risk rating depends on the sensitivity of the data stored inside the database.
+|===
+
+== Unchecked Deployment
+[.small]#unchecked-deployment#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | For each build-pipeline component Unchecked Deployment risks might arise when the build-pipeline does not include established DevSecOps best-practices. DevSecOps best-practices scan as part of CI/CD pipelines for vulnerabilities in source- or byte-code, dependencies, container layers, and dynamically against running test systems. There are several open-source and commercial tools existing in the categories DAST, SAST, and IAST.
+| Detection:   | All development-relevant technical assets.
+| Rating:      | The risk rating depends on the highest rating of the technical assets and data assets processed by deployment-receiving targets.
+|===
+
+== Unguarded Direct Datastore Access
+[.small]#unguarded-direct-datastore-access#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Data stores accessed across trust boundaries must be guarded by some protecting service or application.
+| Detection:   | In-scope technical assets of type datastore (except identity-store-ldap when accessed from identity-provider and file-server when accessed via file transfer protocols) with confidentiality rating of confidential (or higher) or with integrity rating of critical (or higher) which have incoming data-flows from assets outside across a network trust-boundary. DevOps config and deployment access is excluded from this risk.
+| Rating:      | The matching technical assets are at low risk. When either the confidentiality rating is strictly-confidential or the integrity rating is mission-critical, the risk-rating is considered medium. For assets with RAA values higher than 40 % the risk-rating increases.
 |===
 
 == Unnecessary Data Asset
@@ -385,16 +286,90 @@ Threagile (see https://threagile.io[] for more details) is an open-source toolki
 | Rating:      | low
 |===
 
-== XML External Entity (XXE)
-[.small]#xml-external-entity#
+== Non-Compliance - Personal Data Processed Without Lawful Basis
+[.small]#non-compliance-no-lawful-basis#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
 | STRIDE:      | Information Disclosure
-| Description: | When a technical asset accepts data in XML format, XML External Entity (XXE) risks might arise.
-| Detection:   | In-scope technical assets accepting XML data formats.
-| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed. Also for cloud-based environments the exploitation impact is at least medium, as cloud backend services can be attacked via SSRF (and XXE vulnerabilities are often also SSRF vulnerabilities).
+| Description: | GDPR Article 6 requires that every processing activity for personal data has a declared lawful basis. A technical asset that processes PII data assets with no declared lawful_basis on any of those data assets is non-compliant.
+| Detection:   | In-scope technical assets that process at least one data asset with declared pii_categories but empty lawful_basis.
+| Rating:      | Processing without a lawful basis is a strict GDPR violation; severity scales with the sensitivity of the personal data.
+|===
+
+== Push instead of Pull Deployment
+[.small]#push-instead-of-pull-deployment#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | When comparing push-based vs. pull-based deployments from a security perspective, pull-based deployments improve the overall security of the deployment targets. Every exposed interface of a production system to accept a deployment increases the attack surface of the production system, thus a pull-based approach exposes less attack surface relevant interfaces.
+| Detection:   | Models with build pipeline components accessing in-scope targets of deployment (in a non-readonly way) which are not build-related components themselves.
+| Rating:      | The risk rating depends on the highest sensitivity of the deployment targets running custom-developed parts.
+|===
+
+== Missing Network Segmentation
+[.small]#missing-network-segmentation#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Highly sensitive assets and/or data stores residing in the same network segment than other lower sensitive assets (like webservers or content management systems etc.) should be better protected by a network segmentation trust-boundary.
+| Detection:   | In-scope technical assets with high sensitivity and RAA values as well as data stores when surrounded by assets (without a network trust-boundary in-between) which are of type client-system, web-server, web-application, cms, web-service-rest, web-service-soap, build-pipeline, sourcecode-repository, monitoring, or similar and there is no direct connection between these (hence no requirement to be so close to each other).
+| Rating:      | Default is low risk. The risk is increased to medium when the asset missing the trust-boundary protection is rated as strictly-confidential or mission-critical.
+|===
+
+== Accidental Secret Leak
+[.small]#accidental-secret-leak#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Sourcecode repositories (including their histories) as well as artifact registries can accidentally contain secrets like checked-in or packaged-in passwords, API tokens, certificates, crypto keys, etc.
+| Detection:   | In-scope sourcecode repositories and artifact registries.
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== Unencrypted Communication
+[.small]#unencrypted-communication#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Due to the confidentiality and/or integrity rating of the data assets transferred over the communication link this connection must be encrypted.
+| Detection:   | Unencrypted technical communication links of in-scope technical assets (excluding monitoring traffic as well as local-file-access, in-process-library-call and inter-process-communication) transferring sensitive data.
+| Rating:      | Depending on the confidentiality rating of the transferred data-assets either medium or high risk.
+|===
+
+== Wrong Communication Link Content
+[.small]#wrong-communication-link-content#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | When a communication link is defined as readonly, but does not receive any data asset, or when it is defined as not readonly, but does not send any data asset, it is likely to be a model failure.
+| Detection:   | Communication links with inconsistent data assets being sent/received not matching their readonly flag or otherwise inconsistent protocols not matching the target technology type.
+| Rating:      | low
+|===
+
+== Non-Compliance - Cross-Border Personal Data Transfer Without Safeguard
+[.small]#non-compliance-cross-border-transfer#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | GDPR Chapter V restricts transfers of personal data to third countries. A communication link marked cross_border as true that also involves PII data assets indicates a potential cross-border transfer that must be covered by an adequacy decision, SCCs, BCRs, or another Article 46 safeguard.
+
+| Detection:   | In-scope technical assets that process PII AND have at least one outgoing link with cross_border set to true.
+
+| Rating:      | Elevated baseline; critical for transfers to countries without adequacy decisions.
 |===
 
 == Non-Repudiation - PII or Auth Tokens Accessible in Browser-Side Storage
@@ -412,16 +387,100 @@ Threagile (see https://threagile.io[] for more details) is an open-source toolki
 
 |===
 
-== Cross-Site Scripting (XSS)
-[.small]#cross-site-scripting#
+== Missing Build Infrastructure
+[.small]#missing-build-infrastructure#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
 | STRIDE:      | Tampering
-| Description: | For each web application Cross-Site Scripting (XSS) risks might arise. In terms of the overall risk level take other applications running on the same domain into account as well.
-| Detection:   | In-scope web applications.
-| Rating:      | The risk rating depends on the sensitivity of the data processed in the web application.
+| Description: | The modeled architecture does not contain a build infrastructure (devops-client, sourcecode-repo, build-pipeline, etc.), which might be the risk of a model missing critical assets (and thus not seeing their risks). If the architecture contains custom-developed parts, the pipeline where code gets developed and built needs to be part of the model.
+| Detection:   | Models with in-scope custom-developed parts missing in-scope development (code creation) and build infrastructure components (devops-client, sourcecode-repo, build-pipeline, etc.).
+| Rating:      | The risk rating depends on the highest sensitivity of the in-scope assets running custom-developed parts.
+|===
+
+== Missing Web Application Firewall (WAF)
+[.small]#missing-waf#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | To have a first line of filtering defense, security architectures with web-services or web-applications should include a WAF in front of them. Even though a WAF is not a replacement for security (all components must be secure even without a WAF) it adds another layer of defense to the overall system by delaying some attacks and having easier attack alerting through it.
+| Detection:   | In-scope web-services and/or web-applications accessed across a network trust boundary not having a Web Application Firewall (WAF) in front of them.
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== Untrusted Deserialization
+[.small]#untrusted-deserialization#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | When a technical asset accepts data in a specific serialized form (like Java or .NET serialization), Untrusted Deserialization risks might arise.
+| Detection:   | In-scope technical assets accepting serialization data formats (including EJB and RMI protocols).
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== Lateral Movement via Credential Reuse Across Trust Boundaries
+[.small]#lateral-movement-credential-reuse#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Lateral Movement
+| Description: | Technical assets that authenticate via the same credential type (credentials, tokens) to targets in multiple distinct trust zones enable lateral movement: compromise of one credential grants access across zone boundaries without additional authentication.
+| Detection:   | Outgoing communication links that use credentials-based authentication and target assets in at least two different trust boundaries from the same source asset.
+| Rating:      | High when the target trust zones differ significantly in sensitivity. Medium otherwise.
+|===
+
+== Missing Two-Factor Authentication (2FA)
+[.small]#missing-authentication-second-factor#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Technical assets (especially multi-tenant systems) should authenticate incoming requests with two-factor (2FA) authentication when the asset processes or stores highly sensitive data (in terms of confidentiality, integrity, and availability) and is accessed by humans.
+| Detection:   | In-scope technical assets (except load-balancer, reverse-proxy, waf, ids, and ips) should authenticate incoming requests via two-factor authentication (2FA) when the asset processes or stores highly sensitive data (in terms of confidentiality, integrity, and availability) and is accessed by a client used by a human user.
+| Rating:      | medium
+|===
+
+== Missing Cloud Hardening
+[.small]#missing-cloud-hardening#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | Cloud components should be hardened according to the cloud vendor best practices. This affects their configuration, auditing, and further areas.
+| Detection:   | In-scope cloud components (either residing in cloud trust boundaries or more specifically tagged with cloud provider types).
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== Missing Vault (Secret Storage)
+[.small]#missing-vault#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | In order to avoid the risk of secret leakage via config files (when attacked through vulnerabilities being able to read files like Path-Traversal and others), it is best practice to use a separate hardened process with proper authentication, authorization, and audit logging to access config secrets (like credentials, private keys, client certificates, etc.). This component is usually some kind of Vault.
+| Detection:   | Models without a Vault (Secret Storage).
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== Unnecessary Communication Link
+[.small]#unnecessary-communication-link#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | When a technical communication link does not send or receive any data assets, this is an indicator for an unnecessary communication link (or for an incomplete model).
+| Detection:   | In-scope technical assets' technical communication links not sending or receiving any data assets.
+| Rating:      | low
 |===
 
 == Missing Authentication
@@ -436,111 +495,27 @@ Threagile (see https://threagile.io[] for more details) is an open-source toolki
 | Rating:      | The risk rating (medium or high) depends on the sensitivity of the data sent across the communication link. Monitoring callers are exempted from this risk.
 |===
 
-== Missing Hardening
-[.small]#missing-hardening#
+== XML External Entity (XXE)
+[.small]#xml-external-entity#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
-| STRIDE:      | Tampering
-| Description: | Technical assets with a Relative Attacker Attractiveness (RAA) value of 55 % or higher should be explicitly hardened taking best practices and vendor hardening guides into account.
-| Detection:   | In-scope technical assets with RAA values of 55 % or higher. Generally for high-value targets like data stores, application servers, identity providers and ERP systems this limit is reduced to 40 %
-| Rating:      | The risk rating depends on the sensitivity of the data processed in the technical asset.
+| STRIDE:      | Information Disclosure
+| Description: | When a technical asset accepts data in XML format, XML External Entity (XXE) risks might arise.
+| Detection:   | In-scope technical assets accepting XML data formats.
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed. Also for cloud-based environments the exploitation impact is at least medium, as cloud backend services can be attacked via SSRF (and XXE vulnerabilities are often also SSRF vulnerabilities).
 |===
 
-== Missing Vault Isolation
-[.small]#missing-vault-isolation#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Elevation of Privilege
-| Description: | Highly sensitive vault assets and their data stores should be isolated from other assets by their own network segmentation trust-boundary (execution-environment boundaries do not count as network isolation).
-| Detection:   | In-scope vault assets when surrounded by other (not vault-related) assets (without a network trust-boundary in-between). This risk is especially prevalent when other non-vault related assets are within the same execution environment (i.e. same database or same application server).
-| Rating:      | Default is medium impact. The impact is increased to high when the asset missing the trust-boundary protection is rated as strictly-confidential or mission-critical.
-|===
-
-== Mixed Targets on Shared Runtime
-[.small]#mixed-targets-on-shared-runtime#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Elevation of Privilege
-| Description: | Different attacker targets (like frontend and backend/datastore components) should not be running on the same shared (underlying) runtime.
-| Detection:   | Shared runtime running technical assets of different trust-boundaries is at risk. Also mixing backend/datastore with frontend components on the same shared runtime is considered a risk.
-| Rating:      | The risk rating (low or medium) depends on the confidentiality, integrity, and availability rating of the technical asset running on the shared runtime.
-|===
-
-== Push instead of Pull Deployment
-[.small]#push-instead-of-pull-deployment#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Tampering
-| Description: | When comparing push-based vs. pull-based deployments from a security perspective, pull-based deployments improve the overall security of the deployment targets. Every exposed interface of a production system to accept a deployment increases the attack surface of the production system, thus a pull-based approach exposes less attack surface relevant interfaces.
-| Detection:   | Models with build pipeline components accessing in-scope targets of deployment (in a non-readonly way) which are not build-related components themselves.
-| Rating:      | The risk rating depends on the highest sensitivity of the deployment targets running custom-developed parts.
-|===
-
-== Service Registry Poisoning
-[.small]#service-registry-poisoning#
+== Missing File Validation
+[.small]#missing-file-validation#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
 | STRIDE:      | Spoofing
-| Description: | When a service registry used for discovery of trusted service endpoints Service Registry Poisoning risks might arise.
-| Detection:   | In-scope service registries.
-| Rating:      | The risk rating depends on the sensitivity of the technical assets accessing the service registry as well as the data assets processed.
-|===
-
-== Unencrypted Technical Assets
-[.small]#unencrypted-asset#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Information Disclosure
-| Description: | Due to the confidentiality rating of the technical asset itself and/or the stored data assets this technical asset must be encrypted. The risk rating depends on the sensitivity technical asset itself and of the data assets stored.
-| Detection:   | In-scope unencrypted technical assets (excluding reverse-proxy, load-balancer, waf, ids, ips and embedded components like library) storing data assets rated at least as confidential or critical. For technical assets storing data assets rated as strictly-confidential or mission-critical the encryption must be of type data-with-end-user-individual-key.
-| Rating:      | Depending on the confidentiality rating of the stored data-assets either medium or high risk.
-|===
-
-== Incomplete Model
-[.small]#incomplete-model#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Information Disclosure
-| Description: | When the threat model contains unknown technologies or transfers data over unknown protocols, this is an indicator for an incomplete model.
-| Detection:   | All technical assets and communication links with technology type or protocol type specified as unknown.
-| Rating:      | low
-|===
-
-== LDAP-Injection
-[.small]#ldap-injection#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Tampering
-| Description: | When an LDAP server is accessed LDAP-Injection risks might arise. The risk rating depends on the sensitivity of the LDAP server itself and of the data assets processed.
-| Detection:   | In-scope clients accessing LDAP servers via typical LDAP access protocols.
-| Rating:      | The risk rating depends on the sensitivity of the LDAP server itself and of the data assets processed.
-|===
-
-== Missing Cloud Hardening
-[.small]#missing-cloud-hardening#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Tampering
-| Description: | Cloud components should be hardened according to the cloud vendor best practices. This affects their configuration, auditing, and further areas.
-| Detection:   | In-scope cloud components (either residing in cloud trust boundaries or more specifically tagged with cloud provider types).
+| Description: | When a technical asset accepts files, these input files should be strictly validated about filename and type.
+| Detection:   | In-scope technical assets with custom-developed code accepting file data formats.
 | Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
 |===
 
@@ -568,30 +543,81 @@ Threagile (see https://threagile.io[] for more details) is an open-source toolki
 | Rating:      | low
 |===
 
-== Data Disclosure - Personal Data Transmitted Over Unencrypted Channel
-[.small]#data-disclosure-pii-unencrypted-link#
+== Asset Using Known Default or Hardcoded Credentials
+[.small]#exposed-default-credentials#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
 | STRIDE:      | Information Disclosure
-| Description: | Personal data in transit over unencrypted communication links (plain HTTP, unencrypted database protocols, etc.) is exposed to network observers. GDPR Article 32 requires appropriate technical measures including encryption in transit.
-| Detection:   | In-scope technical assets that process PII data assets AND have at least one outgoing communication link that is unencrypted and not VPN-protected.
-| Rating:      | High — unencrypted PII in transit is a direct GDPR Article 32 violation.
+| Description: | Technical assets tagged as intentional-misconfiguration that store confidential data represent an immediately exploitable attack vector. Default credentials (e.g. minioadmin/minioadmin, admin/admin, postgres/postgres) are published in vendor documentation and are the first credentials an attacker tries after reaching the service network.
+
+| Detection:   | In-scope technical assets tagged with intentional-misconfiguration that store data assets rated at confidential or above.
+
+| Rating:      | High severity — default credentials plus confidential stored data equals a trivial full data breach with no exploitation skill required.
+
 |===
 
-== Detectability - PII Flows Without Audit Logging
-[.small]#detecting-no-audit-logging#
+== Non-Repudiation - PII Datastore Lacks Audit-Logged Ingress
+[.small]#non-repudiation-missing-access-log#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
 | STRIDE:      | Repudiation
-| Description: | Communication links that carry personal data without audit logging enabled mean that access to and use of personal data cannot be detected or reviewed after the fact. GDPR Article 5(2) requires demonstrable accountability.
+| Description: | A datastore that holds personal data whose incoming communication links lack audit logging allows access to personal data without any tamper-evident record. This violates the GDPR accountability principle (Article 5(2)).
 
-| Detection:   | In-scope technical assets that process PII AND have at least one outgoing link without audit logging enabled.
+| Detection:   | In-scope datastore technical assets storing PII data assets that also have at least one incoming communication link without audit logging enabled.
 
-| Rating:      | Medium severity baseline; elevated if the data includes sensitive categories.
+| Rating:      | Medium baseline; elevated for highly sensitive or regulated personal data.
+|===
+
+== Unguarded Access From Internet
+[.small]#unguarded-access-from-internet#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Internet-exposed assets must be guarded by a protecting service, application, or reverse-proxy.
+| Detection:   | In-scope technical assets (excluding load-balancer) with confidentiality rating of confidential (or higher) or with integrity rating of critical (or higher) when accessed directly from the internet. All web-server, web-application, reverse-proxy, waf, and gateway assets are exempted from this risk when they do not consist of custom developed code and the data-flow only consists of HTTP or FTP protocols. Access from monitoring systems as well as VPN-protected connections are exempted.
+| Rating:      | The matching technical assets are at low risk. When either the confidentiality rating is strictly-confidential or the integrity rating is mission-critical, the risk-rating is considered medium. For assets with RAA values higher than 40 % the risk-rating increases.
+|===
+
+== Missing Hardening
+[.small]#missing-hardening#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | Technical assets with a Relative Attacker Attractiveness (RAA) value of 55 % or higher should be explicitly hardened taking best practices and vendor hardening guides into account.
+| Detection:   | In-scope technical assets with RAA values of 55 % or higher. Generally for high-value targets like data stores, application servers, identity providers and ERP systems this limit is reduced to 40 %
+| Rating:      | The risk rating depends on the sensitivity of the data processed in the technical asset.
+|===
+
+== Unencrypted Technical Assets
+[.small]#unencrypted-asset#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Due to the confidentiality rating of the technical asset itself and/or the stored data assets this technical asset must be encrypted. The risk rating depends on the sensitivity technical asset itself and of the data assets stored.
+| Detection:   | In-scope unencrypted technical assets (excluding reverse-proxy, load-balancer, waf, ids, ips and embedded components like library) storing data assets rated at least as confidential or critical. For technical assets storing data assets rated as strictly-confidential or mission-critical the encryption must be of type data-with-end-user-individual-key.
+| Rating:      | Depending on the confidentiality rating of the stored data-assets either medium or high risk.
+|===
+
+== Wrong Trust Boundary Content
+[.small]#wrong-trust-boundary-content#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | When a trust boundary of type network-policy-namespace-isolation contains non-container assets it is likely to be a model failure.
+| Detection:   | Trust boundaries which should only contain containers, but have different assets inside.
+| Rating:      | low
 |===
 
 == Identifiability - Personal Data Stored Without Encryption at Rest
@@ -609,40 +635,76 @@ Threagile (see https://threagile.io[] for more details) is an open-source toolki
 
 |===
 
-== Missing File Validation
-[.small]#missing-file-validation#
+== Incomplete Model
+[.small]#incomplete-model#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
-| STRIDE:      | Spoofing
-| Description: | When a technical asset accepts files, these input files should be strictly validated about filename and type.
-| Detection:   | In-scope technical assets with custom-developed code accepting file data formats.
-| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+| STRIDE:      | Information Disclosure
+| Description: | When the threat model contains unknown technologies or transfers data over unknown protocols, this is an indicator for an incomplete model.
+| Detection:   | All technical assets and communication links with technology type or protocol type specified as unknown.
+| Rating:      | low
 |===
 
-== SQL/NoSQL-Injection
-[.small]#sql-nosql-injection#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Tampering
-| Description: | When a database is accessed via database access protocols SQL/NoSQL-Injection risks might arise. The risk rating depends on the sensitivity technical asset itself and of the data assets processed.
-| Detection:   | Database accessed via typical database access protocols by in-scope clients.
-| Rating:      | The risk rating depends on the sensitivity of the data stored inside the database.
-|===
-
-== Unnecessary Communication Link
-[.small]#unnecessary-communication-link#
+== Missing Identity Propagation
+[.small]#missing-identity-propagation#
 
 
 [cols="h,1",frame=none,grid=none]
 |===
 | STRIDE:      | Elevation of Privilege
-| Description: | When a technical communication link does not send or receive any data assets, this is an indicator for an unnecessary communication link (or for an incomplete model).
-| Detection:   | In-scope technical assets' technical communication links not sending or receiving any data assets.
-| Rating:      | low
+| Description: | Technical assets (especially multi-tenant systems), which usually process data for end users should authorize every request based on the identity of the end user when the data flow is authenticated (i.e. non-public). For DevOps usages at least a technical-user authorization is required.
+| Detection:   | In-scope service-like technical assets which usually process data based on end user requests, if authenticated (i.e. non-public), should authorize incoming requests based on the propagated end user identity when their rating is sensitive. This is especially the case for all multi-tenant assets (there even less-sensitive rated ones). DevOps usages are exempted from this risk.
+| Rating:      | The risk rating (medium or high) depends on the confidentiality, integrity, and availability rating of the technical asset.
+|===
+
+== Data Disclosure - Personal Data Transmitted Over Unencrypted Channel
+[.small]#data-disclosure-pii-unencrypted-link#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Information Disclosure
+| Description: | Personal data in transit over unencrypted communication links (plain HTTP, unencrypted database protocols, etc.) is exposed to network observers. GDPR Article 32 requires appropriate technical measures including encryption in transit.
+| Detection:   | In-scope technical assets that process PII data assets AND have at least one outgoing communication link that is unencrypted and not VPN-protected.
+| Rating:      | High — unencrypted PII in transit is a direct GDPR Article 32 violation.
+|===
+
+== Code Backdooring
+[.small]#code-backdooring#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Tampering
+| Description: | For each build pipeline component Code Backdooring risks might arise where attackers compromise the build pipeline in order to let backdoored artifacts be shipped into production. Aside from direct code backdooring this includes backdooring of dependencies and even of more lower-level build infrastructure, like backdooring compilers (similar to what the XcodeGhost malware did) or dependencies.
+| Detection:   | In-scope development relevant technical assets which are either accessed by out-of-scope unmanaged developer clients and/or are directly accessed by any kind of internet-located (non-VPN) component or are themselves directly located on the internet.
+| Rating:      | The risk rating depends on the confidentiality and integrity rating of the code being handled and deployed as well as the placement/calling of this technical asset on/from the internet.
+|===
+
+== Container Platform Escape
+[.small]#container-platform-escape#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Elevation of Privilege
+| Description: | Container platforms are especially interesting targets for attackers as they host big parts of a containerized runtime infrastructure. When not configured and operated with security best practices in mind, attackers might exploit a vulnerability inside an container and escape towards the platform as highly privileged users. These scenarios might give attackers capabilities to attack every other container as owning the container platform (via container escape attacks) equals to owning every container.
+| Detection:   | In-scope container platforms.
+| Rating:      | The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+|===
+
+== DoS-risky Access Across Trust-Boundary
+[.small]#dos-risky-access-across-trust-boundary#
+
+
+[cols="h,1",frame=none,grid=none]
+|===
+| STRIDE:      | Denial of Service
+| Description: | Assets accessed across trust boundaries with critical or mission-critical availability rating are more prone to Denial-of-Service (DoS) risks.
+| Detection:   | In-scope technical assets (excluding load-balancer) with availability rating of critical or higher which have incoming data-flows across a network trust-boundary (excluding devops usage).
+| Rating:      | Matching technical assets with availability rating of critical or higher are at low risk. When the availability rating is mission-critical and neither a VPN nor IP filter for the incoming data-flow nor redundancy for the asset is applied, the risk-rating is considered medium.
 |===
 
 == Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries
@@ -657,19 +719,5 @@ Threagile (see https://threagile.io[] for more details) is an open-source toolki
 | Detection:   | Technical assets that process PII data assets that also appear in assets in at least one other trust boundary.
 
 | Rating:      | Medium baseline; elevated for sensitive categories or high-quantity data.
-|===
-
-== Non-Compliance - Cross-Border Personal Data Transfer Without Safeguard
-[.small]#non-compliance-cross-border-transfer#
-
-
-[cols="h,1",frame=none,grid=none]
-|===
-| STRIDE:      | Information Disclosure
-| Description: | GDPR Chapter V restricts transfers of personal data to third countries. A communication link marked cross_border as true that also involves PII data assets indicates a potential cross-border transfer that must be covered by an adequacy decision, SCCs, BCRs, or another Article 46 safeguard.
-
-| Detection:   | In-scope technical assets that process PII AND have at least one outgoing link with cross_border set to true.
-
-| Rating:      | Elevated baseline; critical for transfers to countries without adequacy decisions.
 |===
 

@@ -1,6 +1,6 @@
-= Impact Analysis Of 11 Initial Risks In 4 Categories
+= Impact Analysis Of 10 Initial Risks In 4 Categories
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
-The most prevalent impacts of the *11 initial risks* (distributed over *4 risk categories*) are (taking the severity ratings into account and using the highest for each category)!{fn-risk-findings}
+The most prevalent impacts of the *10 initial risks* (distributed over *4 risk categories*) are (taking the severity ratings into account and using the highest for each category)!{fn-risk-findings}
 
 <<application-secrets-across-processes,[.ElevatedRisk]#Elevated: *Application Threat - Strictly-Confidential Asset Bridges Business Process Contexts*: 2 Initial Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
 Credential exposure in any one process context compromises all other processes the asset supports, amplifying the breach blast radius.
@@ -10,7 +10,7 @@ Credential exposure in any one process context compromises all other processes t
 Complete outage of a critical business process due to failure or targeted attack against the sole supporting technical asset. No failover path means maximum downtime.
 
 
-<<operational-unmonitored-critical-process,[.ElevatedRisk]#Elevated: *Operational Threat - Critical Business Process Without Operational Monitoring*: 3 Initial Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+<<operational-unmonitored-critical-process,[.ElevatedRisk]#Elevated: *Operational Threat - Critical Business Process Without Operational Monitoring*: 2 Initial Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
 Undetected breaches, inability to investigate incidents, compliance failures, and violation of SLA accountability requirements.
 
 

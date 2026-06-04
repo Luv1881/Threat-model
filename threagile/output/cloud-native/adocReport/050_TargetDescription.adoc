@@ -1,0 +1,18 @@
+= Application Overview
+== Business Criticality
+
+The overall business criticality of "VaultNote Threat Model" was rated as:
+
+(  [GreyText]#archive# | [GreyText]#operational# | [.underline]#*IMPORTANT*# | [GreyText]#critical# | [GreyText]#mission-critical#  )
+
+
+
+== Business Overview
+VaultNote allows authenticated users to create, edit, and share encrypted notes with file attachments. The application stores sensitive user data and note content that must be protected against unauthorized disclosure.
+
+
+
+
+== Technical Overview
+Multi-tier containerized deployment: Nginx terminates TLS and proxies requests to the API over unencrypted HTTP. The API accesses PostgreSQL, Redis, and MinIO over plaintext TCP/HTTP within an internal Docker network.
+

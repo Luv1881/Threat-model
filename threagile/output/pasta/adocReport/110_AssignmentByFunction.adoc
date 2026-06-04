@@ -1,17 +1,25 @@
 = Assignment by Function
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
 
-This chapter clusters and assigns the risks by functions which are most likely able to check and mitigate them: In total *5 potential risks* have been identified during the threat modeling process of which *0 should be checked by Business Side*, *0 should be checked by Architecture*, *2 should be checked by Development*, and *3 should be checked by Operations*.{fn-risk-findings}
+This chapter clusters and assigns the risks by functions which are most likely able to check and mitigate them: In total *12 potential risks* have been identified during the threat modeling process of which *0 should be checked by Business Side*, *8 should be checked by Architecture*, *0 should be checked by Development*, and *4 should be checked by Operations*.{fn-risk-findings}
 
 == Business Side
 
 == Architecture
+<<undocumented-entry-point,[.ElevatedRisk]#Elevated: *Stage III - Undocumented Application Entry Point*: 5/5 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
+Undocumented entry points are excluded from threat analysis, leaving unknown attack surface that attackers can exploit without detection or mitigation.
+
+
+<<weak-auth-on-entry-point,[.ElevatedRisk]#Elevated: *Stage VI - Weak Authentication Strength on Internet-Exposed Entry Point*: 1/1 unmitigated Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
+Full account takeover, lateral movement into internal systems, and data exfiltration. Credential stuffing attacks against password-only endpoints succeed at statistically predictable rates given leaked credential databases.
+
+
+<<internet-reachable-datastore,[.ElevatedRisk]#Elevated: *Stage VII - Internet-Reachable Datastore With No Mitigation*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _Very High_ impact.#>>::
+Mass data exfiltration of all stored records, ransomware encryption of datastores, complete loss of data integrity, and regulatory breach notification obligations.
+
+
 
 == Development
-<<custom-development-no-sast,[.MediumRisk]#Medium: *Stage II - Custom-Developed Asset With No Build Pipeline Security*: 2/2 unmitigated Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
-Injection vulnerabilities, insecure dependencies, hardcoded secrets, and other code-level weaknesses reach production without detection, widening the attack surface.
-
-
 
 == Operations
 <<per-operation-rate-limiting-missing,[.ElevatedRisk]#Elevated: *Stage V - Custom-Developed Service Without Per-Operation Rate Limiting*: 2/2 unmitigated Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
@@ -20,6 +28,10 @@ Attackers can enumerate users, brute-force credentials, bulk-download sensitive 
 
 <<no-rate-limiting-public-api,[.ElevatedRisk]#Elevated: *Stage V - No Rate Limiting on Internet-Exposed API*: 1/1 unmitigated Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
 Brute-force attacks against authentication endpoints, mass data harvesting via enumeration, DDoS amplification, and billing abuse on pay-per-use endpoints.
+
+
+<<missing-threat-scenario,[.LowRisk]#Low: *Stage I - No Threat Scenarios Defined for Internet-Exposed Entry Points*: 1/1 unmitigated Risk - Exploitation likelihood is _Unlikely_ with _Low_ impact.#>>::
+Without explicit threat actor profiles and attack scenarios, mitigations are chosen reactively rather than proactively, leaving systematic threat actor capabilities unaddressed.
 
 
 
