@@ -54,19 +54,35 @@ jobs:
           fi
 
       # ── 3. Analysis ──────────────────────────────────────────────────────────
-      - name: Pull Threagile image
-        run: docker pull threagile/threagile --quiet
+      # Uses better-threagile (the fork) because this model uses the `includes:`
+      # directive to split the model across multiple YAML files — a feature not
+      # present in the upstream threagile/threagile Docker image.
+      - name: Checkout better-threagile
+        uses: actions/checkout@v4
+        with:
+          repository: Luv1881/better-threagile
+          path: better-threagile
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: better-threagile/go.mod
+          cache-dependency-path: better-threagile/go.sum
+
+      - name: Build better-threagile binary
+        run: |
+          cd better-threagile
+          go build -o bin/threagile ./cmd/threagile/
 
       - name: Run Threagile analysis
         run: |
           mkdir -p threagile/output
-          chmod -R 777 threagile/output
-          docker run --rm \
-            -v "${{ github.workspace }}/threagile:/app/work" \
-            threagile/threagile \
-              -model  /app/work/threagile.yaml \
-              -output /app/work/output \
-              -ignore-orphaned-risk-tracking
+          better-threagile/bin/threagile analyze-model \
+            --model      threagile/threagile.yaml \
+            --output     threagile/output \
+            --app-dir    better-threagile \
+            --background better-threagile/report/background.pdf \
+            --ignore-orphaned-risk-tracking
 
       # ── 4. Diff ──────────────────────────────────────────────────────────────
       - name: Diff risk output
