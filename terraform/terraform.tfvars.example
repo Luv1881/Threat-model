@@ -1,0 +1,30 @@
+# Copy to terraform.tfvars and fill in real values before running
+# Never commit terraform.tfvars — it is in .gitignore
+
+aws_region   = "us-east-1"
+environment  = "dev"
+
+# Networking
+vpc_cidr             = "10.0.0.0/16"
+public_subnet_cidrs  = ["10.0.1.0/24", "10.0.2.0/24"]
+private_subnet_cidrs = ["10.0.11.0/24", "10.0.12.0/24"]
+availability_zones   = ["us-east-1a", "us-east-1b"]
+
+# Sensitive — use AWS Secrets Manager or CI/CD vault in production
+db_username      = "vaultnote"
+db_password      = "REPLACE_ME"
+redis_auth_token = "REPLACE_ME"
+jwt_secret       = "REPLACE_ME"
+
+# ECR image (build and push first: docker build ./api -t <account>.dkr.ecr.us-east-1.amazonaws.com/vaultnote/api:latest)
+api_image = "ACCOUNT_ID.dkr.ecr.us-east-1.amazonaws.com/vaultnote/api:latest"
+
+# ACM certificate for HTTPS on the ALB
+certificate_arn = "arn:aws:acm:us-east-1:ACCOUNT_ID:certificate/CERT_ID"
+
+# Sizing
+api_desired_count = 2
+api_cpu           = 512
+api_memory        = 1024
+db_instance_class = "db.t4g.micro"
+redis_node_type   = "cache.t4g.micro"

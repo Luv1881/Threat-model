@@ -1,11 +1,14 @@
 tags_available:
+  # Frontend
   - react
   - spa
   - nginx
   - tls-termination
+  # API
   - nodejs
   - express
   - jwt
+  # Datastores
   - postgresql
   - relational
   - redis
@@ -17,3 +20,40 @@ tags_available:
   - intentional-misconfiguration
   - docker
   - container-runtime
+  # CI/CD & Supply Chain
+  - github
+  - git
+  - supply-chain
+  - github-actions
+  - ci
+  - ecr
+  - aws
+  # Cloud Native
+  - api-gateway
+  - cloud-native
+  - lambda
+  - notifications
+  - rds
+  - fargate
+  - ecs
+  - ses
+  - email
+  # Supply-chain
+  - has-automated-backup
+  # AI/ML
+  - llm
+  - ai
+  - openai
+  - qdrant
+  - embeddings
+  - rag
+  - langchain
+  - pii
+  # OCTAVE tags
+  - information-asset-container
+  - criticality-high
+  - third-party-shared
+  # Trike tags
+  - trike-actor
+  - trike-actor-untrusted
+  - trike-trust-level-admin

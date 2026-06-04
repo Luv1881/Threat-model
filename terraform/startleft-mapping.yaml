@@ -1,0 +1,22 @@
+# ──────────────────────────────────────────────────────────────────────────────
+# IriusRisk StartLeft — VaultNote custom mapping
+# Passed as --custom-mapping-file alongside the default iriusrisk-tf-aws-mapping.
+#
+# The default mapping already defines:
+#   f0ba7722-39b6-4c81-8290-a30a248bb8d9  →  Internet
+#   b61d6911-338d-46a8-9f39-8dcd24abfe91  →  Public Cloud  ($default: true)
+#
+# This file only adds the Private Secured trust zone for the data tier.
+# All component and dataflow mappings are handled by the default file to
+# avoid $source conflicts.
+# ──────────────────────────────────────────────────────────────────────────────
+
+trustzones:
+  # Data Tier — private subnets (RDS, ElastiCache, S3, ECS tasks)
+  - id:   2ab4effa-40b7-4cd2-ba81-8247d29a6f2f
+    name: Private Secured (Data Tier)
+    type: 2ab4effa-40b7-4cd2-ba81-8247d29a6f2f
+
+components: []
+
+dataflows: []
