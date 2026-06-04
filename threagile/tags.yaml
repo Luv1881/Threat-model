@@ -36,6 +36,10 @@ tags_available:
   - rds
   - fargate
   - ecs
+  - ses
+  - email
+  # Supply-chain
+  - has-automated-backup
   # AI/ML
   - llm
   - ai

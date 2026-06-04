@@ -37,9 +37,36 @@ threagile_version: 1.0.0
 #     --model threagile.yaml --output output/vast \
 #     --methodology vast --rule-pack vast --ignore-orphaned-risk-tracking
 #
-# Note: --ignore-orphaned-risk-tracking is required because risk_tracking
-# entries span all four methodologies; each single-methodology run sees the
-# other methodologies' tracking entries as orphans.
+#   Cloud-Native (AWS infra — 17 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --model threagile.yaml --output output/cloud-native \
+#     --rule-pack cloud-native --ignore-orphaned-risk-tracking
+#
+#   Supply-Chain (CI/CD — 10 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --model threagile.yaml --output output/supply-chain \
+#     --rule-pack supply-chain --ignore-orphaned-risk-tracking
+#
+#   AI/ML (inference risks — 18 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --model threagile.yaml --output output/ai-ml \
+#     --rule-pack ai-ml --ignore-orphaned-risk-tracking
+#
+#   OCTAVE Allegro (asset-centric — 8 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --model threagile.yaml --output output/octave \
+#     --rule-pack octave --ignore-orphaned-risk-tracking
+#
+#   Trike (actor-centric — 8 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --model threagile.yaml --output output/trike \
+#     --rule-pack trike --ignore-orphaned-risk-tracking
+#
+# IMPORTANT: --ignore-orphaned-risk-tracking is REQUIRED for all runs because
+# risk_tracking entries span all 9 methodologies. Each single-methodology run
+# sees the other packs' tracking entries as orphans — this is expected for a
+# multi-methodology reference model. The flag does NOT suppress risk findings;
+# it only suppresses the orphaned-tracking validation error.
 
 includes:
   - meta.yaml              # title, author, date, business_criticality

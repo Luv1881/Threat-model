@@ -44,6 +44,8 @@ technical_assets:
     is_pii_processor: true
     is_pii_controller: false
     is_llm_inference: true
+    entry_point_type: llm-inference-api
+    attack_surface_exposure: internet
     data_assets_processed:
       - note-content
       - ai-model-responses

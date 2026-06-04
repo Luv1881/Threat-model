@@ -115,11 +115,12 @@ technical_assets:
     communication_links:
 
       SES Email Send:
-        target: aws-api-gateway
+        target: aws-ses
         description: >
-          Lambda calls AWS SES to deliver transactional emails. Outbound to
-          AWS SES endpoint (not represented as a separate asset — using gateway
-          as proxy reference).
+          Lambda calls AWS SES to deliver transactional emails. IAM role grants
+          ses:SendEmail only; no SendRawEmail permission. No SES sending rate
+          limit configured on the IAM policy — a compromised Lambda could exhaust
+          the SES daily quota.
         protocol: https
         authentication: credentials
         authorization: technical-user
@@ -153,7 +154,7 @@ technical_assets:
     size: service
     technology: managed-database
     tags: ["aws", "rds", "postgresql", "cloud-native", "information-asset-container",
-           "criticality-high"]
+           "criticality-high", "has-automated-backup"]
     internet: false
     machine: virtual
     encryption: none
@@ -283,6 +284,46 @@ technical_assets:
         diagram_tweak_weight: 1
         diagram_tweak_constraint: false
 
+  AWS SES:
+    id: aws-ses
+    description: >
+      AWS Simple Email Service used for transactional email delivery (note-share
+      invitations, account verification). Managed service — not custom-developed.
+      SES sending identity (domain) is verified; DKIM and SPF records are configured.
+      No dedicated sending quota alarm; a compromised Lambda could exhaust the daily
+      send limit and cause notification delivery failure.
+    type: process
+    usage: business
+    used_as_client_by_human: false
+    out_of_scope: false
+    justification_out_of_scope: ""
+    size: service
+    technology: mail-server
+    tags: ["aws", "ses", "email", "cloud-native"]
+    internet: true
+    machine: virtual
+    encryption: transparent
+    owner: VaultNote Team
+    confidentiality: confidential
+    integrity: operational
+    availability: operational
+    justification_cia_rating: >
+      SES handles PII (email addresses). Sending quota exhaustion prevents delivery
+      of account verification emails, blocking user registration. Email spoofing via
+      insufficient SPF/DKIM/DMARC alignment is possible if domain records are
+      misconfigured.
+    multi_tenant: false
+    redundant: true
+    custom_developed_parts: false
+    is_pii_processor: true
+    is_pii_controller: false
+    data_assets_processed:
+      - notification-payloads
+    data_assets_stored: []
+    data_formats_accepted:
+      - json
+    communication_links: {}
+
 data_assets:
 
   Notification Payloads:
@@ -325,6 +366,7 @@ trust_boundaries:
       - rds-postgresql
       - s3-notes-bucket
       - ecs-platform
+      - aws-ses
     trust_boundaries_nested: []
 
 risk_tracking:
@@ -369,6 +411,18 @@ risk_tracking:
       restricts access to the API ECS task role only.
     ticket: VAULT-135
     date: 2026-04-28
+    checked_by: Infrastructure Team
+
+  cloud-managed-db-no-backup@rds-postgresql:
+    status: accepted
+    justification: >
+      Automated backups ARE enabled in Terraform (backup_retention_period = 7,
+      confirmed in terraform/rds.tf). The has-automated-backup tag suppresses this
+      finding. PITR is available for the 7-day window. Multi-AZ is not enabled
+      (multi_az = false in Terraform) — failover requires snapshot restore, not
+      standby promotion. Accepted: RPO = 24 h backup cadence for this demo tier.
+    ticket: VAULT-141
+    date: 2026-05-25
     checked_by: Infrastructure Team
 
   cloud-container-no-image-scanning@ecs-platform:

@@ -248,3 +248,30 @@ risk_tracking:
     ticket: VAULT-121
     date: 2026-04-25
     checked_by: Security Team
+
+  # ── Manually-identified findings from source code review (no engine rule) ──
+  # These are documented as YAML comments because they have no corresponding
+  # engine-generated risk ID — the threagile model validates all risk_tracking
+  # entries against generated risk IDs.
+  #
+  # VAULT-142 | cors-wildcard-origin | in-progress
+  #   api/src/index.js: cors({ origin: process.env.CORS_ORIGIN || '*' })
+  #   Wildcard CORS allows cross-origin requests from any domain. Production
+  #   MUST set CORS_ORIGIN env var. Pre-launch security gate.
+  #
+  # VAULT-143 | jwt-long-lived-token | accepted
+  #   api/src/routes/auth.js: TOKEN_TTL_SECONDS = 8 hours.
+  #   Long window for token abuse. Mitigated by Redis revocation list + rate
+  #   limiter. TTL will be reduced to 15-30 min with refresh token rotation.
+  #
+  # VAULT-124 | jwt-secret-insecure-default | in-progress
+  #   JWT_SECRET defaults to 'change-me-in-production' if env var unset.
+  #   Allows arbitrary token forgery. Blocked by secrets manager work (VAULT-124).
+  #
+  # VAULT-144 | file-upload-mime-type-bypass | in-progress
+  #   files.js: Content-Type served from req.file.mimetype (client-controlled).
+  #   Attacker can serve JS as text/html. Fix: magic-bytes detection server-side.
+  #
+  # VAULT-144 | file-upload-content-disposition-injection | in-progress
+  #   files.js: Content-Disposition filename unsanitised from S3 object key.
+  #   Newlines/semicolons in filename = HTTP response splitting. Fix: RFC 5987.
