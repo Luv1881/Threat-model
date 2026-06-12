@@ -243,6 +243,17 @@ risk_tracking:
     date: 2026-04-18
     checked_by: Security Team
 
+  exposed-default-credentials@minio-storage:
+    status: in-progress
+    justification: >
+      MinIO is still running with the default minioadmin/minioadmin
+      credentials in this environment. Credential rotation is the same
+      effort tracked under VAULT-110 (alongside SSE-S3 enablement) and is a
+      CRITICAL blocker for production launch.
+    ticket: VAULT-110
+    date: 2026-04-18
+    checked_by: Security Team
+
   mixed-targets-on-shared-runtime@docker-host:
     status: accepted
     justification: >
