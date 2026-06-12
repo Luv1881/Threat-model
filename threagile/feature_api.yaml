@@ -192,6 +192,17 @@ trust_boundaries:
 
 risk_tracking:
 
+  sql-nosql-injection@api-server@postgresql-db@api-server>postgresql-connection:
+    status: mitigated
+    justification: >
+      All application-level SQL queries against PostgreSQL use parameterized
+      statements via the `pg` library (no string-concatenated queries). The
+      generic protocol-based finding is acknowledged and mitigated by code
+      review + the Semgrep SAST rules tracked in VAULT-121.
+    ticket: VAULT-121
+    date: 2026-04-25
+    checked_by: Security Team
+
   # LINDDUN findings on the API server
   detecting-no-audit-logging@api-server:
     status: in-progress
