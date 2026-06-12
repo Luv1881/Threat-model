@@ -1,0 +1,658 @@
+# Risk-review wave 2026-06-12 — full triage of previously-unchecked findings
+# across all 9 methodology runs (STRIDE, LINDDUN, PASTA, VAST, Cloud-Native,
+# Supply-Chain, AI/ML, OCTAVE, Trike).
+#
+# Conventions:
+#   - Wildcard entries (rule-id@*) apply to every matching generated risk that
+#     has no direct (non-wildcard) tracking entry of its own.
+#   - "accepted" entries carry accepted_until/accepted_by (acceptance-expiry
+#     workflow): the analysis FAILS once the date passes, forcing re-review.
+#     VaultNote contains intentional misconfigurations kept for security
+#     training; those acceptances expire 2026-12-31 to force re-confirmation.
+#   - "false-positive" entries explain why the detection logic does not apply.
+#   - "in-progress" entries reference a VAULT-* remediation ticket.
+
+risk_tracking:
+
+  # ── Transport encryption (intentional misconfiguration cluster) ──────────
+
+  unencrypted-communication@*:
+    status: in-progress
+    justification: >
+      Plaintext HTTP between API server and PostgreSQL/Redis/MinIO inside
+      backend-net is one of the model's intentional misconfigurations. TLS for
+      all internal data-plane connections is the same effort already tracked
+      for the PII-disclosure findings (VAULT-117).
+    ticket: VAULT-117
+    date: 2026-06-12
+    checked_by: Security Team
+
+  octave-unencrypted-transport@*:
+    status: in-progress
+    justification: >
+      OCTAVE view of the same internal plaintext-transport gap covered by
+      VAULT-117 (TLS for PostgreSQL, Redis, MinIO, vector store, and the
+      RDS/S3 in-VPC variants).
+    ticket: VAULT-117
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Encryption at rest (intentional misconfiguration cluster) ────────────
+
+  identifying-pii-stored-unencrypted@*:
+    status: accepted
+    justification: >
+      Intentional misconfiguration: encryption at rest is deliberately absent
+      on PostgreSQL/Redis/MinIO/vector store (and disabled on RDS/S3 in the
+      Terraform) for training purposes. Production deployments require the
+      VAULT-110/VAULT-89 encryption work before launch.
+    accepted_until: 2026-12-31
+    accepted_by: VaultNote Security Team
+    date: 2026-06-12
+    checked_by: Security Team
+
+  unencrypted-asset@*:
+    status: accepted
+    justification: >
+      Same intentional encryption-at-rest gap as the LINDDUN PII findings:
+      RDS (storage_encrypted=false), S3 (no SSE), and Redis are deliberately
+      unencrypted in this training environment. Direct entries exist for
+      postgresql-db and minio-storage; this acceptance covers the remaining
+      managed-service variants until the next review.
+    accepted_until: 2026-12-31
+    accepted_by: VaultNote Security Team
+    date: 2026-06-12
+    checked_by: Security Team
+
+  cloud-object-storage-no-encryption@minio-storage:
+    status: in-progress
+    justification: >
+      MinIO SSE-S3 enablement is already in flight as part of VAULT-110
+      (alongside default-credential rotation); this is the cloud-native pack's
+      view of the same gap.
+    ticket: VAULT-110
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Authentication on internal links (intentional misconfiguration) ──────
+
+  missing-authentication@*:
+    status: accepted
+    justification: >
+      Intentional misconfiguration: the Nginx→API plaintext hop carries no
+      link-level authentication (end-user JWTs are validated by the API
+      server itself), and the API-Gateway→ECS route relies on the gateway
+      JWT authorizer rather than mutual auth. Kept for training; production
+      hardening (mTLS / signed service identity) re-evaluated at expiry.
+    accepted_until: 2026-12-31
+    accepted_by: VaultNote Security Team
+    date: 2026-06-12
+    checked_by: Security Team
+
+  missing-authentication-second-factor@*:
+    status: accepted
+    justification: >
+      MFA for end users is on the product roadmap but out of scope for the
+      current release; session hardening (short-lived JWTs + Redis revocation
+      list, VAULT-143) is the compensating control.
+    accepted_until: 2027-03-31
+    accepted_by: VaultNote Security Team
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Injection / request-forgery detections (analytical review) ───────────
+
+  sql-nosql-injection@api-server@redis-cache@api-server>redis-session-store:
+    status: false-positive
+    justification: >
+      Redis is accessed exclusively through ioredis command methods with
+      discrete arguments (no Lua scripts built from user input, no EVAL of
+      concatenated strings). The injection detection keys on the datastore
+      protocol and does not apply to this access pattern.
+    date: 2026-06-12
+    checked_by: Security Team
+
+  server-side-request-forgery@*:
+    status: false-positive
+    justification: >
+      Every flagged outbound call targets a static, configuration-defined
+      endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by
+      digest, GitHub→Actions webhooks, and fixed internal AI-service URLs.
+      No user-controlled URL or hostname is ever fetched, which is the
+      precondition for SSRF.
+    date: 2026-06-12
+    checked_by: Security Team
+
+  path-traversal@*:
+    status: in-progress
+    justification: >
+      MinIO object keys are server-generated UUIDs (never derived from
+      user-supplied filenames) and registry pulls are by immutable digest,
+      but a verification pass plus regression tests asserting the key
+      construction is tracked before closing as false-positive.
+    ticket: VAULT-166
+    date: 2026-06-12
+    checked_by: Security Team
+
+  unguarded-direct-datastore-access@*:
+    status: false-positive
+    justification: >
+      The API server is the identity-providing application tier; its direct
+      access to its own PostgreSQL/Redis/MinIO backing stores is the standard
+      three-tier pattern. The finding triggers on datastore RAA attractiveness,
+      not on an actual missing guard.
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Internet exposure review ──────────────────────────────────────────────
+
+  unguarded-access-from-internet@api-server@aws-api-gateway@aws-api-gateway>route-to-ecs-api:
+    status: accepted
+    justification: >
+      The API Gateway route is the designed public entry point of the AWS
+      deployment; requests pass the gateway JWT authorizer and (pending
+      VAULT-149 WAF work) gateway throttling. Re-review at expiry.
+    accepted_until: 2027-06-01
+    accepted_by: VaultNote Security Team
+    date: 2026-06-12
+    checked_by: Security Team
+
+  unguarded-access-from-internet@*:
+    status: false-positive
+    justification: >
+      Remaining matches are authenticated SaaS/service flows mis-detected as
+      unguarded: GitHub→Actions and Actions→ECR use OIDC/registry auth, and
+      the LLM-summarizer→RAG/vector-store calls are service-to-service inside
+      the AI Services network (flagged only because the summarizer asset is
+      internet-facing).
+    date: 2026-06-12
+    checked_by: Security Team
+
+  internet-reachable-datastore@container-registry:
+    status: false-positive
+    justification: >
+      ECR repositories are private (no public registry policy); the asset's
+      internet flag models the managed-service endpoint, not public
+      readability. Pull/push require AWS IAM auth.
+    date: 2026-06-12
+    checked_by: Security Team
+
+  internet-reachable-datastore@vector-store:
+    status: false-positive
+    justification: >
+      The vector store is modeled with internet: false inside the AI Services
+      trust boundary; the PASTA rule flags it through the internet-facing
+      LLM-summarizer caller, not through actual exposure. Network policy
+      restricts ingress to the RAG pipeline and summarizer.
+    date: 2026-06-12
+    checked_by: Security Team
+
+  dos-risky-access-across-trust-boundary@*:
+    status: accepted
+    justification: >
+      Low-severity DoS exposure on the browser→nginx→API→PostgreSQL chain is
+      mitigated by the existing nginx rate limiting and connection pooling;
+      additional per-operation limits are the VAULT-146 effort.
+    accepted_until: 2027-06-01
+    accepted_by: VaultNote Security Team
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Hardening programme ──────────────────────────────────────────────────
+
+  missing-hardening@*:
+    status: in-progress
+    justification: >
+      CIS benchmark hardening for PostgreSQL (self-hosted + RDS parameter
+      groups) and the ECS task/host configuration is scheduled as one
+      hardening wave.
+    ticket: VAULT-160
+    date: 2026-06-12
+    checked_by: Security Team
+
+  missing-cloud-hardening@*:
+    status: in-progress
+    justification: >
+      CIS AWS Foundations benchmark for the AWS account, Docker Bench for the
+      self-hosted docker-host, and GitHub organization security settings for
+      the external CI/CD boundary are tracked as one cloud-hardening effort.
+    ticket: VAULT-158
+    date: 2026-06-12
+    checked_by: Security Team
+
+  missing-csp-header@nginx-proxy:
+    status: in-progress
+    justification: >
+      Content-Security-Policy rollout for the SPA: report-only policy first,
+      then enforcing (script-src 'self' + hash allowlist). Nginx config change
+      staged.
+    ticket: VAULT-159
+    date: 2026-06-12
+    checked_by: Security Team
+
+  missing-waf@api-server:
+    status: in-progress
+    justification: >
+      AWS WAF (managed core rule set + rate-based rules) in front of the API
+      Gateway covers the AWS deployment; ModSecurity evaluation for the
+      self-hosted nginx tier is part of the same ticket.
+    ticket: VAULT-149
+    date: 2026-06-12
+    checked_by: Security Team
+
+  cloud-api-gateway-no-waf@aws-api-gateway:
+    status: in-progress
+    justification: >
+      Same WAF effort as missing-waf@api-server: AWS WAF web ACL association
+      with the API Gateway stage.
+    ticket: VAULT-149
+    date: 2026-06-12
+    checked_by: Security Team
+
+  missing-vault@api-server:
+    status: in-progress
+    justification: >
+      AWS Secrets Manager adoption for the ECS deployment and docker secrets
+      for the self-hosted tier; removes env-var credential injection.
+    ticket: VAULT-162
+    date: 2026-06-12
+    checked_by: Security Team
+
+  missing-identity-store@nginx-proxy:
+    status: false-positive
+    justification: >
+      User identities live in the PostgreSQL users table (modeled as the
+      user-credentials data asset) with bcrypt password hashing; there is no
+      separate IdP by design for this product size. The rule expects a
+      dedicated identity-store asset type.
+    date: 2026-06-12
+    checked_by: Security Team
+
+  missing-build-infrastructure@api-server:
+    status: false-positive
+    justification: >
+      Build infrastructure exists and is fully modeled (source-repo,
+      build-pipeline, container-registry in the External CI/CD boundary);
+      the rule fires because the build assets sit outside the asset's own
+      network boundary, which is exactly the GitHub-hosted topology.
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Logging / monitoring programme ───────────────────────────────────────
+
+  detecting-no-audit-logging@*:
+    status: in-progress
+    justification: >
+      Extension of the structured audit-logging effort (VAULT-116) to the
+      remaining processing components: ECS platform events, Lambda notifier,
+      LLM summarizer, and RAG pipeline.
+    ticket: VAULT-116
+    date: 2026-06-12
+    checked_by: Security Team
+
+  cloud-no-audit-logging-high-value@*:
+    status: in-progress
+    justification: >
+      CloudTrail data events for S3, RDS audit log export to CloudWatch,
+      API Gateway access logs, Lambda structured logs, and MinIO audit
+      webhook are one logging wave.
+    ticket: VAULT-150
+    date: 2026-06-12
+    checked_by: Security Team
+
+  octave-insufficient-logging@*:
+    status: in-progress
+    justification: >
+      OCTAVE view of the datastore logging gap covered by the VAULT-150
+      logging wave (DB audit logs, object-store access logs, cache slowlog).
+    ticket: VAULT-150
+    date: 2026-06-12
+    checked_by: Security Team
+
+  trike-high-trust-unmonitored@api-server:
+    status: in-progress
+    justification: >
+      API server is the highest-trust actor; runtime monitoring (structured
+      audit log + CloudWatch alarms on auth failures and 5xx spikes) lands
+      with the VAULT-150 logging wave.
+    ticket: VAULT-150
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Resilience / recovery programme (OCTAVE asset-care findings) ─────────
+
+  octave-no-backup@*:
+    status: in-progress
+    justification: >
+      Backup wave: nightly pg_dump with restore verification, Redis RDB
+      snapshots (cache data is reconstructible), MinIO bucket replication,
+      S3 versioning, and vector-store re-embedding runbook.
+    ticket: VAULT-164
+    date: 2026-06-12
+    checked_by: Security Team
+
+  octave-no-recovery-plan@*:
+    status: in-progress
+    justification: >
+      Disaster-recovery runbook (RTO/RPO targets per datastore, restore
+      drills) is drafted and pending review alongside the VAULT-164 backup
+      implementation.
+    ticket: VAULT-165
+    date: 2026-06-12
+    checked_by: Security Team
+
+  octave-no-access-control@*:
+    status: in-progress
+    justification: >
+      Least-privilege pass on datastore access: dedicated PostgreSQL roles
+      per service, Redis ACLs, MinIO policy per bucket prefix, RDS/S3
+      security-group and bucket-policy review.
+    ticket: VAULT-163
+    date: 2026-06-12
+    checked_by: Security Team
+
+  octave-third-party-exposure@*:
+    status: accepted
+    justification: >
+      Dependence on managed third parties (AWS RDS/S3, MinIO distribution)
+      is a deliberate build-vs-buy decision; vendor security posture was
+      assessed at selection. Re-confirm at expiry.
+    accepted_until: 2027-06-01
+    accepted_by: VaultNote Security Team
+    date: 2026-06-12
+    checked_by: Security Team
+
+  cloud-object-storage-no-versioning@*:
+    status: in-progress
+    justification: >
+      S3 bucket versioning + MinIO object locking are part of the VAULT-164
+      backup/recovery wave (protects against ransomware-style overwrite and
+      accidental deletion).
+    ticket: VAULT-164
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Supply chain ─────────────────────────────────────────────────────────
+
+  accidental-secret-leak@source-repo:
+    status: in-progress
+    justification: >
+      gitleaks pre-commit hook plus GitHub push protection (secret scanning)
+      to be enabled on the repository.
+    ticket: VAULT-145
+    date: 2026-06-12
+    checked_by: Security Team
+
+  code-backdooring@*:
+    status: in-progress
+    justification: >
+      Branch protection with required reviews and signed commits across
+      source repo, pipeline definitions, and registry write paths — same
+      effort as the intentional no-branch-protection misconfiguration's
+      remediation.
+    ticket: VAULT-154
+    date: 2026-06-12
+    checked_by: Security Team
+
+  supply-chain-no-code-review@source-repo:
+    status: in-progress
+    justification: >
+      Required pull-request reviews arrive with the VAULT-154 branch
+      protection rollout (the missing branch protection is one of the model's
+      intentional misconfigurations).
+    ticket: VAULT-154
+    date: 2026-06-12
+    checked_by: Security Team
+
+  supply-chain-no-dependency-scanning@build-pipeline:
+    status: in-progress
+    justification: >
+      Dependabot alerts + npm audit gate in the Actions workflow; failing
+      severities block merge.
+    ticket: VAULT-167
+    date: 2026-06-12
+    checked_by: Security Team
+
+  supply-chain-no-sast@*:
+    status: in-progress
+    justification: >
+      Semgrep SAST (already piloted for the API server under VAULT-121) is
+      being rolled out to all first-party components: SPA, Lambda notifier,
+      LLM summarizer, and RAG pipeline.
+    ticket: VAULT-121
+    date: 2026-06-12
+    checked_by: Security Team
+
+  container-baseimage-backdooring@*:
+    status: in-progress
+    justification: >
+      Base images to be pinned by digest and scanned (ECR Enhanced scanning
+      is intentionally disabled in the training setup; enabling it plus a
+      Trivy CI gate is the remediation).
+    ticket: VAULT-155
+    date: 2026-06-12
+    checked_by: Security Team
+
+  supply-chain-unpinned-base-images@ecs-platform:
+    status: in-progress
+    justification: >
+      Digest pinning for ECS task images is part of the VAULT-155 image
+      integrity wave.
+    ticket: VAULT-155
+    date: 2026-06-12
+    checked_by: Security Team
+
+  supply-chain-unsigned-container-image@ecs-platform:
+    status: in-progress
+    justification: >
+      cosign signing in the build pipeline with ECS-side verification policy;
+      registry-side entry already tracked, this covers the deploy-side check.
+    ticket: VAULT-168
+    date: 2026-06-12
+    checked_by: Security Team
+
+  unchecked-deployment@*:
+    status: in-progress
+    justification: >
+      GitHub environments with required reviewers for production deploys and
+      an IaC scan (tfsec) stage in the pipeline.
+    ticket: VAULT-170
+    date: 2026-06-12
+    checked_by: Security Team
+
+  missing-cloud-hardening@external-cicd:
+    status: in-progress
+    justification: >
+      GitHub organization hardening (SSO enforcement, runner isolation,
+      OIDC-only cloud credentials) is part of the VAULT-158 cloud-hardening
+      wave.
+    ticket: VAULT-158
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Platform / runtime ───────────────────────────────────────────────────
+
+  lateral-movement-shared-runtime@docker-host:
+    status: accepted
+    justification: >
+      The single docker-host runtime is inherent to the self-hosted
+      deployment tier (compose on one VM). Containers run unprivileged with
+      no docker socket mounts (see mixed-targets acceptance VAULT-95); the
+      AWS/ECS deployment removes the shared runtime entirely.
+    accepted_until: 2026-12-31
+    accepted_by: VaultNote Security Team
+    date: 2026-06-12
+    checked_by: Security Team
+
+  container-platform-escape@ecs-platform:
+    status: accepted
+    justification: >
+      ECS on Fargate provides VM-level task isolation managed by AWS; no
+      privileged containers or host mounts are configured. Residual platform
+      escape risk is accepted as a managed-service dependency.
+    accepted_until: 2027-06-01
+    accepted_by: VaultNote Security Team
+    date: 2026-06-12
+    checked_by: Security Team
+
+  cloud-container-registry-public@container-registry:
+    status: false-positive
+    justification: >
+      ECR repositories are private with IAM-scoped pull/push; no public
+      registry policy exists. The internet flag on the asset models the
+      managed endpoint, not anonymous accessibility.
+    date: 2026-06-12
+    checked_by: Security Team
+
+  cloud-serverless-overpermissive-role@lambda-notifier:
+    status: in-progress
+    justification: >
+      Lambda execution role to be scoped from ses:* to ses:SendEmail on the
+      verified identity ARN plus the specific SQS queue ARN.
+    ticket: VAULT-153
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Rate limiting / entry points (PASTA) ─────────────────────────────────
+
+  per-operation-rate-limiting-missing@*:
+    status: in-progress
+    justification: >
+      Per-route rate limits (login, note-create, share endpoints) at nginx
+      and API Gateway usage plans; complements the existing global limiter.
+    ticket: VAULT-146
+    date: 2026-06-12
+    checked_by: Security Team
+
+  ai-ml-inference-endpoint-no-rate-limiting@llm-summarizer:
+    status: in-progress
+    justification: >
+      Token-bucket limits per user on the summarizer endpoint are part of the
+      VAULT-146 per-operation rate-limiting wave (also bounds LLM cost abuse).
+    ticket: VAULT-146
+    date: 2026-06-12
+    checked_by: Security Team
+
+  undocumented-entry-point@*:
+    status: in-progress
+    justification: >
+      Entry-point inventory: documenting the CI/CD webhooks, SES sending
+      endpoint, registry, and API Gateway as reviewed entry points with
+      owners in the architecture record.
+    ticket: VAULT-171
+    date: 2026-06-12
+    checked_by: Security Team
+
+  weak-auth-on-entry-point@llm-summarizer:
+    status: in-progress
+    justification: >
+      The summarizer's unauthenticated internet exposure is one of the
+      model's intentional misconfigurations; remediation (service token +
+      gateway routing) is the same effort as the already-tracked
+      ai-ml-inference-endpoint-no-auth finding.
+    ticket: VAULT-130
+    date: 2026-06-12
+    checked_by: Security Team
+
+  missing-threat-scenario@llm-summarizer:
+    status: in-progress
+    justification: >
+      A PASTA threat scenario covering LLM endpoint abuse (prompt injection,
+      cost amplification) is being added to feature_threats.yaml.
+    ticket: VAULT-172
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── AI-specific ──────────────────────────────────────────────────────────
+
+  ai-ml-inference-logs-pii@llm-summarizer:
+    status: in-progress
+    justification: >
+      Prompt/response logging to be scrubbed (hash user IDs, drop note
+      bodies) before shipping logs to the aggregator.
+    ticket: VAULT-147
+    date: 2026-06-12
+    checked_by: Security Team
+
+  ai-ml-llm-api-key-hardcoded@llm-summarizer:
+    status: in-progress
+    justification: >
+      Verification pass that the upstream LLM API key is injected via
+      Secrets Manager (VAULT-162) and never committed; gitleaks history scan
+      included.
+    ticket: VAULT-148
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Privacy (LINDDUN) ────────────────────────────────────────────────────
+
+  pii-client-side-storage@browser-spa:
+    status: accepted
+    justification: >
+      The SPA keeps the JWT in memory and caches note drafts in IndexedDB to
+      support offline editing — a deliberate product decision. Cache is
+      cleared on logout; device-level encryption is the user's control.
+    accepted_until: 2026-12-31
+    accepted_by: VaultNote Security Team
+    date: 2026-06-12
+    checked_by: Security Team
+
+  linking-pii-multi-boundary@*:
+    status: in-progress
+    justification: >
+      Data-flow minimization review for the remaining PII-crossing assets
+      (API Gateway, ECS, RAG pipeline, RDS, S3, vector store): pseudonymous
+      user IDs in AI-service calls and embedding metadata.
+    ticket: VAULT-157
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Trike governance ─────────────────────────────────────────────────────
+
+  trike-actor-no-trust-level@browser-spa:
+    status: in-progress
+    justification: >
+      Actor trust levels (anonymous, authenticated user, admin, CI service)
+      are being added to the model as part of the Trike CRUD-matrix workshop.
+    ticket: VAULT-169
+    date: 2026-06-12
+    checked_by: Security Team
+
+  trike-asset-no-action-matrix@*:
+    status: in-progress
+    justification: >
+      Actor-action (CRUD) matrices per datastore are the deliverable of the
+      Trike workshop; matrix YAML lands with the next model revision.
+    ticket: VAULT-169
+    date: 2026-06-12
+    checked_by: Security Team
+
+  trike-matrix-unreviewed@*:
+    status: in-progress
+    justification: >
+      Matrix review/sign-off follows matrix creation in the same Trike
+      workshop effort.
+    ticket: VAULT-169
+    date: 2026-06-12
+    checked_by: Security Team
+
+  trike-residual-risk-unaccepted@*:
+    status: in-progress
+    justification: >
+      Residual-risk acceptance decisions per datastore are recorded as the
+      outcome of the Trike workshop, using the acceptance-expiry workflow so
+      they cannot silently rot.
+    ticket: VAULT-169
+    date: 2026-06-12
+    checked_by: Security Team
+
+  # ── Low-severity informational ───────────────────────────────────────────
+
+  unnecessary-technical-asset@*:
+    status: false-positive
+    justification: >
+      RDS and the S3 notes bucket belong to the AWS deployment variant of the
+      dual-deployment model (self-hosted compose + AWS/ECS); they are unused
+      only from the self-hosted tier's perspective.
+    date: 2026-06-12
+    checked_by: Security Team

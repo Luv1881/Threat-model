@@ -67,6 +67,21 @@ threagile_version: 1.0.0
 # sees the other packs' tracking entries as orphans — this is expected for a
 # multi-methodology reference model. The flag does NOT suppress risk findings;
 # it only suppresses the orphaned-tracking validation error.
+#
+#   FAIR Monte-Carlo quantification (estimates in fair-estimates.yaml):
+#   ../../better-threagile/bin/threagile quantify \
+#     --model threagile.yaml --ignore-orphaned-risk-tracking \
+#     --estimates fair-estimates.yaml --output-json output/quantify.json
+#   NOTE: root persistent flags (--model, --ignore-orphaned-risk-tracking)
+#   must come BEFORE command-local flags (--estimates) on the command line.
+#
+# Every analysis also writes risks.sarif (SARIF 2.1.0) for code-scanning
+# upload; suppressed results = mitigated/false-positive/accepted tracking.
+#
+# Acceptance expiry: all "accepted" entries carry accepted_until/accepted_by
+# (see feature_risk_review.yaml). Analysis FAILS once an acceptance expires;
+# renew the date or change the status. --ignore-expired-risk-acceptance
+# downgrades this to a warning.
 
 includes:
   - meta.yaml              # title, author, date, business_criticality
@@ -80,3 +95,4 @@ includes:
   - feature_ai.yaml         # LLM Summarizer + Vector Store + RAG Pipeline | AI Services | ai-ml pack
   - feature_threats.yaml          # PASTA threat scenarios
   - feature_business_processes.yaml # VAST business processes
+  - feature_risk_review.yaml      # 2026-06-12 triage wave: tracking for all previously-unchecked findings (wildcards + acceptance expiry)
