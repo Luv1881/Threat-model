@@ -1,0 +1,55 @@
+# FAIR quantitative estimates for `threagile quantify` (2026-06-12).
+# Keys are risk-category IDs (apply to all generated risks of that category)
+# or exact synthetic risk IDs. loss_event_frequency is events/year;
+# loss_magnitude is USD/event (modified-PERT min/most_likely/max).
+#
+# Calibration basis: ~5k active users, PII = notes + credentials; magnitude
+# anchored on breach-notification + churn cost for a small SaaS, frequency on
+# internet exposure and existing compensating controls noted in risk_tracking.
+
+default_iterations: 20000
+
+estimates:
+
+  # Default MinIO credentials on an internet-adjacent object store holding
+  # all note attachments — the single worst finding (high, in-progress).
+  exposed-default-credentials@minio-storage:
+    loss_event_frequency: {min: 0.2, most_likely: 1.0, max: 4.0}
+    loss_magnitude: {min: 50000, most_likely: 250000, max: 1500000}
+    confidence: 0.8
+
+  # Plaintext internal links carrying credentials/session tokens/notes.
+  unencrypted-communication:
+    loss_event_frequency: {min: 0.05, most_likely: 0.2, max: 1.0}
+    loss_magnitude: {min: 20000, most_likely: 120000, max: 800000}
+    confidence: 0.7
+
+  # Unauthenticated/plaintext internal hops (accepted, training scope).
+  missing-authentication:
+    loss_event_frequency: {min: 0.05, most_likely: 0.15, max: 0.8}
+    loss_magnitude: {min: 20000, most_likely: 100000, max: 600000}
+    confidence: 0.6
+
+  # PII at rest unencrypted across all stores (accepted until 2026-12-31).
+  identifying-pii-stored-unencrypted:
+    loss_event_frequency: {min: 0.05, most_likely: 0.25, max: 1.0}
+    loss_magnitude: {min: 40000, most_likely: 200000, max: 1200000}
+    confidence: 0.7
+
+  # Secret leakage via the unprotected source repo.
+  accidental-secret-leak:
+    loss_event_frequency: {min: 0.1, most_likely: 0.5, max: 2.0}
+    loss_magnitude: {min: 10000, most_likely: 80000, max: 500000}
+    confidence: 0.7
+
+  # Unauthenticated internet-facing LLM endpoint (cost abuse + data leak).
+  weak-auth-on-entry-point:
+    loss_event_frequency: {min: 0.5, most_likely: 2.0, max: 12.0}
+    loss_magnitude: {min: 2000, most_likely: 15000, max: 120000}
+    confidence: 0.6
+
+  # Supply-chain: no dependency scanning on the build pipeline.
+  supply-chain-no-dependency-scanning:
+    loss_event_frequency: {min: 0.1, most_likely: 0.4, max: 1.5}
+    loss_magnitude: {min: 15000, most_likely: 90000, max: 700000}
+    confidence: 0.6
