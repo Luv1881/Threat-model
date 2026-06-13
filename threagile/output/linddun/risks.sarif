@@ -1,0 +1,1035 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Threagile",
+          "informationUri": "https://threagile.io",
+          "version": "1.0.0",
+          "rules": [
+            {
+              "id": "data-disclosure-pii-unencrypted-link",
+              "name": "Data Disclosure - Personal Data Transmitted Over Unencrypted Channel",
+              "shortDescription": {
+                "text": "Personal data in transit over unencrypted communication links (plain HTTP, unencrypted database protocols, etc.) is exposed to network observers. GDPR Article 32 requires appropriate technical measures including encryption in transit."
+              },
+              "fullDescription": {
+                "text": "Exposure of personal data to eavesdroppers, potential data breach notification obligations under GDPR Article 33, and significant regulatory penalties.\n\nMitigation: Migrate all communication links carrying PII data assets to TLS 1.2+ (preferably TLS 1.3). For internal service-to-service communication, consider mutual TLS (mTLS)."
+              },
+              "help": {
+                "text": "Are all communication links carrying personal data encrypted in transit?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Security_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-319",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "detecting-no-audit-logging",
+              "name": "Detectability - PII Flows Without Audit Logging",
+              "shortDescription": {
+                "text": "Communication links that carry personal data without audit logging enabled mean that access to and use of personal data cannot be detected or reviewed after the fact. GDPR Article 5(2) requires demonstrable accountability.\n"
+              },
+              "fullDescription": {
+                "text": "Inability to detect unauthorized access to personal data, failure to meet GDPR accountability obligations, and potential inability to meet breach notification deadlines.\n\n\nMitigation: Set audit_logged to true on every communication link that transmits PII data assets. Store logs in a tamper-evident system separate from the application.\n"
+              },
+              "help": {
+                "text": "Are all communication links that carry personal data audit-logged?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-778",
+                "function": "operations",
+                "security-severity": "6.5",
+                "stride": "repudiation"
+              }
+            },
+            {
+              "id": "identifying-pii-stored-unencrypted",
+              "name": "Identifiability - Personal Data Stored Without Encryption at Rest",
+              "shortDescription": {
+                "text": "Datastores holding personal data without encryption at rest allow anyone with access to the underlying storage to read and identify data subjects. GDPR Article 32 requires appropriate security measures including encryption at rest.\n"
+              },
+              "fullDescription": {
+                "text": "Physical or logical access to unencrypted volumes directly exposes personal data, enabling identification of natural persons and constituting a reportable data breach.\n\n\nMitigation: Enable disk-level or database-level encryption on every datastore asset that stores PII data assets. Use full-disk encryption (LUKS, AWS EBS encryption, Azure SSE) or database-level TDE (pgcrypto, SQL Server TDE).\n"
+              },
+              "help": {
+                "text": "Is every datastore that holds personal data encrypted at rest?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-312",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "linking-pii-multi-boundary",
+              "name": "Linkability - Same PII Data Asset Processed Across Multiple Trust Boundaries",
+              "shortDescription": {
+                "text": "When the same personal-data asset is processed by technical assets in two or more different trust boundaries, an attacker who compromises any one boundary gains linkability across all others, enabling cross-context profiling.\n"
+              },
+              "fullDescription": {
+                "text": "Aggregation of personal data enables profiling, re-identification, and violations of GDPR data minimisation and purpose limitation principles (Articles 5(1)(b) and 5(1)(c)).\n\n\nMitigation: Use per-context pseudonyms or pairwise identifiers so the same natural person cannot be linked across trust boundaries.\n"
+              },
+              "help": {
+                "text": "Does each PII data asset appear in assets across more than one trust boundary?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-359",
+                "function": "architecture",
+                "security-severity": "5.0",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "pii-client-side-storage",
+              "name": "Non-Repudiation - PII or Auth Tokens Accessible in Browser-Side Storage",
+              "shortDescription": {
+                "text": "Browser-based clients (SPAs, web apps) that process personal data or authentication tokens typically persist them in localStorage or sessionStorage. This browser-accessible storage is readable by any JavaScript running in the same origin — including injected scripts. Without HttpOnly cookies or a strict Content-Security-Policy, the stored tokens and PII are one XSS payload away from full exfiltration. From a LINDDUN perspective this enables Non-Repudiation attacks: an adversary who steals a token can act as the victim, making it impossible to distinguish attacker actions from legitimate user actions in audit logs.\n"
+              },
+              "fullDescription": {
+                "text": "Stolen session tokens allow account takeover and impersonation. The original user cannot repudiate actions performed by the attacker. Stolen PII violates GDPR data minimisation and storage limitation principles.\n\n\nMitigation: Replace localStorage/sessionStorage token storage with HttpOnly, Secure, SameSite=Strict cookies. Cookies with the HttpOnly flag are inaccessible to JavaScript, eliminating the XSS token-theft vector. Deploy a strict Content-Security-Policy to limit damage from any residual XSS. Tag the asset has-httponly-session once deployed.\n"
+              },
+              "help": {
+                "text": "Are authentication tokens stored in HttpOnly cookies rather than localStorage? Is a Content-Security-Policy header present on all pages served to this browser client?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/HTML5_Security_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-922",
+                "function": "development",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "unawareness-no-consent-technology",
+              "name": "Unawareness - PII Processed Without a Consent Management Component",
+              "shortDescription": {
+                "text": "When a system processes personal data from end users but has no consent-management technology in the architecture, data subjects are likely unaware of the nature and extent of processing. GDPR Articles 13 and 14 require transparent disclosure.\n"
+              },
+              "fullDescription": {
+                "text": "Data subjects cannot exercise GDPR rights. Regulatory investigation risk and class-action exposure in jurisdictions with private right of action.\n\n\nMitigation: Introduce a consent-manager (tagged with technology consent-manager) to capture, store, and honour data-subject preferences.\n"
+              },
+              "help": {
+                "text": "Does the architecture include a consent management component when processing PII?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-359",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "data-disclosure-pii-unencrypted-link",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "Data Disclosure: API Server processes personal data and has an unencrypted outgoing communication link"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "data-disclosure-pii-unencrypted-link@api-server"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "data-disclosure-pii-unencrypted-link",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "Data Disclosure: Nginx Reverse Proxy processes personal data and has an unencrypted outgoing communication link"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "data-disclosure-pii-unencrypted-link@nginx-proxy"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "nginx-proxy",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "detecting-no-audit-logging",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Detectability: API Server processes PII and has communication links without audit logging"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "detecting-no-audit-logging@api-server"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "detecting-no-audit-logging",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Detectability: ECS Container Platform processes PII and has communication links without audit logging"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "detecting-no-audit-logging@ecs-platform"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "ecs-platform",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "detecting-no-audit-logging",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Detectability: Lambda Email Notifier processes PII and has communication links without audit logging"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "detecting-no-audit-logging@lambda-notifier"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "lambda-notifier",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "detecting-no-audit-logging",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Detectability: LLM Note Summarizer processes PII and has communication links without audit logging"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "detecting-no-audit-logging@llm-summarizer"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "llm-summarizer",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "detecting-no-audit-logging",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Detectability: Nginx Reverse Proxy processes PII and has communication links without audit logging"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "detecting-no-audit-logging@nginx-proxy"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Nginx access.log captures all incoming requests (IP, URL, status code, response size). Individual API-level audit events are handled by the API server. The Nginx→API internal hop has no separate audit log; this is accepted as the TLS-termination boundary log is sufficient for DMZ-level audit requirements.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "nginx-proxy",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "detecting-no-audit-logging",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Detectability: Note RAG Pipeline processes PII and has communication links without audit logging"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "detecting-no-audit-logging@rag-pipeline"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "rag-pipeline",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "identifying-pii-stored-unencrypted",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "Identifiability: datastore MinIO Object Storage stores personal data without encryption at rest"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "identifying-pii-stored-unencrypted@minio-storage"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Intentional misconfiguration: encryption at rest is deliberately absent on PostgreSQL/Redis/MinIO/vector store (and disabled on RDS/S3 in the Terraform) for training purposes. Production deployments require the VAULT-110/VAULT-89 encryption work before launch.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "minio-storage",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "identifying-pii-stored-unencrypted",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "Identifiability: datastore PostgreSQL Database stores personal data without encryption at rest"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "identifying-pii-stored-unencrypted@postgresql-db"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Intentional misconfiguration: encryption at rest is deliberately absent on PostgreSQL/Redis/MinIO/vector store (and disabled on RDS/S3 in the Terraform) for training purposes. Production deployments require the VAULT-110/VAULT-89 encryption work before launch.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "postgresql-db",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "identifying-pii-stored-unencrypted",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "Identifiability: datastore AWS RDS PostgreSQL stores personal data without encryption at rest"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "identifying-pii-stored-unencrypted@rds-postgresql"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Intentional misconfiguration: encryption at rest is deliberately absent on PostgreSQL/Redis/MinIO/vector store (and disabled on RDS/S3 in the Terraform) for training purposes. Production deployments require the VAULT-110/VAULT-89 encryption work before launch.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "rds-postgresql",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "identifying-pii-stored-unencrypted",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "Identifiability: datastore Redis Cache stores personal data without encryption at rest"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "identifying-pii-stored-unencrypted@redis-cache"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Intentional misconfiguration: encryption at rest is deliberately absent on PostgreSQL/Redis/MinIO/vector store (and disabled on RDS/S3 in the Terraform) for training purposes. Production deployments require the VAULT-110/VAULT-89 encryption work before launch.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "redis-cache",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "identifying-pii-stored-unencrypted",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "Identifiability: datastore AWS S3 Notes Bucket stores personal data without encryption at rest"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "identifying-pii-stored-unencrypted@s3-notes-bucket"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Intentional misconfiguration: encryption at rest is deliberately absent on PostgreSQL/Redis/MinIO/vector store (and disabled on RDS/S3 in the Terraform) for training purposes. Production deployments require the VAULT-110/VAULT-89 encryption work before launch.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "s3-notes-bucket",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "identifying-pii-stored-unencrypted",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "Identifiability: datastore VaultNote Vector Store stores personal data without encryption at rest"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "identifying-pii-stored-unencrypted@vector-store"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Intentional misconfiguration: encryption at rest is deliberately absent on PostgreSQL/Redis/MinIO/vector store (and disabled on RDS/S3 in the Terraform) for training purposes. Production deployments require the VAULT-110/VAULT-89 encryption work before launch.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "vector-store",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: API Server processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@api-server"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "The API server bridges frontend-net and backend-net by architectural necessity — it is the sole legitimate data path between the two networks. Cross-boundary PII flow is an inherent design characteristic, not a misconfiguration. Mitigated by authentication + authorization enforcement at the API layer.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "api-server",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: AWS API Gateway processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@aws-api-gateway"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "aws-api-gateway",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: Browser SPA processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@browser-spa"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "The Browser SPA processes user-credentials and note-content across the Internet and DMZ boundaries by design (user-facing client). The risk is inherent to the SPA architecture; mitigated by HTTPS-only transport and short-lived session tokens.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "browser-spa",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: ECS Container Platform processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@ecs-platform"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "ecs-platform",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: MinIO Object Storage processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@minio-storage"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "File attachments uploaded via the Internet are stored in the Data Tier. Cross-boundary flow is by design. VAULT-110 (credential rotation + SSE) addresses the high-severity storage risk; the linkability finding is accepted as an inherent architectural property.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "minio-storage",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: Nginx Reverse Proxy processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@nginx-proxy"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Nginx is the TLS-termination proxy and must bridge Internet and DMZ by design. Cross-boundary PII flow is intentional and unavoidable for this component.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "nginx-proxy",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: PostgreSQL Database processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@postgresql-db"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "PostgreSQL stores credentials and note content that originate from multiple trust boundaries (Internet → DMZ → App Network → Data Tier). This is inherent to the data flow by design. Risk is accepted; mitigated by parameterized queries and authentication-only access via the API.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "postgresql-db",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: Note RAG Pipeline processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@rag-pipeline"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "rag-pipeline",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: AWS RDS PostgreSQL processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@rds-postgresql"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "rds-postgresql",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: Redis Cache processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@redis-cache"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Session identifiers originate from users across the Internet boundary. Storage in Redis within the Data Tier is unavoidable. Mitigated by short TTL (15 minutes), revocation list, and password-protected access.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "redis-cache",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: AWS S3 Notes Bucket processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@s3-notes-bucket"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "s3-notes-bucket",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "linking-pii-multi-boundary",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Linkability: VaultNote Vector Store processes a PII data asset also flowing into another trust boundary"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "linking-pii-multi-boundary@vector-store"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "vector-store",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "pii-client-side-storage",
+          "ruleIndex": 4,
+          "level": "warning",
+          "message": {
+            "text": "PII in Client-Side Storage: browser asset Browser SPA processes personal data that may be stored in JavaScript-accessible browser storage"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "pii-client-side-storage@browser-spa"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "The SPA keeps the JWT in memory and caches note drafts in IndexedDB to support offline editing — a deliberate product decision. Cache is cleared on logout; device-level encryption is the user's control.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "browser-spa",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "unawareness-no-consent-technology",
+          "ruleIndex": 5,
+          "level": "warning",
+          "message": {
+            "text": "Unawareness: Browser SPA processes end-user PII but no consent management component is present"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unawareness-no-consent-technology@browser-spa"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "browser-spa",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        }
+      ]
+    }
+  ]
+}

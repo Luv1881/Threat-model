@@ -1,13 +1,10 @@
-= Impact Analysis Of 67 Remaining Risks In 26 Categories
+= Impact Analysis Of 46 Remaining Risks In 20 Categories
 :fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
-The most prevalent impacts of the *67 remaining risks* (distributed over *26 risk categories*) are (taking the severity ratings into account and using the highest for each category)!{fn-risk-findings}
+The most prevalent impacts of the *46 remaining risks* (distributed over *20 risk categories*) are (taking the severity ratings into account and using the highest for each category)!{fn-risk-findings}
 
 <<exposed-default-credentials,[.HighRisk]#High: *Asset Using Known Default or Hardcoded Credentials*: 1 Remaining Risk - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
 Any attacker with network access can authenticate using default credentials, exfiltrate all stored data, modify records, or pivot into adjacent systems.
 
-
-<<sql-nosql-injection,[.HighRisk]#High: *SQL/NoSQL-Injection*: 2 Remaining Risks - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
-If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.
 
 <<lateral-movement-shared-runtime,[.ElevatedRisk]#Elevated: *Lateral Movement via Shared Runtime*: 1 Remaining Risk - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
 An attacker who compromises any asset on the shared runtime may pivot to other co-located assets, including those in higher trust zones.
@@ -28,20 +25,11 @@ If this risk remains unmitigated, attackers might be able to easier attack high-
 <<path-traversal,[.ElevatedRisk]#Elevated: *Path-Traversal*: 3 Remaining Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
 If this risk is unmitigated, attackers might be able to read sensitive files (configuration data, key/credential files, deployment files, business data files, etc.) from the filesystem of affected components.
 
-<<sql-nosql-injection,[.ElevatedRisk]#Elevated: *SQL/NoSQL-Injection*: 2 Remaining Risks - Exploitation likelihood is _Very Likely_ with _High_ impact.#>>::
-If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.
-
-<<server-side-request-forgery,[.ElevatedRisk]#Elevated: *Server-Side Request Forgery (SSRF)*: 8 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
-If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.
-
 <<unencrypted-communication,[.ElevatedRisk]#Elevated: *Unencrypted Communication*: 4 Remaining Risks - Exploitation likelihood is _Likely_ with _High_ impact.#>>::
 If this risk is unmitigated, network attackers might be able to to eavesdrop on unencrypted sensitive data sent between components.
 
-<<unguarded-access-from-internet,[.ElevatedRisk]#Elevated: *Unguarded Access From Internet*: 5 Remaining Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
+<<unguarded-access-from-internet,[.ElevatedRisk]#Elevated: *Unguarded Access From Internet*: 1 Remaining Risk - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
 If this risk is unmitigated, attackers might be able to directly attack sensitive systems without any hardening components in-between due to them being directly exposed on the internet.
-
-<<unguarded-direct-datastore-access,[.ElevatedRisk]#Elevated: *Unguarded Direct Datastore Access*: 3 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
-If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.
 
 <<accidental-secret-leak,[.MediumRisk]#Medium: *Accidental Secret Leak*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
 If this risk is unmitigated, attackers which have access to affected sourcecode repositories or artifact registries might find secrets accidentally checked-in.
@@ -55,14 +43,8 @@ If this risk is unmitigated, attackers might be able to deeply persist in the ta
 <<container-platform-escape,[.MediumRisk]#Medium: *Container Platform Escape*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
 If this risk is unmitigated, attackers which have successfully compromised a container (via other vulnerabilities) might be able to deeply persist in the target system by executing code in many deployed containers and the container platform itself.
 
-<<missing-build-infrastructure,[.MediumRisk]#Medium: *Missing Build Infrastructure*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
-If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model due to critical build infrastructure components missing in the model.
-
 <<missing-cloud-hardening,[.MediumRisk]#Medium: *Missing Cloud Hardening*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Very High_ impact.#>>::
 If this risk is unmitigated, attackers might access cloud components in an unintended way.
-
-<<missing-identity-store,[.MediumRisk]#Medium: *Missing Identity Store*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
-If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model in the identity provider/store that is currently missing in the model.
 
 <<missing-authentication-second-factor,[.MediumRisk]#Medium: *Missing Two-Factor Authentication (2FA)*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
 If this risk is unmitigated, attackers might be able to access or modify highly sensitive data without strong authentication.
@@ -76,27 +58,15 @@ If this risk is unmitigated, attackers might be able to apply standard attack pa
 <<mixed-targets-on-shared-runtime,[.MediumRisk]#Medium: *Mixed Targets on Shared Runtime*: 1 Remaining Risk - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
 If this risk is unmitigated, attackers successfully attacking other components of the system might have an easy path towards more valuable targets, as they are running on the same shared runtime.
 
-<<server-side-request-forgery,[.MediumRisk]#Medium: *Server-Side Request Forgery (SSRF)*: 8 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
-If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.
-
 <<unchecked-deployment,[.MediumRisk]#Medium: *Unchecked Deployment*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
 If this risk remains unmitigated, vulnerabilities in custom-developed software or their dependencies might not be identified during continuous deployment cycles.
 
 <<unencrypted-asset,[.MediumRisk]#Medium: *Unencrypted Technical Assets*: 5 Remaining Risks - Exploitation likelihood is _Unlikely_ with _High_ impact.#>>::
 If this risk is unmitigated, attackers might be able to access unencrypted data when successfully compromising sensitive components.
 
-<<unguarded-access-from-internet,[.MediumRisk]#Medium: *Unguarded Access From Internet*: 5 Remaining Risks - Exploitation likelihood is _Very Likely_ with _Medium_ impact.#>>::
-If this risk is unmitigated, attackers might be able to directly attack sensitive systems without any hardening components in-between due to them being directly exposed on the internet.
-
-<<unguarded-direct-datastore-access,[.MediumRisk]#Medium: *Unguarded Direct Datastore Access*: 3 Remaining Risks - Exploitation likelihood is _Likely_ with _Medium_ impact.#>>::
-If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.
-
 <<dos-risky-access-across-trust-boundary,[.LowRisk]#Low: *DoS-risky Access Across Trust-Boundary*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Low_ impact.#>>::
 If this risk remains unmitigated, attackers might be able to disturb the availability of important parts of the system.
 
 <<unchecked-deployment,[.LowRisk]#Low: *Unchecked Deployment*: 3 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Medium_ impact.#>>::
 If this risk remains unmitigated, vulnerabilities in custom-developed software or their dependencies might not be identified during continuous deployment cycles.
-
-<<unnecessary-technical-asset,[.LowRisk]#Low: *Unnecessary Technical Asset*: 2 Remaining Risks - Exploitation likelihood is _Unlikely_ with _Low_ impact.#>>::
-If this risk is unmitigated, attackers might be able to target unnecessary technical assets.
 

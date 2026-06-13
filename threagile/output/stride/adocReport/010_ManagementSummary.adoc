@@ -36,12 +36,12 @@ pie showData
 ....
 %%{init: {'pie' : {'textPosition' : 0.5}, 'theme': 'base', 'themeVariables': { 'pie1': '#FF0000', 'pie2': '#FF9300', 'pie3': '#FF40FF', 'pie4': '#0000FF', 'pie5': '#008F00', 'pie5': '#666666'}}}%%
 pie showData
-  "unchecked" : 63
+  "unchecked" : 0
   "in discussion" : 0
-  "accepted" : 2
-  "in progress" : 2
-  "mitigated" : 0
-  "false positive" : 0
+  "accepted" : 14
+  "in progress" : 32
+  "mitigated" : 1
+  "false positive" : 20
 ....
 |===
 

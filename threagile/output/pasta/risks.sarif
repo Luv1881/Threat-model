@@ -1,0 +1,499 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Threagile",
+          "informationUri": "https://threagile.io",
+          "version": "1.0.0",
+          "rules": [
+            {
+              "id": "internet-reachable-datastore",
+              "name": "Stage VII - Internet-Reachable Datastore With No Mitigation",
+              "shortDescription": {
+                "text": "PASTA Stage VII evaluates residual risk. A datastore (database, cache, object store) that can be reached from the internet, either directly or via a chain of HTTP/plain protocol hops, with no network segmentation represents one of the highest-risk configurations in any architecture. Attackers who compromise any internet-facing component gain a direct path to sensitive stored data.\n"
+              },
+              "fullDescription": {
+                "text": "Mass data exfiltration of all stored records, ransomware encryption of datastores, complete loss of data integrity, and regulatory breach notification obligations.\n\n\nMitigation: Place all datastores in a dedicated backend trust boundary with no direct internet access. Ensure all communication links between internet-facing assets and datastores go through the application tier (no direct datastore exposure). Apply defense-in-depth with connection-level authentication and network ACLs.\n"
+              },
+              "help": {
+                "text": "Are all datastores behind at least one application-tier trust boundary?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Database_Security_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-284",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "missing-threat-scenario",
+              "name": "Stage I - No Threat Scenarios Defined for Internet-Exposed Entry Points",
+              "shortDescription": {
+                "text": "PASTA Stage I defines business and security objectives and maps them to threat actors. An architecture with internet-exposed entry points but no documented threat scenarios means that adversarial thinking has not been applied: the team has not specified who might attack, how, and with what capabilities.\n"
+              },
+              "fullDescription": {
+                "text": "Without explicit threat actor profiles and attack scenarios, mitigations are chosen reactively rather than proactively, leaving systematic threat actor capabilities unaddressed.\n\n\nMitigation: Add a threat_scenarios section to the model with at least one scenario per distinct threat actor type (e.g., script-kiddie, insider, nation-state). Each scenario should document entry_assets, kill_chain_steps, and mitigated_by controls.\n"
+              },
+              "help": {
+                "text": "Does the model have at least one threat_scenarios entry for each internet-facing entry point?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Threat_Modeling_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-693",
+                "function": "operations",
+                "security-severity": "2.0",
+                "stride": "elevation-of-privilege"
+              }
+            },
+            {
+              "id": "no-rate-limiting-public-api",
+              "name": "Stage V - No Rate Limiting on Internet-Exposed API",
+              "shortDescription": {
+                "text": "PASTA Stage V identifies weaknesses that enable exploitation. An internet-accessible API endpoint without rate limiting is vulnerable to brute-force credential attacks, credential stuffing, API abuse, and denial-of-service amplification. Rate limiting is a fundamental control for any internet-exposed API.\n"
+              },
+              "fullDescription": {
+                "text": "Brute-force attacks against authentication endpoints, mass data harvesting via enumeration, DDoS amplification, and billing abuse on pay-per-use endpoints.\n\n\nMitigation: Add rate limiting at the API gateway or application layer (token bucket, sliding window). Apply stricter limits on authentication endpoints. Set rate_limited to true on the corresponding communication links after implementation.\n"
+              },
+              "help": {
+                "text": "Are all internet-exposed API communication links rate-limited?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-770",
+                "function": "operations",
+                "security-severity": "6.5",
+                "stride": "denial-of-service"
+              }
+            },
+            {
+              "id": "per-operation-rate-limiting-missing",
+              "name": "Stage V - Custom-Developed Service Without Per-Operation Rate Limiting",
+              "shortDescription": {
+                "text": "PASTA Stage V identifies vulnerabilities in the attack surface. Custom-developed services that process authentication credentials or session tokens and have outgoing communication links without rate limiting are vulnerable to credential stuffing, brute-force, bulk data exfiltration, and resource exhaustion. Global API rate limits are too coarse to prevent targeted abuse of individual high-value operations such as login, password reset, or bulk data exports.\n"
+              },
+              "fullDescription": {
+                "text": "Attackers can enumerate users, brute-force credentials, bulk-download sensitive data, or exhaust backend resources by sending unlimited requests to unthrottled operations. Business process integrity degrades when operations can be repeated without throttling.\n\n\nMitigation: Apply rate limiting at the operation level using token-bucket or sliding-window algorithms, enforced per-user for authenticated requests and per-IP for unauthenticated requests. Set rate_limited: true on every communication link once per-operation limits are implemented and verified.\n"
+              },
+              "help": {
+                "text": "Is rate_limited set to true on every communication link that participates in authentication or sensitive data processing? Are per-user limits enforced in addition to any global API limits?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-770",
+                "function": "operations",
+                "security-severity": "6.5",
+                "stride": "denial-of-service"
+              }
+            },
+            {
+              "id": "undocumented-entry-point",
+              "name": "Stage III - Undocumented Application Entry Point",
+              "shortDescription": {
+                "text": "PASTA Stage III requires decomposing the application into entry points so that threats can be mapped against known attack surfaces. A technical asset reachable from the internet or marked as internet-exposed that has no entry_point_type declared represents an undocumented entry point that cannot be systematically analysed for threats.\n"
+              },
+              "fullDescription": {
+                "text": "Undocumented entry points are excluded from threat analysis, leaving unknown attack surface that attackers can exploit without detection or mitigation.\n\n\nMitigation: Declare entry_point_type on every internet-exposed technical asset (api, web_ui, cli, file_upload, webhook, cron, or internal_rpc). Maintain an entry point register and review it as part of each release cycle.\n"
+              },
+              "help": {
+                "text": "Do all internet-exposed technical assets have an entry_point_type declared?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-693",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "elevation-of-privilege"
+              }
+            },
+            {
+              "id": "weak-auth-on-entry-point",
+              "name": "Stage VI - Weak Authentication Strength on Internet-Exposed Entry Point",
+              "shortDescription": {
+                "text": "PASTA Stage VI models how attackers simulate attacks against identified entry points. Internet-exposed entry points with weak authentication (none or password-only) are prime targets for credential stuffing, phishing, and account takeover attacks. High-value or sensitive entry points should require MFA or hardware tokens.\n"
+              },
+              "fullDescription": {
+                "text": "Full account takeover, lateral movement into internal systems, and data exfiltration. Credential stuffing attacks against password-only endpoints succeed at statistically predictable rates given leaked credential databases.\n\n\nMitigation: Require MFA for all user-facing internet entry points handling sensitive data. Declare requires_authentication_strength as mfa or hardware on the technical asset. Consider phishing-resistant authentication (WebAuthn, FIDO2) for high-value assets.\n"
+              },
+              "help": {
+                "text": "Do all internet-exposed entry points with confidential or higher data have requires_authentication_strength set to mfa or hardware?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-287",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "spoofing"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "internet-reachable-datastore",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "Internet-Reachable Datastore: AWS ECR Container Registry can be reached from an internet-exposed asset with no application-tier separation"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "internet-reachable-datastore@container-registry"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "ECR repositories are private (no public registry policy); the asset's internet flag models the managed-service endpoint, not public readability. Pull/push require AWS IAM auth.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "very-high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "container-registry",
+            "severity": "elevated",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "internet-reachable-datastore",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "Internet-Reachable Datastore: VaultNote Vector Store can be reached from an internet-exposed asset with no application-tier separation"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "internet-reachable-datastore@vector-store"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "The vector store is modeled with internet: false inside the AI Services trust boundary; the PASTA rule flags it through the internet-facing LLM-summarizer caller, not through actual exposure. Network policy restricts ingress to the RAG pipeline and summarizer.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "very-high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "vector-store",
+            "severity": "elevated",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "missing-threat-scenario",
+          "ruleIndex": 1,
+          "level": "note",
+          "message": {
+            "text": "Missing Threat Scenario: internet entry point LLM Note Summarizer has no documented threat scenario"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-threat-scenario@llm-summarizer"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "llm-summarizer",
+            "severity": "low",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "no-rate-limiting-public-api",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "No Rate Limiting: internet-exposed API Nginx Reverse Proxy has communication links without rate limiting"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "no-rate-limiting-public-api@nginx-proxy"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "nginx-proxy",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "per-operation-rate-limiting-missing",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Missing Per-Operation Rate Limiting: custom service API Server processes auth data with unthrottled outgoing communication links"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "per-operation-rate-limiting-missing@api-server"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "per-operation-rate-limiting-missing",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Missing Per-Operation Rate Limiting: custom service Browser SPA processes auth data with unthrottled outgoing communication links"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "per-operation-rate-limiting-missing@browser-spa"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "browser-spa",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "undocumented-entry-point",
+          "ruleIndex": 4,
+          "level": "warning",
+          "message": {
+            "text": "Undocumented Entry Point: AWS API Gateway is internet-exposed but has no entry_point_type declared"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "undocumented-entry-point@aws-api-gateway"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "aws-api-gateway",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "undocumented-entry-point",
+          "ruleIndex": 4,
+          "level": "warning",
+          "message": {
+            "text": "Undocumented Entry Point: AWS SES is internet-exposed but has no entry_point_type declared"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "undocumented-entry-point@aws-ses"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "aws-ses",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "undocumented-entry-point",
+          "ruleIndex": 4,
+          "level": "warning",
+          "message": {
+            "text": "Undocumented Entry Point: GitHub Actions Build Pipeline is internet-exposed but has no entry_point_type declared"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "undocumented-entry-point@build-pipeline"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "build-pipeline",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "undocumented-entry-point",
+          "ruleIndex": 4,
+          "level": "warning",
+          "message": {
+            "text": "Undocumented Entry Point: AWS ECR Container Registry is internet-exposed but has no entry_point_type declared"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "undocumented-entry-point@container-registry"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "container-registry",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "undocumented-entry-point",
+          "ruleIndex": 4,
+          "level": "warning",
+          "message": {
+            "text": "Undocumented Entry Point: VaultNote Source Repository is internet-exposed but has no entry_point_type declared"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "undocumented-entry-point@source-repo"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "source-repo",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "weak-auth-on-entry-point",
+          "ruleIndex": 5,
+          "level": "warning",
+          "message": {
+            "text": "Weak Authentication: internet-exposed entry point LLM Note Summarizer lacks strong authentication for confidential data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "weak-auth-on-entry-point@llm-summarizer"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "llm-summarizer",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        }
+      ]
+    }
+  ]
+}
