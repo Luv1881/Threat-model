@@ -53,63 +53,13 @@ The risk *Asset Using Known Default or Hardcoded Credentials* was found *1 time*
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-04-18#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-110#
 
-[[sql-nosql-injection]]
-== [.HighRisk]#SQL/NoSQL-Injection: 2/2 unmitigated Risks#
-
-*Description* (Tampering): https://cwe.mitre.org/data/definitions/89.html[CWE 89]::
-When a database is accessed via database access protocols SQL/NoSQL-Injection risks might arise. The risk rating depends on the sensitivity technical asset itself and of the data assets processed.
-
-*Impact*::
-If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.
-
-*Detection Logic*::
-Database accessed via typical database access protocols by in-scope clients.
-
-*Risk Rating*::
-The risk rating depends on the sensitivity of the data stored inside the database.
-
-[RiskStatusFalsePositive]#*False Positives*#::
-[RiskStatusFalsePositive]#Database accesses by queries not consisting of parts controllable by the caller can be considered as false positives after individual review.#
-
-[RiskStatusMitigated]#*Mitigation*# (Development): SQL/NoSQL-Injection Prevention::
-Try to use parameter binding to be safe from injection vulnerabilities. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level.
-
-
-* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V5 - Validation, Sanitization and Encoding Verification Requirements]
-* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html[SQL_Injection_Prevention_Cheat_Sheet]
-
-
-*Check*
-
-Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
-
-=== Risk Findings
-:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
-
-The risk *SQL/NoSQL-Injection* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
-
-==== [.HighRisk]#_High Risk Severity_#
-[.HighRisk]#*SQL/NoSQL-Injection* risk at *API Server* against database *PostgreSQL Database* via *PostgreSQL Connection*: Exploitation likelihood is _Very Likely_ with _High_ impact.#
-
-<<api-server,[SmallGrey]#sql-nosql-injection@api-server@postgresql-db@api-server>postgresql-connection#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-
-==== [.ElevatedRisk]#_Elevated Risk Severity_#
-[.ElevatedRisk]#*SQL/NoSQL-Injection* risk at *API Server* against database *Redis Cache* via *Redis Session Store*: Exploitation likelihood is _Very Likely_ with _Medium_ impact.#
-
-<<api-server,[SmallGrey]#sql-nosql-injection@api-server@redis-cache@api-server>redis-session-store#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+4+|[.small]#MinIO is still running with the default minioadmin/minioadmin credentials in this environment. Credential rotation is the same effort tracked under VAULT-110 (alongside SSE-S3 enablement) and is a CRITICAL blocker for production launch.
+#
 |===
 
 [[lateral-movement-shared-runtime]]
@@ -153,7 +103,13 @@ The risk *Lateral Movement via Shared Runtime* was found *1 time* in the analyze
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#The single docker-host runtime is inherent to the self-hosted deployment tier (compose on one VM). Containers run unprivileged with no docker socket mounts (see mixed-targets acceptance VAULT-95); the AWS/ECS deployment removes the shared runtime entirely.
+#
 |===
 
 [[missing-authentication]]
@@ -198,7 +154,13 @@ The risk *Missing Authentication* was found *2 times* in the analyzed architectu
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Intentional misconfiguration: the Nginx→API plaintext hop carries no link-level authentication (end-user JWTs are validated by the API server itself), and the API-Gateway→ECS route relies on the gateway JWT authorizer rather than mutual auth. Kept for training; production hardening (mTLS / signed service identity) re-evaluated at expiry.
+#
 |===
 
 
@@ -209,7 +171,13 @@ The risk *Missing Authentication* was found *2 times* in the analyzed architectu
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Intentional misconfiguration: the Nginx→API plaintext hop carries no link-level authentication (end-user JWTs are validated by the API server itself), and the API-Gateway→ECS route relies on the gateway JWT authorizer rather than mutual auth. Kept for training; production hardening (mTLS / signed service identity) re-evaluated at expiry.
+#
 |===
 
 [[missing-cloud-hardening]]
@@ -265,7 +233,13 @@ The risk *Missing Cloud Hardening* was found *3 times* in the analyzed architect
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-158#
+
+4+|[.small]#CIS AWS Foundations benchmark for the AWS account, Docker Bench for the self-hosted docker-host, and GitHub organization security settings for the external CI/CD boundary are tracked as one cloud-hardening effort.
+#
 |===
 
 
@@ -276,7 +250,13 @@ The risk *Missing Cloud Hardening* was found *3 times* in the analyzed architect
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-158#
+
+4+|[.small]#CIS AWS Foundations benchmark for the AWS account, Docker Bench for the self-hosted docker-host, and GitHub organization security settings for the external CI/CD boundary are tracked as one cloud-hardening effort.
+#
 |===
 
 
@@ -287,7 +267,13 @@ The risk *Missing Cloud Hardening* was found *3 times* in the analyzed architect
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-158#
+
+4+|[.small]#GitHub organization hardening (SSO enforcement, runner isolation, OIDC-only cloud credentials) is part of the VAULT-158 cloud-hardening wave.
+#
 |===
 
 [[missing-csp-header]]
@@ -339,7 +325,13 @@ The risk *Missing Content-Security-Policy Header on Web Entry Point* was found *
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-159#
+
+4+|[.small]#Content-Security-Policy rollout for the SPA: report-only policy first, then enforcing (script-src 'self' + hash allowlist). Nginx config change staged.
+#
 |===
 
 [[missing-hardening]]
@@ -384,7 +376,13 @@ The risk *Missing Hardening* was found *3 times* in the analyzed architecture to
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-160#
+
+4+|[.small]#CIS benchmark hardening for PostgreSQL (self-hosted + RDS parameter groups) and the ECS task/host configuration is scheduled as one hardening wave.
+#
 |===
 
 
@@ -395,7 +393,13 @@ The risk *Missing Hardening* was found *3 times* in the analyzed architecture to
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-160#
+
+4+|[.small]#CIS benchmark hardening for PostgreSQL (self-hosted + RDS parameter groups) and the ECS task/host configuration is scheduled as one hardening wave.
+#
 |===
 
 
@@ -406,7 +410,13 @@ The risk *Missing Hardening* was found *3 times* in the analyzed architecture to
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-160#
+
+4+|[.small]#CIS benchmark hardening for PostgreSQL (self-hosted + RDS parameter groups) and the ECS task/host configuration is scheduled as one hardening wave.
+#
 |===
 
 [[path-traversal]]
@@ -451,7 +461,13 @@ The risk *Path-Traversal* was found *3 times* in the analyzed architecture to be
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-166#
+
+4+|[.small]#MinIO object keys are server-generated UUIDs (never derived from user-supplied filenames) and registry pulls are by immutable digest, but a verification pass plus regression tests asserting the key construction is tracked before closing as false-positive.
+#
 |===
 
 
@@ -462,7 +478,13 @@ The risk *Path-Traversal* was found *3 times* in the analyzed architecture to be
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-166#
+
+4+|[.small]#MinIO object keys are server-generated UUIDs (never derived from user-supplied filenames) and registry pulls are by immutable digest, but a verification pass plus regression tests asserting the key construction is tracked before closing as false-positive.
+#
 |===
 
 
@@ -473,129 +495,13 @@ The risk *Path-Traversal* was found *3 times* in the analyzed architecture to be
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-166#
 
-[[server-side-request-forgery]]
-== [.ElevatedRisk]#Server-Side Request Forgery (SSRF): 8/8 unmitigated Risks#
-
-*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/918.html[CWE 918]::
-When a server system (i.e. not a client) is accessing other server systems via typical web protocols Server-Side Request Forgery (SSRF) or Local-File-Inclusion (LFI) or Remote-File-Inclusion (RFI) risks might arise. 
-
-*Impact*::
-If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.
-
-*Detection Logic*::
-In-scope non-client systems accessing (using outgoing communication links) targets with either HTTP or HTTPS protocol.
-
-*Risk Rating*::
-The risk rating (low or medium) depends on the sensitivity of the data assets receivable via web protocols from targets within the same network trust-boundary as well on the sensitivity of the data assets receivable via web protocols from the target asset itself. Also for cloud-based environments the exploitation impact is at least medium, as cloud backend services can be attacked via SSRF.
-
-[RiskStatusFalsePositive]#*False Positives*#::
-[RiskStatusFalsePositive]#Servers not sending outgoing web requests can be considered as false positives after review.#
-
-[RiskStatusMitigated]#*Mitigation*# (Development): SSRF Prevention::
-Try to avoid constructing the outgoing target URL with caller controllable values. Alternatively use a mapping (whitelist) when accessing outgoing URLs instead of creating them including caller controllable values. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level.
-
-
-* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V12 - File and Resources Verification Requirements]
-* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html[Server_Side_Request_Forgery_Prevention_Cheat_Sheet]
-
-
-*Check*
-
-Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
-
-=== Risk Findings
-:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
-
-The risk *Server-Side Request Forgery (SSRF)* was found *8 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
-
-==== [.ElevatedRisk]#_Elevated Risk Severity_#
-[.ElevatedRisk]#*Server-Side Request Forgery (SSRF)* risk at *API Server* server-side web-requesting the target *MinIO Object Storage* via *MinIO File Storage*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
-
-<<api-server,[SmallGrey]#server-side-request-forgery@api-server@minio-storage@api-server>minio-file-storage#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-
-==== [.ElevatedRisk]#_Elevated Risk Severity_#
-[.ElevatedRisk]#*Server-Side Request Forgery (SSRF)* risk at *Lambda Email Notifier* server-side web-requesting the target *AWS SES* via *SES Email Send*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
-
-<<lambda-notifier,[SmallGrey]#server-side-request-forgery@lambda-notifier@aws-ses@lambda-notifier>ses-email-send#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Server-Side Request Forgery (SSRF)* risk at *ECS Container Platform* server-side web-requesting the target *AWS ECR Container Registry* via *Pull Images from ECR*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
-
-<<ecs-platform,[SmallGrey]#server-side-request-forgery@ecs-platform@container-registry@ecs-platform>pull-images-from-ecr#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Server-Side Request Forgery (SSRF)* risk at *GitHub Actions Build Pipeline* server-side web-requesting the target *AWS ECR Container Registry* via *Push Image to Registry*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
-
-<<build-pipeline,[SmallGrey]#server-side-request-forgery@build-pipeline@container-registry@build-pipeline>push-image-to-registry#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Server-Side Request Forgery (SSRF)* risk at *VaultNote Source Repository* server-side web-requesting the target *GitHub Actions Build Pipeline* via *Push to Pipeline*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
-
-<<source-repo,[SmallGrey]#server-side-request-forgery@source-repo@build-pipeline@source-repo>push-to-pipeline#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Server-Side Request Forgery (SSRF)* risk at *LLM Note Summarizer* server-side web-requesting the target *Note RAG Pipeline* via *Call RAG Pipeline*: Exploitation likelihood is _Likely_ with _Low_ impact.#
-
-<<llm-summarizer,[SmallGrey]#server-side-request-forgery@llm-summarizer@rag-pipeline@llm-summarizer>call-rag-pipeline#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Server-Side Request Forgery (SSRF)* risk at *LLM Note Summarizer* server-side web-requesting the target *VaultNote Vector Store* via *Query Vector Store*: Exploitation likelihood is _Likely_ with _Low_ impact.#
-
-<<llm-summarizer,[SmallGrey]#server-side-request-forgery@llm-summarizer@vector-store@llm-summarizer>query-vector-store#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Server-Side Request Forgery (SSRF)* risk at *Note RAG Pipeline* server-side web-requesting the target *VaultNote Vector Store* via *Retrieve from Vector Store*: Exploitation likelihood is _Likely_ with _Low_ impact.#
-
-<<rag-pipeline,[SmallGrey]#server-side-request-forgery@rag-pipeline@vector-store@rag-pipeline>retrieve-from-vector-store#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+4+|[.small]#MinIO object keys are server-generated UUIDs (never derived from user-supplied filenames) and registry pulls are by immutable digest, but a verification pass plus regression tests asserting the key construction is tracked before closing as false-positive.
+#
 |===
 
 [[unencrypted-communication]]
@@ -640,7 +546,13 @@ The risk *Unencrypted Communication* was found *4 times* in the analyzed archite
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-117#
+
+4+|[.small]#Plaintext HTTP between API server and PostgreSQL/Redis/MinIO inside backend-net is one of the model's intentional misconfigurations. TLS for all internal data-plane connections is the same effort already tracked for the PII-disclosure findings (VAULT-117).
+#
 |===
 
 
@@ -651,7 +563,13 @@ The risk *Unencrypted Communication* was found *4 times* in the analyzed archite
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-117#
+
+4+|[.small]#Plaintext HTTP between API server and PostgreSQL/Redis/MinIO inside backend-net is one of the model's intentional misconfigurations. TLS for all internal data-plane connections is the same effort already tracked for the PII-disclosure findings (VAULT-117).
+#
 |===
 
 
@@ -662,7 +580,13 @@ The risk *Unencrypted Communication* was found *4 times* in the analyzed archite
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-117#
+
+4+|[.small]#Plaintext HTTP between API server and PostgreSQL/Redis/MinIO inside backend-net is one of the model's intentional misconfigurations. TLS for all internal data-plane connections is the same effort already tracked for the PII-disclosure findings (VAULT-117).
+#
 |===
 
 
@@ -683,7 +607,7 @@ The risk *Unencrypted Communication* was found *4 times* in the analyzed archite
 |===
 
 [[unguarded-access-from-internet]]
-== [.ElevatedRisk]#Unguarded Access From Internet: 5/5 unmitigated Risks#
+== [.ElevatedRisk]#Unguarded Access From Internet: 1/5 unmitigated Risks#
 
 *Description* (Elevation of Privilege): https://cwe.mitre.org/data/definitions/501.html[CWE 501]::
 Internet-exposed assets must be guarded by a protecting service, application, or reverse-proxy.
@@ -724,118 +648,81 @@ The risk *Unguarded Access From Internet* was found *5 times* in the analyzed ar
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#The API Gateway route is the designed public entry point of the AWS deployment; requests pass the gateway JWT authorizer and (pending VAULT-149 WAF work) gateway throttling. Re-review at expiry.
+#
 |===
 
 
 ==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Unguarded Access from Internet* of *AWS ECR Container Registry* by *GitHub Actions Build Pipeline* via *Push Image to Registry*: Exploitation likelihood is _Very Likely_ with _Low_ impact.#
+*Unguarded Access from Internet* of *AWS ECR Container Registry* by *GitHub Actions Build Pipeline* via *Push Image to Registry*: Exploitation likelihood is _Very Likely_ with _Low_ impact.
 
 <<container-registry,[SmallGrey]#unguarded-access-from-internet@container-registry@build-pipeline@build-pipeline>push-image-to-registry#>>
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Remaining matches are authenticated SaaS/service flows mis-detected as unguarded: GitHub→Actions and Actions→ECR use OIDC/registry auth, and the LLM-summarizer→RAG/vector-store calls are service-to-service inside the AI Services network (flagged only because the summarizer asset is internet-facing).
+#
 |===
 
 
 ==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Unguarded Access from Internet* of *GitHub Actions Build Pipeline* by *VaultNote Source Repository* via *Push to Pipeline*: Exploitation likelihood is _Very Likely_ with _Low_ impact.#
+*Unguarded Access from Internet* of *GitHub Actions Build Pipeline* by *VaultNote Source Repository* via *Push to Pipeline*: Exploitation likelihood is _Very Likely_ with _Low_ impact.
 
 <<build-pipeline,[SmallGrey]#unguarded-access-from-internet@build-pipeline@source-repo@source-repo>push-to-pipeline#>>
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Remaining matches are authenticated SaaS/service flows mis-detected as unguarded: GitHub→Actions and Actions→ECR use OIDC/registry auth, and the LLM-summarizer→RAG/vector-store calls are service-to-service inside the AI Services network (flagged only because the summarizer asset is internet-facing).
+#
 |===
 
 
 ==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Unguarded Access from Internet* of *Note RAG Pipeline* by *LLM Note Summarizer* via *Call RAG Pipeline*: Exploitation likelihood is _Very Likely_ with _Low_ impact.#
+*Unguarded Access from Internet* of *Note RAG Pipeline* by *LLM Note Summarizer* via *Call RAG Pipeline*: Exploitation likelihood is _Very Likely_ with _Low_ impact.
 
 <<rag-pipeline,[SmallGrey]#unguarded-access-from-internet@rag-pipeline@llm-summarizer@llm-summarizer>call-rag-pipeline#>>
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Remaining matches are authenticated SaaS/service flows mis-detected as unguarded: GitHub→Actions and Actions→ECR use OIDC/registry auth, and the LLM-summarizer→RAG/vector-store calls are service-to-service inside the AI Services network (flagged only because the summarizer asset is internet-facing).
+#
 |===
 
 
 ==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Unguarded Access from Internet* of *VaultNote Vector Store* by *LLM Note Summarizer* via *Query Vector Store*: Exploitation likelihood is _Very Likely_ with _Low_ impact.#
+*Unguarded Access from Internet* of *VaultNote Vector Store* by *LLM Note Summarizer* via *Query Vector Store*: Exploitation likelihood is _Very Likely_ with _Low_ impact.
 
 <<vector-store,[SmallGrey]#unguarded-access-from-internet@vector-store@llm-summarizer@llm-summarizer>query-vector-store#>>
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
 
-[[unguarded-direct-datastore-access]]
-== [.ElevatedRisk]#Unguarded Direct Datastore Access: 3/3 unmitigated Risks#
-
-*Description* (Elevation of Privilege): https://cwe.mitre.org/data/definitions/501.html[CWE 501]::
-Data stores accessed across trust boundaries must be guarded by some protecting service or application.
-
-*Impact*::
-If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.
-
-*Detection Logic*::
-In-scope technical assets of type datastore (except identity-store-ldap when accessed from identity-provider and file-server when accessed via file transfer protocols) with confidentiality rating of confidential (or higher) or with integrity rating of critical (or higher) which have incoming data-flows from assets outside across a network trust-boundary. DevOps config and deployment access is excluded from this risk.
-
-*Risk Rating*::
-The matching technical assets are at low risk. When either the confidentiality rating is strictly-confidential or the integrity rating is mission-critical, the risk-rating is considered medium. For assets with RAA values higher than 40 % the risk-rating increases.
-
-[RiskStatusFalsePositive]#*False Positives*#::
-[RiskStatusFalsePositive]#When the caller is considered fully trusted as if it was part of the datastore itself.#
-
-[RiskStatusMitigated]#*Mitigation*# (Architecture): Encapsulation of Datastore::
-Encapsulate the datastore access behind a guarding service or application.
-
-
-* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
-* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html[Attack_Surface_Analysis_Cheat_Sheet]
-
-
-*Check*
-
-Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
-
-=== Risk Findings
-:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
-
-The risk *Unguarded Direct Datastore Access* was found *3 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
-
-==== [.ElevatedRisk]#_Elevated Risk Severity_#
-[.ElevatedRisk]#*Unguarded Direct Datastore Access* of *PostgreSQL Database* by *API Server* via *PostgreSQL Connection*: Exploitation likelihood is _Likely_ with _Medium_ impact.#
-
-<<postgresql-db,[SmallGrey]#unguarded-direct-datastore-access@api-server>postgresql-connection@api-server@postgresql-db#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Unguarded Direct Datastore Access* of *MinIO Object Storage* by *API Server* via *MinIO File Storage*: Exploitation likelihood is _Likely_ with _Low_ impact.#
-
-<<minio-storage,[SmallGrey]#unguarded-direct-datastore-access@api-server>minio-file-storage@api-server@minio-storage#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Unguarded Direct Datastore Access* of *Redis Cache* by *API Server* via *Redis Session Store*: Exploitation likelihood is _Likely_ with _Low_ impact.#
-
-<<redis-cache,[SmallGrey]#unguarded-direct-datastore-access@api-server>redis-session-store@api-server@redis-cache#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+4+|[.small]#Remaining matches are authenticated SaaS/service flows mis-detected as unguarded: GitHub→Actions and Actions→ECR use OIDC/registry auth, and the LLM-summarizer→RAG/vector-store calls are service-to-service inside the AI Services network (flagged only because the summarizer asset is internet-facing).
+#
 |===
 
 [[accidental-secret-leak]]
@@ -880,7 +767,13 @@ The risk *Accidental Secret Leak* was found *1 time* in the analyzed architectur
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-145#
+
+4+|[.small]#gitleaks pre-commit hook plus GitHub push protection (secret scanning) to be enabled on the repository.
+#
 |===
 
 [[code-backdooring]]
@@ -925,7 +818,13 @@ The risk *Code Backdooring* was found *3 times* in the analyzed architecture to 
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-154#
+
+4+|[.small]#Branch protection with required reviews and signed commits across source repo, pipeline definitions, and registry write paths — same effort as the intentional no-branch-protection misconfiguration's remediation.
+#
 |===
 
 
@@ -936,7 +835,13 @@ The risk *Code Backdooring* was found *3 times* in the analyzed architecture to 
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-154#
+
+4+|[.small]#Branch protection with required reviews and signed commits across source repo, pipeline definitions, and registry write paths — same effort as the intentional no-branch-protection misconfiguration's remediation.
+#
 |===
 
 
@@ -947,7 +852,13 @@ The risk *Code Backdooring* was found *3 times* in the analyzed architecture to 
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-154#
+
+4+|[.small]#Branch protection with required reviews and signed commits across source repo, pipeline definitions, and registry write paths — same effort as the intentional no-branch-protection misconfiguration's remediation.
+#
 |===
 
 [[container-baseimage-backdooring]]
@@ -994,7 +905,13 @@ The risk *Container Base Image Backdooring* was found *7 times* in the analyzed 
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-155#
+
+4+|[.small]#Base images to be pinned by digest and scanned (ECR Enhanced scanning is intentionally disabled in the training setup; enabling it plus a Trivy CI gate is the remediation).
+#
 |===
 
 
@@ -1005,7 +922,13 @@ The risk *Container Base Image Backdooring* was found *7 times* in the analyzed 
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-155#
+
+4+|[.small]#Base images to be pinned by digest and scanned (ECR Enhanced scanning is intentionally disabled in the training setup; enabling it plus a Trivy CI gate is the remediation).
+#
 |===
 
 
@@ -1016,7 +939,13 @@ The risk *Container Base Image Backdooring* was found *7 times* in the analyzed 
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-155#
+
+4+|[.small]#Base images to be pinned by digest and scanned (ECR Enhanced scanning is intentionally disabled in the training setup; enabling it plus a Trivy CI gate is the remediation).
+#
 |===
 
 
@@ -1027,7 +956,13 @@ The risk *Container Base Image Backdooring* was found *7 times* in the analyzed 
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-155#
+
+4+|[.small]#Base images to be pinned by digest and scanned (ECR Enhanced scanning is intentionally disabled in the training setup; enabling it plus a Trivy CI gate is the remediation).
+#
 |===
 
 
@@ -1038,7 +973,13 @@ The risk *Container Base Image Backdooring* was found *7 times* in the analyzed 
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-155#
+
+4+|[.small]#Base images to be pinned by digest and scanned (ECR Enhanced scanning is intentionally disabled in the training setup; enabling it plus a Trivy CI gate is the remediation).
+#
 |===
 
 
@@ -1049,7 +990,13 @@ The risk *Container Base Image Backdooring* was found *7 times* in the analyzed 
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-155#
+
+4+|[.small]#Base images to be pinned by digest and scanned (ECR Enhanced scanning is intentionally disabled in the training setup; enabling it plus a Trivy CI gate is the remediation).
+#
 |===
 
 
@@ -1060,7 +1007,13 @@ The risk *Container Base Image Backdooring* was found *7 times* in the analyzed 
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-155#
+
+4+|[.small]#Base images to be pinned by digest and scanned (ECR Enhanced scanning is intentionally disabled in the training setup; enabling it plus a Trivy CI gate is the remediation).
+#
 |===
 
 [[container-platform-escape]]
@@ -1105,97 +1058,13 @@ The risk *Container Platform Escape* was found *1 time* in the analyzed architec
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
 
-[[missing-build-infrastructure]]
-== [.MediumRisk]#Missing Build Infrastructure: 1/1 unmitigated Risk#
-
-*Description* (Tampering): https://cwe.mitre.org/data/definitions/1127.html[CWE 1127]::
-The modeled architecture does not contain a build infrastructure (devops-client, sourcecode-repo, build-pipeline, etc.), which might be the risk of a model missing critical assets (and thus not seeing their risks). If the architecture contains custom-developed parts, the pipeline where code gets developed and built needs to be part of the model.
-
-*Impact*::
-If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model due to critical build infrastructure components missing in the model.
-
-*Detection Logic*::
-Models with in-scope custom-developed parts missing in-scope development (code creation) and build infrastructure components (devops-client, sourcecode-repo, build-pipeline, etc.).
-
-*Risk Rating*::
-The risk rating depends on the highest sensitivity of the in-scope assets running custom-developed parts.
-
-[RiskStatusFalsePositive]#*False Positives*#::
-[RiskStatusFalsePositive]#Models not having any custom-developed parts can be considered as false positives after individual review.#
-
-[RiskStatusMitigated]#*Mitigation*# (Architecture): Build Pipeline Hardening::
-Include the build infrastructure in the model.
-
-
-* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
-* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html[Attack_Surface_Analysis_Cheat_Sheet]
-
-
-*Check*
-
-Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
-
-=== Risk Findings
-:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
-
-The risk *Missing Build Infrastructure* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Missing Build Infrastructure* in the threat model (referencing asset *API Server* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
-
-<<api-server,[SmallGrey]#missing-build-infrastructure@api-server#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-[[missing-identity-store]]
-== [.MediumRisk]#Missing Identity Store: 1/1 unmitigated Risk#
-
-*Description* (Spoofing): https://cwe.mitre.org/data/definitions/287.html[CWE 287]::
-The modeled architecture does not contain an identity store, which might be the risk of a model missing critical assets (and thus not seeing their risks).
-
-*Impact*::
-If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model in the identity provider/store that is currently missing in the model.
-
-*Detection Logic*::
-Models with authenticated data-flows authorized via end user identity missing an in-scope identity store.
-
-*Risk Rating*::
-The risk rating depends on the sensitivity of the end user-identity authorized technical assets and their data assets processed.
-
-[RiskStatusFalsePositive]#*False Positives*#::
-[RiskStatusFalsePositive]#Models only offering data/services without any real authentication need can be considered as false positives after individual review.#
-
-[RiskStatusMitigated]#*Mitigation*# (Architecture): Identity Store::
-Include an identity store in the model if the application has a login.
-
-
-* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V2 - Authentication Verification Requirements]
-* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html[Authentication_Cheat_Sheet]
-
-
-*Check*
-
-Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
-
-=== Risk Findings
-:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
-
-The risk *Missing Identity Store* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Missing Identity Store* in the threat model (referencing asset *Nginx Reverse Proxy* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
-
-<<nginx-proxy,[SmallGrey]#missing-identity-store@nginx-proxy#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+4+|[.small]#ECS on Fargate provides VM-level task isolation managed by AWS; no privileged containers or host mounts are configured. Residual platform escape risk is accepted as a managed-service dependency.
+#
 |===
 
 [[missing-authentication-second-factor]]
@@ -1240,7 +1109,13 @@ The risk *Missing Two-Factor Authentication (2FA)* was found *1 time* in the ana
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#MFA for end users is on the product roadmap but out of scope for the current release; session hardening (short-lived JWTs + Redis revocation list, VAULT-143) is the compensating control.
+#
 |===
 
 [[missing-vault]]
@@ -1285,7 +1160,13 @@ The risk *Missing Vault (Secret Storage)* was found *1 time* in the analyzed arc
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-162#
+
+4+|[.small]#AWS Secrets Manager adoption for the ECS deployment and docker secrets for the self-hosted tier; removes env-var credential injection.
+#
 |===
 
 [[missing-waf]]
@@ -1330,7 +1211,13 @@ The risk *Missing Web Application Firewall (WAF)* was found *1 time* in the anal
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-149#
+
+4+|[.small]#AWS WAF (managed core rule set + rate-based rules) in front of the API Gateway covers the AWS deployment; ModSecurity evaluation for the self-hosted nginx tier is part of the same ticket.
+#
 |===
 
 [[mixed-targets-on-shared-runtime]]
@@ -1426,7 +1313,13 @@ The risk *Unchecked Deployment* was found *3 times* in the analyzed architecture
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-170#
+
+4+|[.small]#GitHub environments with required reviewers for production deploys and an IaC scan (tfsec) stage in the pipeline.
+#
 |===
 
 
@@ -1437,7 +1330,13 @@ The risk *Unchecked Deployment* was found *3 times* in the analyzed architecture
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-170#
+
+4+|[.small]#GitHub environments with required reviewers for production deploys and an IaC scan (tfsec) stage in the pipeline.
+#
 |===
 
 
@@ -1448,7 +1347,13 @@ The risk *Unchecked Deployment* was found *3 times* in the analyzed architecture
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusInProgress.small]#In Progress#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-170#
+
+4+|[.small]#GitHub environments with required reviewers for production deploys and an IaC scan (tfsec) stage in the pipeline.
+#
 |===
 
 [[unencrypted-asset]]
@@ -1493,29 +1398,13 @@ The risk *Unencrypted Technical Assets* was found *5 times* in the analyzed arch
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
 
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Unencrypted Technical Asset* named *AWS S3 Notes Bucket*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
-
-<<s3-notes-bucket,[SmallGrey]#unencrypted-asset@s3-notes-bucket#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
-|===
-
-
-==== [.MediumRisk]#_Medium Risk Severity_#
-[.MediumRisk]#*Unencrypted Technical Asset* named *Redis Cache*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
-
-<<redis-cache,[SmallGrey]#unencrypted-asset@redis-cache#>>
-
-[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
-|===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+4+|[.small]#Same intentional encryption-at-rest gap as the LINDDUN PII findings: RDS (storage_encrypted=false), S3 (no SSE), and Redis are deliberately unencrypted in this training environment. Direct entries exist for postgresql-db and minio-storage; this acceptance covers the remaining managed-service variants until the next review.
+#
 |===
 
 
@@ -1532,6 +1421,40 @@ The risk *Unencrypted Technical Assets* was found *5 times* in the analyzed arch
 | [.GreyText.small]#VAULT-89#
 
 4+|[.small]#The PostgreSQL volume runs on a host-level LUKS-encrypted partition in all production deployments. The Threagile finding is acknowledged as informational for this demo environment which uses unencrypted storage. Production database TDE via pgcrypto will be evaluated in Q3.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Unencrypted Technical Asset* named *AWS S3 Notes Bucket*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<s3-notes-bucket,[SmallGrey]#unencrypted-asset@s3-notes-bucket#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Same intentional encryption-at-rest gap as the LINDDUN PII findings: RDS (storage_encrypted=false), S3 (no SSE), and Redis are deliberately unencrypted in this training environment. Direct entries exist for postgresql-db and minio-storage; this acceptance covers the remaining managed-service variants until the next review.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+[.MediumRisk]#*Unencrypted Technical Asset* named *Redis Cache*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.#
+
+<<redis-cache,[SmallGrey]#unencrypted-asset@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Same intentional encryption-at-rest gap as the LINDDUN PII findings: RDS (storage_encrypted=false), S3 (no SSE), and Redis are deliberately unencrypted in this training environment. Direct entries exist for postgresql-db and minio-storage; this acceptance covers the remaining managed-service variants until the next review.
 #
 |===
 
@@ -1594,7 +1517,13 @@ The risk *DoS-risky Access Across Trust-Boundary* was found *3 times* in the ana
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Low-severity DoS exposure on the browser→nginx→API→PostgreSQL chain is mitigated by the existing nginx rate limiting and connection pooling; additional per-operation limits are the VAULT-146 effort.
+#
 |===
 
 
@@ -1605,7 +1534,13 @@ The risk *DoS-risky Access Across Trust-Boundary* was found *3 times* in the ana
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Low-severity DoS exposure on the browser→nginx→API→PostgreSQL chain is mitigated by the existing nginx rate limiting and connection pooling; additional per-operation limits are the VAULT-146 effort.
+#
 |===
 
 
@@ -1616,11 +1551,442 @@ The risk *DoS-risky Access Across Trust-Boundary* was found *3 times* in the ana
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusAccepted.small]#Accepted#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Low-severity DoS exposure on the browser→nginx→API→PostgreSQL chain is mitigated by the existing nginx rate limiting and connection pooling; additional per-operation limits are the VAULT-146 effort.
+#
+|===
+
+[[missing-build-infrastructure]]
+== Missing Build Infrastructure: 1 mitigated Risk
+
+*Description* (Tampering): https://cwe.mitre.org/data/definitions/1127.html[CWE 1127]::
+The modeled architecture does not contain a build infrastructure (devops-client, sourcecode-repo, build-pipeline, etc.), which might be the risk of a model missing critical assets (and thus not seeing their risks). If the architecture contains custom-developed parts, the pipeline where code gets developed and built needs to be part of the model.
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model due to critical build infrastructure components missing in the model.
+
+*Detection Logic*::
+Models with in-scope custom-developed parts missing in-scope development (code creation) and build infrastructure components (devops-client, sourcecode-repo, build-pipeline, etc.).
+
+*Risk Rating*::
+The risk rating depends on the highest sensitivity of the in-scope assets running custom-developed parts.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Models not having any custom-developed parts can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Build Pipeline Hardening::
+Include the build infrastructure in the model.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html[Attack_Surface_Analysis_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Missing Build Infrastructure* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+*Missing Build Infrastructure* in the threat model (referencing asset *API Server* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.
+
+<<api-server,[SmallGrey]#missing-build-infrastructure@api-server#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Build infrastructure exists and is fully modeled (source-repo, build-pipeline, container-registry in the External CI/CD boundary); the rule fires because the build assets sit outside the asset's own network boundary, which is exactly the GitHub-hosted topology.
+#
+|===
+
+[[missing-identity-store]]
+== Missing Identity Store: 1 mitigated Risk
+
+*Description* (Spoofing): https://cwe.mitre.org/data/definitions/287.html[CWE 287]::
+The modeled architecture does not contain an identity store, which might be the risk of a model missing critical assets (and thus not seeing their risks).
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model in the identity provider/store that is currently missing in the model.
+
+*Detection Logic*::
+Models with authenticated data-flows authorized via end user identity missing an in-scope identity store.
+
+*Risk Rating*::
+The risk rating depends on the sensitivity of the end user-identity authorized technical assets and their data assets processed.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Models only offering data/services without any real authentication need can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Identity Store::
+Include an identity store in the model if the application has a login.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V2 - Authentication Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html[Authentication_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Missing Identity Store* was found *1 time* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+*Missing Identity Store* in the threat model (referencing asset *Nginx Reverse Proxy* as an example): Exploitation likelihood is _Unlikely_ with _Medium_ impact.
+
+<<nginx-proxy,[SmallGrey]#missing-identity-store@nginx-proxy#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#User identities live in the PostgreSQL users table (modeled as the user-credentials data asset) with bcrypt password hashing; there is no separate IdP by design for this product size. The rule expects a dedicated identity-store asset type.
+#
+|===
+
+[[sql-nosql-injection]]
+== SQL/NoSQL-Injection: 2 mitigated Risks
+
+*Description* (Tampering): https://cwe.mitre.org/data/definitions/89.html[CWE 89]::
+When a database is accessed via database access protocols SQL/NoSQL-Injection risks might arise. The risk rating depends on the sensitivity technical asset itself and of the data assets processed.
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.
+
+*Detection Logic*::
+Database accessed via typical database access protocols by in-scope clients.
+
+*Risk Rating*::
+The risk rating depends on the sensitivity of the data stored inside the database.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Database accesses by queries not consisting of parts controllable by the caller can be considered as false positives after individual review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Development): SQL/NoSQL-Injection Prevention::
+Try to use parameter binding to be safe from injection vulnerabilities. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V5 - Validation, Sanitization and Encoding Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html[SQL_Injection_Prevention_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *SQL/NoSQL-Injection* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.HighRisk]#_High Risk Severity_#
+*SQL/NoSQL-Injection* risk at *API Server* against database *PostgreSQL Database* via *PostgreSQL Connection*: Exploitation likelihood is _Very Likely_ with _High_ impact.
+
+<<api-server,[SmallGrey]#sql-nosql-injection@api-server@postgresql-db@api-server>postgresql-connection#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusMitigated.small]#Mitigated#
+| [.GreyText.small]#2026-04-25#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#VAULT-121#
+
+4+|[.small]#All application-level SQL queries against PostgreSQL use parameterized statements via the `pg` library (no string-concatenated queries). The generic protocol-based finding is acknowledged and mitigated by code review + the Semgrep SAST rules tracked in VAULT-121.
+#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+*SQL/NoSQL-Injection* risk at *API Server* against database *Redis Cache* via *Redis Session Store*: Exploitation likelihood is _Very Likely_ with _Medium_ impact.
+
+<<api-server,[SmallGrey]#sql-nosql-injection@api-server@redis-cache@api-server>redis-session-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Redis is accessed exclusively through ioredis command methods with discrete arguments (no Lua scripts built from user input, no EVAL of concatenated strings). The injection detection keys on the datastore protocol and does not apply to this access pattern.
+#
+|===
+
+[[server-side-request-forgery]]
+== Server-Side Request Forgery (SSRF): 8 mitigated Risks
+
+*Description* (Information Disclosure): https://cwe.mitre.org/data/definitions/918.html[CWE 918]::
+When a server system (i.e. not a client) is accessing other server systems via typical web protocols Server-Side Request Forgery (SSRF) or Local-File-Inclusion (LFI) or Remote-File-Inclusion (RFI) risks might arise. 
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.
+
+*Detection Logic*::
+In-scope non-client systems accessing (using outgoing communication links) targets with either HTTP or HTTPS protocol.
+
+*Risk Rating*::
+The risk rating (low or medium) depends on the sensitivity of the data assets receivable via web protocols from targets within the same network trust-boundary as well on the sensitivity of the data assets receivable via web protocols from the target asset itself. Also for cloud-based environments the exploitation impact is at least medium, as cloud backend services can be attacked via SSRF.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#Servers not sending outgoing web requests can be considered as false positives after review.#
+
+[RiskStatusMitigated]#*Mitigation*# (Development): SSRF Prevention::
+Try to avoid constructing the outgoing target URL with caller controllable values. Alternatively use a mapping (whitelist) when accessing outgoing URLs instead of creating them including caller controllable values. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V12 - File and Resources Verification Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html[Server_Side_Request_Forgery_Prevention_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Server-Side Request Forgery (SSRF)* was found *8 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+*Server-Side Request Forgery (SSRF)* risk at *API Server* server-side web-requesting the target *MinIO Object Storage* via *MinIO File Storage*: Exploitation likelihood is _Likely_ with _Medium_ impact.
+
+<<api-server,[SmallGrey]#server-side-request-forgery@api-server@minio-storage@api-server>minio-file-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.
+#
+|===
+
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+*Server-Side Request Forgery (SSRF)* risk at *Lambda Email Notifier* server-side web-requesting the target *AWS SES* via *SES Email Send*: Exploitation likelihood is _Likely_ with _Medium_ impact.
+
+<<lambda-notifier,[SmallGrey]#server-side-request-forgery@lambda-notifier@aws-ses@lambda-notifier>ses-email-send#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+*Server-Side Request Forgery (SSRF)* risk at *ECS Container Platform* server-side web-requesting the target *AWS ECR Container Registry* via *Pull Images from ECR*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.
+
+<<ecs-platform,[SmallGrey]#server-side-request-forgery@ecs-platform@container-registry@ecs-platform>pull-images-from-ecr#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+*Server-Side Request Forgery (SSRF)* risk at *GitHub Actions Build Pipeline* server-side web-requesting the target *AWS ECR Container Registry* via *Push Image to Registry*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.
+
+<<build-pipeline,[SmallGrey]#server-side-request-forgery@build-pipeline@container-registry@build-pipeline>push-image-to-registry#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+*Server-Side Request Forgery (SSRF)* risk at *VaultNote Source Repository* server-side web-requesting the target *GitHub Actions Build Pipeline* via *Push to Pipeline*: Exploitation likelihood is _Unlikely_ with _Medium_ impact.
+
+<<source-repo,[SmallGrey]#server-side-request-forgery@source-repo@build-pipeline@source-repo>push-to-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+*Server-Side Request Forgery (SSRF)* risk at *LLM Note Summarizer* server-side web-requesting the target *Note RAG Pipeline* via *Call RAG Pipeline*: Exploitation likelihood is _Likely_ with _Low_ impact.
+
+<<llm-summarizer,[SmallGrey]#server-side-request-forgery@llm-summarizer@rag-pipeline@llm-summarizer>call-rag-pipeline#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+*Server-Side Request Forgery (SSRF)* risk at *LLM Note Summarizer* server-side web-requesting the target *VaultNote Vector Store* via *Query Vector Store*: Exploitation likelihood is _Likely_ with _Low_ impact.
+
+<<llm-summarizer,[SmallGrey]#server-side-request-forgery@llm-summarizer@vector-store@llm-summarizer>query-vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+*Server-Side Request Forgery (SSRF)* risk at *Note RAG Pipeline* server-side web-requesting the target *VaultNote Vector Store* via *Retrieve from Vector Store*: Exploitation likelihood is _Likely_ with _Low_ impact.
+
+<<rag-pipeline,[SmallGrey]#server-side-request-forgery@rag-pipeline@vector-store@rag-pipeline>retrieve-from-vector-store#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.
+#
+|===
+
+[[unguarded-direct-datastore-access]]
+== Unguarded Direct Datastore Access: 3 mitigated Risks
+
+*Description* (Elevation of Privilege): https://cwe.mitre.org/data/definitions/501.html[CWE 501]::
+Data stores accessed across trust boundaries must be guarded by some protecting service or application.
+
+*Impact*::
+If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.
+
+*Detection Logic*::
+In-scope technical assets of type datastore (except identity-store-ldap when accessed from identity-provider and file-server when accessed via file transfer protocols) with confidentiality rating of confidential (or higher) or with integrity rating of critical (or higher) which have incoming data-flows from assets outside across a network trust-boundary. DevOps config and deployment access is excluded from this risk.
+
+*Risk Rating*::
+The matching technical assets are at low risk. When either the confidentiality rating is strictly-confidential or the integrity rating is mission-critical, the risk-rating is considered medium. For assets with RAA values higher than 40 % the risk-rating increases.
+
+[RiskStatusFalsePositive]#*False Positives*#::
+[RiskStatusFalsePositive]#When the caller is considered fully trusted as if it was part of the datastore itself.#
+
+[RiskStatusMitigated]#*Mitigation*# (Architecture): Encapsulation of Datastore::
+Encapsulate the datastore access behind a guarding service or application.
+
+
+* [RiskStatusMitigated]#ASVS Chapter#: https://owasp.org/www-project-application-security-verification-standard/[V1 - Architecture, Design and Threat Modeling Requirements]
+* [RiskStatusMitigated]#Cheat Sheet#: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html[Attack_Surface_Analysis_Cheat_Sheet]
+
+
+*Check*
+
+Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?
+
+=== Risk Findings
+:fn-risk-findings: footnote:riskfinding[Risk finding paragraphs are clickable and link to the corresponding chapter.]
+
+The risk *Unguarded Direct Datastore Access* was found *3 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
+
+==== [.ElevatedRisk]#_Elevated Risk Severity_#
+*Unguarded Direct Datastore Access* of *PostgreSQL Database* by *API Server* via *PostgreSQL Connection*: Exploitation likelihood is _Likely_ with _Medium_ impact.
+
+<<postgresql-db,[SmallGrey]#unguarded-direct-datastore-access@api-server>postgresql-connection@api-server@postgresql-db#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#The API server is the identity-providing application tier; its direct access to its own PostgreSQL/Redis/MinIO backing stores is the standard three-tier pattern. The finding triggers on datastore RAA attractiveness, not on an actual missing guard.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+*Unguarded Direct Datastore Access* of *MinIO Object Storage* by *API Server* via *MinIO File Storage*: Exploitation likelihood is _Likely_ with _Low_ impact.
+
+<<minio-storage,[SmallGrey]#unguarded-direct-datastore-access@api-server>minio-file-storage@api-server@minio-storage#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#The API server is the identity-providing application tier; its direct access to its own PostgreSQL/Redis/MinIO backing stores is the standard three-tier pattern. The finding triggers on datastore RAA attractiveness, not on an actual missing guard.
+#
+|===
+
+
+==== [.MediumRisk]#_Medium Risk Severity_#
+*Unguarded Direct Datastore Access* of *Redis Cache* by *API Server* via *Redis Session Store*: Exploitation likelihood is _Likely_ with _Low_ impact.
+
+<<redis-cache,[SmallGrey]#unguarded-direct-datastore-access@api-server>redis-session-store@api-server@redis-cache#>>
+
+[cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
+|===
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#The API server is the identity-providing application tier; its direct access to its own PostgreSQL/Redis/MinIO backing stores is the standard three-tier pattern. The finding triggers on datastore RAA attractiveness, not on an actual missing guard.
+#
 |===
 
 [[unnecessary-technical-asset]]
-== [.LowRisk]#Unnecessary Technical Asset: 2/2 unmitigated Risks#
+== Unnecessary Technical Asset: 2 mitigated Risks
 
 *Description* (Elevation of Privilege): https://cwe.mitre.org/data/definitions/1008.html[CWE 1008]::
 When a technical asset does not process any data assets, this is an indicator for an unnecessary technical asset (or for an incomplete model). This is also the case if the asset has no communication links (either outgoing or incoming).
@@ -1655,23 +2021,35 @@ Are recommendations from the linked cheat sheet and referenced ASVS chapter appl
 The risk *Unnecessary Technical Asset* was found *2 times* in the analyzed architecture to be potentially possible. Each spot should be checked individually by reviewing the implementation whether all controls have been applied properly in order to mitigate each risk.{fn-risk-findings}
 
 ==== [.LowRisk]#_Low Risk Severity_#
-[.LowRisk]#*Unnecessary Technical Asset* named *AWS RDS PostgreSQL*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+*Unnecessary Technical Asset* named *AWS RDS PostgreSQL*: Exploitation likelihood is _Unlikely_ with _Low_ impact.
 
 <<rds-postgresql,[SmallGrey]#unnecessary-technical-asset@rds-postgresql#>>
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#RDS and the S3 notes bucket belong to the AWS deployment variant of the dual-deployment model (self-hosted compose + AWS/ECS); they are unused only from the self-hosted tier's perspective.
+#
 |===
 
 
 ==== [.LowRisk]#_Low Risk Severity_#
-[.LowRisk]#*Unnecessary Technical Asset* named *AWS S3 Notes Bucket*: Exploitation likelihood is _Unlikely_ with _Low_ impact.#
+*Unnecessary Technical Asset* named *AWS S3 Notes Bucket*: Exploitation likelihood is _Unlikely_ with _Low_ impact.
 
 <<s3-notes-bucket,[SmallGrey]#unnecessary-technical-asset@s3-notes-bucket#>>
 
 [cols="a,c,c,2c",frame=none,grid=none,options="unbreakable"]
 |===
-4+| [.RiskStatusUnchecked.small]#*Unchecked*#
+| [.RiskStatusFalsePositive.small]#False Positive#
+| [.GreyText.small]#2026-06-12#
+| [.GreyText.small]#Security Team#
+| [.GreyText.small]#-#
+
+4+|[.small]#RDS and the S3 notes bucket belong to the AWS deployment variant of the dual-deployment model (self-hosted compose + AWS/ECS); they are unused only from the self-hosted tier's perspective.
+#
 |===
 

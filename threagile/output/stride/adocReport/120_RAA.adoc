@@ -14,7 +14,7 @@ The following lists all technical assets sorted by their RAA value from highest 
 <<postgresql-db,*PostgreSQL Database*: RAA 54%>>::
   Primary relational datastore. Contains users table (email + bcrypt password hash), notes table (title + content), and attachments metadata. INTENTIONAL MISCONFIGURATION: No encryption at rest (encryption: none).
 
-<<api-server,[HighRisk]#*API Server*: RAA 44%#>>::
+<<api-server,*API Server*: RAA 44%>>::
   Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD on notes, file uploads to MinIO. Bridges the frontend and backend networks. Single most security-critical component — compromise equals full data access.
 
 <<aws-api-gateway,*AWS API Gateway*: RAA 30%>>::
@@ -35,7 +35,7 @@ The following lists all technical assets sorted by their RAA value from highest 
 <<minio-storage,[HighRisk]#*MinIO Object Storage*: RAA 21%#>>::
   S3-compatible object store for file attachments. INTENTIONAL MISCONFIGURATION: Uses default minioadmin/minioadmin credentials (visible in docker-compose.yml) and stores files without encryption at rest. HTTP-only (no TLS) within the Docker network.
 
-<<llm-summarizer,[MediumRisk]#*LLM Note Summarizer*: RAA 20%#>>::
+<<llm-summarizer,*LLM Note Summarizer*: RAA 20%>>::
   OpenAI-compatible LLM inference endpoint used to generate AI summaries of user notes on demand. Deployed as a containerised model proxy (LiteLLM) with a public API endpoint for testing. INTENTIONAL: Endpoint is internet-accessible and lacks authentication — the has-authentication tag is intentionally absent to demonstrate the finding. No adversarial input shield (Llama Guard or guardrails) is configured. System prompt contains internal business context visible to adversarial probing.
 
 <<build-pipeline,*GitHub Actions Build Pipeline*: RAA 12%>>::

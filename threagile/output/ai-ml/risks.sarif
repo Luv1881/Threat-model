@@ -1,0 +1,3083 @@
+{
+  "$schema": "https://raw.githubusercontent.com/oasis-tcs/sarif-spec/master/Schemata/sarif-schema-2.1.0.json",
+  "version": "2.1.0",
+  "runs": [
+    {
+      "tool": {
+        "driver": {
+          "name": "Threagile",
+          "informationUri": "https://threagile.io",
+          "version": "1.0.0",
+          "rules": [
+            {
+              "id": "accidental-secret-leak",
+              "name": "Accidental Secret Leak",
+              "shortDescription": {
+                "text": "Sourcecode repositories (including their histories) as well as artifact registries can accidentally contain secrets like checked-in or packaged-in passwords, API tokens, certificates, crypto keys, etc."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers which have access to affected sourcecode repositories or artifact registries might find secrets accidentally checked-in.\n\nMitigation: Establish measures preventing accidental check-in or package-in of secrets into sourcecode repositories and artifact registries. This starts by using good .gitignore and .dockerignore files, but does not stop there. See for example tools like \u003ci\u003e\\\"git-secrets\\\"\u003c/i\u003e or \u003ci\u003e\\\"Talisman\\\"\u003c/i\u003e to have check-in preventive measures for secrets. Consider also to regularly scan your repositories for secrets accidentally checked-in using scanning tools like \u003ci\u003e\"gitleaks\"\u003c/i\u003e or \u003ci\u003e\"gitrob\"\u003c/i\u003e."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-200",
+                "function": "operations",
+                "security-severity": "5.0",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "ai-ml-adversarial-input-no-shield",
+              "name": "AI/ML - LLM Inference Endpoint Without Input Shield Against Adversarial Inputs",
+              "shortDescription": {
+                "text": "LLM inference endpoints that receive user-controlled inputs without an input shielding or guardrail layer are vulnerable to a broad class of adversarial inputs including prompt injection, jailbreak attempts, toxicity bypass, and adversarially crafted token sequences that trigger unexpected model behaviour. An input shield (content safety classifier, guardrail model, or structured parsing layer) provides a first line of defence before potentially dangerous inputs reach the core model.\n"
+              },
+              "fullDescription": {
+                "text": "Without input shielding, attackers can use prompt injection to override system instructions, jailbreak content policies to generate prohibited content, or craft adversarial token sequences that cause unexpected model behaviour including context manipulation and data exfiltration through model-driven actions. Publicly accessible endpoints are continuously probed for new jailbreak techniques.\n\n\nMitigation: Deploy a dedicated input safety classifier (e.g. Llama Guard, Azure Content Safety, OpenAI Moderation API, Rebuff) that screens all user inputs for prompt injection patterns, toxicity, jailbreak attempts, and policy violations before they reach the core model. Implement a deny-list for known jailbreak patterns and maintain it as a living artefact. Apply structured input parsing where possible to constrain the attack surface. Tag the asset has-input-shield once the shielding layer is verified.\n"
+              },
+              "help": {
+                "text": "Is a content safety classifier or guardrail model screening all inputs before they reach the LLM inference endpoint? Are known jailbreak and prompt injection patterns blocked at the input layer?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-693",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "tampering"
+              }
+            },
+            {
+              "id": "ai-ml-inference-endpoint-no-auth",
+              "name": "AI/ML - LLM Inference Endpoint Internet-Accessible Without Authentication",
+              "shortDescription": {
+                "text": "LLM inference endpoints that are accessible from the internet without authentication allow any actor to query the model without restrictions. This exposes the organization to unauthorized inference costs, model misuse, content policy violations, and potential exfiltration of system prompts or fine-tuning data through adversarial querying. Unauthenticated LLM endpoints are frequently discovered and abused within hours of exposure.\n"
+              },
+              "fullDescription": {
+                "text": "Unauthenticated callers can issue arbitrary prompts, exhausting inference budgets, extracting system-prompt content through jailbreaks, and generating policy-violating content at scale. Fine-tuned or retrieval-augmented models may leak proprietary knowledge embedded in context. Downstream applications trusting LLM output may be manipulated via malicious public prompts.\n\n\nMitigation: Place the inference endpoint behind an API gateway with mandatory authentication (API key, OAuth 2.0 bearer token, or mTLS). Enforce authentication at the network layer so unauthenticated requests are rejected before reaching the model runtime. Implement per-caller rate limiting and quota enforcement alongside authentication. Tag the asset has-authentication once authentication controls are verified.\n"
+              },
+              "help": {
+                "text": "Is authentication required on every path to the LLM inference endpoint? Are API keys rotated regularly and scoped to least-privilege?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-306",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "elevation-of-privilege"
+              }
+            },
+            {
+              "id": "ai-ml-inference-endpoint-no-rate-limiting",
+              "name": "AI/ML - LLM Inference Endpoint Without Rate Limiting",
+              "shortDescription": {
+                "text": "LLM inference endpoints without rate limiting are vulnerable to prompt flooding attacks that exhaust token budgets, trigger runaway inference costs, and degrade or deny service to legitimate users. Because LLM inference is significantly more expensive per request than typical API calls, the absence of rate limiting creates disproportionate cost amplification risk compared to traditional services.\n"
+              },
+              "fullDescription": {
+                "text": "An attacker or misconfigured client can issue thousands of high-token prompts per minute, exhausting per-period inference quotas, triggering cloud cost spikes in the thousands of dollars per hour, and starving legitimate traffic. Inference-budget exhaustion can also cascade to dependent applications that rely on the model for real-time decision-making.\n\n\nMitigation: Implement request-per-minute and tokens-per-minute rate limits at the API gateway layer in front of the inference endpoint. Apply per-caller quotas using API keys or authenticated identity. Set hard monthly budget caps at the inference provider level. Alert on anomalous usage patterns. Tag the asset has-rate-limiting once throttling policies are verified.\n"
+              },
+              "help": {
+                "text": "Are per-caller request-per-minute and token-per-minute limits configured? Are hard monthly spend caps enforced at the provider or gateway level?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-770",
+                "function": "operations",
+                "security-severity": "6.5",
+                "stride": "denial-of-service"
+              }
+            },
+            {
+              "id": "ai-ml-inference-logs-pii",
+              "name": "AI/ML - LLM Inference Endpoint Logging PII Without Sanitization",
+              "shortDescription": {
+                "text": "LLM inference endpoints that process data assets containing PII and lack log sanitization controls will capture personally identifiable information in inference request and response logs. Inference logs routinely contain full prompt text including user messages, retrieved document snippets, and model responses — all of which may contain PII. Without sanitization, these logs become an uncontrolled copy of sensitive data stored in logging infrastructure with often broader access than the primary data store.\n"
+              },
+              "fullDescription": {
+                "text": "PII persisted in inference logs is exposed to every engineer with logging access, log aggregation services, and any attacker who gains read access to the logging pipeline. Log retention policies typically keep this data for months or years, creating a long-lived secondary breach surface. Under GDPR, logging PII without a legal basis for the retention period constitutes a violation even if the primary processing is lawful.\n\n\nMitigation: Apply a log sanitization layer that masks or redacts PII fields before they reach the log aggregation system. Use a PII detection library (Presidio, AWS Comprehend, Google DLP) to identify and redact personal data in prompt and response text. Configure inference logging to capture only metadata (latency, token counts, error codes) without full prompt content in production. Tag the asset has-log-sanitization once redaction controls are verified.\n"
+              },
+              "help": {
+                "text": "Are all inference request and response logs scanned for PII before storage? Is PII masked or redacted in all log outputs accessible to engineering staff?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-532",
+                "function": "operations",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "ai-ml-llm-api-key-hardcoded",
+              "name": "AI/ML - LLM Inference Endpoint With Custom Code and No Secrets Manager",
+              "shortDescription": {
+                "text": "Custom-developed code that calls an LLM inference endpoint often requires an API key or service credential. When the codebase lacks a dedicated secrets manager, developers frequently hard-code these credentials in source files, environment variable defaults, or configuration files checked into version control. A single committed API key can be scraped by automated tools within minutes of repository exposure, resulting in unauthorized LLM usage billed to the organization and potential access to sensitive model outputs.\n"
+              },
+              "fullDescription": {
+                "text": "A leaked LLM API key enables unlimited inference billing charges until revoked, potential access to shared fine-tuned model outputs, and exfiltration of organization-specific system prompts if the key grants access to private model deployments. Keys leaked via version control history persist even after deletion from the current codebase and can be recovered from git history.\n\n\nMitigation: Store LLM API keys in a dedicated secrets manager (HashiCorp Vault, AWS Secrets Manager, GCP Secret Manager, Azure Key Vault). Inject credentials at runtime via environment variable injection from the secrets manager. Enable pre-commit hooks (detect-secrets, gitleaks) to prevent credential commits. Rotate any previously committed keys immediately. Tag the asset has-secrets-manager once key management is verified.\n"
+              },
+              "help": {
+                "text": "Are all LLM API keys stored in a dedicated secrets manager rather than source code or env defaults? Are pre-commit secret-scanning hooks active on all repositories that contain LLM client code?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-798",
+                "function": "development",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "ai-ml-prompt-injection-rag-context",
+              "name": "AI/ML - RAG Pipeline Without Input Validation Enabling Prompt Injection",
+              "shortDescription": {
+                "text": "RAG (Retrieval-Augmented Generation) pipelines that pass user-supplied text to the retrieval step and then into the LLM context without sanitizing or validating inputs are susceptible to prompt injection attacks. An adversary can craft inputs that manipulate the retrieval query, poison the retrieved context, or override the system prompt via retrieved documents containing embedded instructions. Indirect prompt injection through poisoned knowledge-base documents is a growing attack vector against enterprise RAG deployments.\n"
+              },
+              "fullDescription": {
+                "text": "A successful prompt injection can cause the LLM to ignore safety guardrails, exfiltrate content from the retrieved context to an attacker-controlled endpoint, generate harmful or false outputs that appear authoritative, or escalate privileges in agentic workflows where the LLM drives downstream actions.\n\n\nMitigation: Apply input validation at the RAG pipeline ingress to detect and reject prompt injection patterns. Sanitize user inputs before embedding and retrieval steps. Use a dedicated prompt-injection detection model or guardrail layer (e.g. Llama Guard, Rebuff) before injecting retrieved content into the LLM context. Enforce strict output schemas and refuse to process instructions embedded in retrieved documents. Tag the asset has-input-validation once validation controls are verified.\n"
+              },
+              "help": {
+                "text": "Is user input sanitized before it is used as a retrieval query? Are retrieved documents scanned for embedded prompt-injection instructions?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-77",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "tampering"
+              }
+            },
+            {
+              "id": "ai-ml-rag-no-retrieval-filtering",
+              "name": "AI/ML - RAG Pipeline Without Retrieval Filtering",
+              "shortDescription": {
+                "text": "RAG pipelines that inject all retrieved documents into the LLM context without filtering based on the caller's access level can expose documents the user is not authorized to read. When the vector store contains documents from multiple security domains or sensitivity levels, absence of retrieval filtering means a low-privileged user's query can surface confidential documents in the LLM's answer. This is analogous to a broken access control at the search layer.\n"
+              },
+              "fullDescription": {
+                "text": "Sensitive documents — including HR records, legal contracts, financial projections, and technical specifications — may be summarized and returned to users who should not have access to the source material. Confidential information disclosed via LLM paraphrasing is still a reportable breach under GDPR and HIPAA even though the original document is not directly returned.\n\n\nMitigation: Apply pre-retrieval and post-retrieval access-control filters that match documents to the authenticated caller's entitlements. Store document-level ACL metadata in the vector store and enforce it server-side on every query. Alternatively, segment the vector store by access tier and route queries to the appropriate segment based on identity. Tag the asset has-retrieval-filtering once access filtering is verified.\n"
+              },
+              "help": {
+                "text": "Is every retrieved document filtered against the caller's access entitlements before it is injected into the LLM context? Is retrieval filtering enforced server-side rather than relying on post-hoc output filtering?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Access_Control_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-200",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "ai-ml-vector-store-no-encryption",
+              "name": "AI/ML - Vector Store Without Encryption at Rest",
+              "shortDescription": {
+                "text": "Vector stores that persist embedding vectors without encryption at rest expose the semantic content of the original documents to anyone with low-level storage access. Although embedding vectors are not plaintext, recent research demonstrates that text can be reconstructed from embeddings with high fidelity using inversion attacks. Vector stores frequently hold embeddings of sensitive enterprise content (contracts, medical records, source code) ingested into RAG pipelines, making unencrypted storage a significant confidentiality risk.\n"
+              },
+              "fullDescription": {
+                "text": "An attacker with storage-layer access (cloud support, exfiltrated keys, physical media) can recover near-plaintext content from unencrypted embeddings using text inversion techniques. In a breach scenario, unencrypted embeddings of PII-containing documents require mandatory breach notification under GDPR and HIPAA.\n\n\nMitigation: Enable volume-level or database-level encryption on the vector store using provider-managed or customer-managed keys (SSE-KMS, CMEK, LUKS). For self-hosted deployments (Qdrant, Weaviate, Milvus, Chroma), configure full-disk encryption on the underlying storage. Update the encryption field on the asset to transparent or higher once encryption is enabled.\n"
+              },
+              "help": {
+                "text": "Is encryption at rest enabled on all vector store volumes and index files? Are customer-managed KMS keys used when the store contains confidential embeddings?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-312",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "code-backdooring",
+              "name": "Code Backdooring",
+              "shortDescription": {
+                "text": "For each build pipeline component Code Backdooring risks might arise where attackers compromise the build pipeline in order to let backdoored artifacts be shipped into production. Aside from direct code backdooring this includes backdooring of dependencies and even of more lower-level build infrastructure, like backdooring compilers (similar to what the XcodeGhost malware did) or dependencies."
+              },
+              "fullDescription": {
+                "text": "If this risk remains unmitigated, attackers might be able to execute code on and completely takeover production environments.\n\nMitigation: Reduce the attack surface of backdooring the build pipeline by not directly exposing the build pipeline components on the public internet and also not exposing it in front of unmanaged (out-of-scope) developer clients.Also consider the use of code signing to prevent code modifications."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-912",
+                "function": "operations",
+                "security-severity": "5.0",
+                "stride": "tampering"
+              }
+            },
+            {
+              "id": "container-baseimage-backdooring",
+              "name": "Container Base Image Backdooring",
+              "shortDescription": {
+                "text": "When a technical asset is built using container technologies, Base Image Backdooring risks might arise where base images and other layers used contain vulnerable components or backdoors.\u003cbr\u003e\u003cbr\u003eSee for example: \u003ca href=\"https://techcrunch.com/2018/06/15/tainted-crypto-mining-containers-pulled-from-docker-hub/\"\u003ehttps://techcrunch.com/2018/06/15/tainted-crypto-mining-containers-pulled-from-docker-hub/\u003c/a\u003e"
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to deeply persist in the target system by executing code in deployed containers.\n\nMitigation: Apply hardening of all container infrastructures (see for example the \u003ci\u003eCIS-Benchmarks for Docker and Kubernetes\u003c/i\u003e and the \u003ci\u003eDocker Bench for Security\u003c/i\u003e). Use only trusted base images of the original vendors, verify digital signatures and apply image creation best practices. Also consider using Google's \u003ci\u003eDistroless\u003c/i\u003e base images or otherwise very small base images. Regularly execute container image scans with tools checking the layers for vulnerable components."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS/CSVS applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-912",
+                "function": "operations",
+                "security-severity": "5.0",
+                "stride": "tampering"
+              }
+            },
+            {
+              "id": "container-platform-escape",
+              "name": "Container Platform Escape",
+              "shortDescription": {
+                "text": "Container platforms are especially interesting targets for attackers as they host big parts of a containerized runtime infrastructure. When not configured and operated with security best practices in mind, attackers might exploit a vulnerability inside an container and escape towards the platform as highly privileged users. These scenarios might give attackers capabilities to attack every other container as owning the container platform (via container escape attacks) equals to owning every container."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers which have successfully compromised a container (via other vulnerabilities) might be able to deeply persist in the target system by executing code in many deployed containers and the container platform itself.\n\nMitigation: Apply hardening of all container infrastructures. \u003cp\u003eSee for example the \u003ci\u003eCIS-Benchmarks for Docker and Kubernetes\u003c/i\u003e as well as the \u003ci\u003eDocker Bench for Security\u003c/i\u003e ( \u003ca href=\"https://github.com/docker/docker-bench-security\"\u003ehttps://github.com/docker/docker-bench-security\u003c/a\u003e ) or \u003ci\u003eInSpec Checks for Docker and Kubernetes\u003c/i\u003e ( \u003ca href=\"https://github.com/dev-sec/cis-kubernetes-benchmark\"\u003ehttps://github.com/dev-sec/cis-docker-benchmark\u003c/a\u003e and \u003ca href=\"https://github.com/dev-sec/cis-kubernetes-benchmark\"\u003ehttps://github.com/dev-sec/cis-kubernetes-benchmark\u003c/a\u003e ). Use only trusted base images, verify digital signatures and apply image creation best practices. Also consider using Google's \u003cb\u003eDistroless\u003c/i\u003e base images or otherwise very small base images. Apply namespace isolation and nod affinity to separate pods from each other in terms of access and nodes the same style as you separate data."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS or CSVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-1008",
+                "function": "operations",
+                "security-severity": "5.0",
+                "stride": "elevation-of-privilege"
+              }
+            },
+            {
+              "id": "dos-risky-access-across-trust-boundary",
+              "name": "DoS-risky Access Across Trust-Boundary",
+              "shortDescription": {
+                "text": "Assets accessed across trust boundaries with critical or mission-critical availability rating are more prone to Denial-of-Service (DoS) risks."
+              },
+              "fullDescription": {
+                "text": "If this risk remains unmitigated, attackers might be able to disturb the availability of important parts of the system.\n\nMitigation: Apply anti-DoS techniques like throttling and/or per-client load blocking with quotas. Also for maintenance access routes consider applying a VPN instead of public reachable interfaces. Generally applying redundancy on the targeted technical asset reduces the risk of DoS."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Denial_of_Service_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-400",
+                "function": "operations",
+                "security-severity": "2.0",
+                "stride": "denial-of-service"
+              }
+            },
+            {
+              "id": "exposed-default-credentials",
+              "name": "Asset Using Known Default or Hardcoded Credentials",
+              "shortDescription": {
+                "text": "Technical assets tagged as intentional-misconfiguration that store confidential data represent an immediately exploitable attack vector. Default credentials (e.g. minioadmin/minioadmin, admin/admin, postgres/postgres) are published in vendor documentation and are the first credentials an attacker tries after reaching the service network.\n"
+              },
+              "fullDescription": {
+                "text": "Any attacker with network access can authenticate using default credentials, exfiltrate all stored data, modify records, or pivot into adjacent systems.\n\n\nMitigation: Replace all default credentials with randomly generated secrets (minimum 32 chars). Store in a secrets manager (Vault, AWS Secrets Manager, etc.) rather than environment variables or compose files. Add credential rotation to the pre-deployment checklist.\n"
+              },
+              "help": {
+                "text": "Are all service credentials rotated from vendor defaults? Are secrets stored in a dedicated secrets manager rather than plain environment variables?\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-1392",
+                "function": "operations",
+                "security-severity": "8.0",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "lateral-movement-shared-runtime",
+              "name": "Lateral Movement via Shared Runtime",
+              "shortDescription": {
+                "text": "Technical assets from different trust zones co-located on the same shared runtime (e.g. container platform, VM host, shared Kubernetes namespace) create a lateral movement path: a compromised low-trust asset on the runtime can escalate to high-trust neighbours without traversing a network boundary."
+              },
+              "fullDescription": {
+                "text": "An attacker who compromises any asset on the shared runtime may pivot to other co-located assets, including those in higher trust zones.\n\nMitigation: Separate assets from different trust zones onto dedicated runtimes (separate node pools, dedicated VMs, distinct container namespaces with NetworkPolicy). Apply seccomp/AppArmor profiles and disable privilege escalation."
+              },
+              "help": {
+                "text": "Are high-trust and low-trust assets co-located on the same shared runtime?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Docker_Security_Cheat_Sheet.html",
+              "properties": {
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "lateral-movement"
+              }
+            },
+            {
+              "id": "missing-authentication",
+              "name": "Missing Authentication",
+              "shortDescription": {
+                "text": "Technical assets (especially multi-tenant systems) should authenticate incoming requests when the asset processes sensitive data. "
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to access or modify sensitive data in an unauthenticated way.\n\nMitigation: Apply an authentication method to the technical asset. To protect highly sensitive data consider the use of two-factor authentication for human users."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-306",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "elevation-of-privilege"
+              }
+            },
+            {
+              "id": "missing-authentication-second-factor",
+              "name": "Missing Two-Factor Authentication (2FA)",
+              "shortDescription": {
+                "text": "Technical assets (especially multi-tenant systems) should authenticate incoming requests with two-factor (2FA) authentication when the asset processes or stores highly sensitive data (in terms of confidentiality, integrity, and availability) and is accessed by humans."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to access or modify highly sensitive data without strong authentication.\n\nMitigation: Apply an authentication method to the technical asset protecting highly sensitive data via two-factor authentication for human users."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Multifactor_Authentication_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-308",
+                "function": "business-side",
+                "security-severity": "5.0",
+                "stride": "elevation-of-privilege"
+              }
+            },
+            {
+              "id": "missing-build-infrastructure",
+              "name": "Missing Build Infrastructure",
+              "shortDescription": {
+                "text": "The modeled architecture does not contain a build infrastructure (devops-client, sourcecode-repo, build-pipeline, etc.), which might be the risk of a model missing critical assets (and thus not seeing their risks). If the architecture contains custom-developed parts, the pipeline where code gets developed and built needs to be part of the model."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model due to critical build infrastructure components missing in the model.\n\nMitigation: Include the build infrastructure in the model."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-1127",
+                "function": "architecture",
+                "security-severity": "5.0",
+                "stride": "tampering"
+              }
+            },
+            {
+              "id": "missing-cloud-hardening",
+              "name": "Missing Cloud Hardening",
+              "shortDescription": {
+                "text": "Cloud components should be hardened according to the cloud vendor best practices. This affects their configuration, auditing, and further areas."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might access cloud components in an unintended way.\n\nMitigation: Apply hardening of all cloud components and services, taking special care to follow the individual risk descriptions (which depend on the cloud provider tags in the model). \u003cbr\u003e\u003cbr\u003eFor \u003cb\u003eAmazon Web Services (AWS)\u003c/b\u003e: Follow the \u003ci\u003eCIS Benchmark for Amazon Web Services\u003c/i\u003e (see also the automated checks of cloud audit tools like \u003ci\u003e\"PacBot\", \"CloudSploit\", \"CloudMapper\", \"ScoutSuite\", or \"Prowler AWS CIS Benchmark Tool\"\u003c/i\u003e). \u003cbr\u003eFor EC2 and other servers running Amazon Linux, follow the \u003ci\u003eCIS Benchmark for Amazon Linux\u003c/i\u003e and switch to IMDSv2. \u003cbr\u003eFor S3 buckets follow the \u003ci\u003eSecurity Best Practices for Amazon S3\u003c/i\u003e at \u003ca href=\"https://docs.aws.amazon.com/AmazonS3/latest/dev/security-best-practices.html\"\u003ehttps://docs.aws.amazon.com/AmazonS3/latest/dev/security-best-practices.html\u003c/a\u003e to avoid accidental leakage. \u003cbr\u003eAlso take a look at some of these tools: \u003ca href=\"https://github.com/toniblyx/my-arsenal-of-aws-security-tools\"\u003ehttps://github.com/toniblyx/my-arsenal-of-aws-security-tools\u003c/a\u003e \u003cbr\u003e\u003cbr\u003eFor \u003cb\u003eMicrosoft Azure\u003c/b\u003e: Follow the \u003ci\u003eCIS Benchmark for Microsoft Azure\u003c/i\u003e (see also the automated checks of cloud audit tools like \u003ci\u003e\"CloudSploit\" or \"ScoutSuite\"\u003c/i\u003e).\u003cbr\u003e\u003cbr\u003eFor \u003cb\u003eGoogle Cloud Platform\u003c/b\u003e: Follow the \u003ci\u003eCIS Benchmark for Google Cloud Computing Platform\u003c/i\u003e (see also the automated checks of cloud audit tools like \u003ci\u003e\"CloudSploit\" or \"ScoutSuite\"\u003c/i\u003e). \u003cbr\u003e\u003cbr\u003eFor \u003cb\u003eOracle Cloud Platform\u003c/b\u003e: Follow the hardening best practices (see also the automated checks of cloud audit tools like \u003ci\u003e\"CloudSploit\"\u003c/i\u003e)."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-1008",
+                "function": "operations",
+                "security-severity": "6.5",
+                "stride": "tampering"
+              }
+            },
+            {
+              "id": "missing-csp-header",
+              "name": "Missing Content-Security-Policy Header on Web Entry Point",
+              "shortDescription": {
+                "text": "Web entry points (reverse proxies and web applications) that serve browser-based clients and process authentication tokens without a Content-Security-Policy (CSP) header are vulnerable to XSS-facilitated token theft. An attacker who achieves XSS in the browser can read localStorage/sessionStorage tokens and replay them without any client-side protection if CSP is absent.\n"
+              },
+              "fullDescription": {
+                "text": "An attacker who successfully injects client-side script can exfiltrate authentication tokens, impersonate users, and access all data the victim can access. Without CSP, there is no browser-enforced barrier against inline script execution or data exfiltration.\n\n\nMitigation: Add a strict Content-Security-Policy header to all responses served to browser clients. At minimum use: default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'. Combine with Subresource Integrity (SRI) for external scripts and avoid inline event handlers. Once deployed, tag the asset has-csp to suppress this finding.\n"
+              },
+              "help": {
+                "text": "Is a Content-Security-Policy response header present and non-trivial on all pages served to browsers? Use browser DevTools or securityheaders.com to verify.\n"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Content_Security_Policy_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-693",
+                "function": "operations",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "missing-hardening",
+              "name": "Missing Hardening",
+              "shortDescription": {
+                "text": "Technical assets with a Relative Attacker Attractiveness (RAA) value of 55 % or higher should be explicitly hardened taking best practices and vendor hardening guides into account."
+              },
+              "fullDescription": {
+                "text": "If this risk remains unmitigated, attackers might be able to easier attack high-value targets.\n\nMitigation: Try to apply all hardening best practices (like CIS benchmarks, OWASP recommendations, vendor recommendations, DevSec Hardening Framework, DBSAT for Oracle databases, and others)."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-16",
+                "function": "operations",
+                "security-severity": "6.5",
+                "stride": "tampering"
+              }
+            },
+            {
+              "id": "missing-identity-store",
+              "name": "Missing Identity Store",
+              "shortDescription": {
+                "text": "The modeled architecture does not contain an identity store, which might be the risk of a model missing critical assets (and thus not seeing their risks)."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to exploit risks unseen in this threat model in the identity provider/store that is currently missing in the model.\n\nMitigation: Include an identity store in the model if the application has a login."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-287",
+                "function": "architecture",
+                "security-severity": "5.0",
+                "stride": "spoofing"
+              }
+            },
+            {
+              "id": "missing-vault",
+              "name": "Missing Vault (Secret Storage)",
+              "shortDescription": {
+                "text": "In order to avoid the risk of secret leakage via config files (when attacked through vulnerabilities being able to read files like Path-Traversal and others), it is best practice to use a separate hardened process with proper authentication, authorization, and audit logging to access config secrets (like credentials, private keys, client certificates, etc.). This component is usually some kind of Vault."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to easier steal config secrets (like credentials, private keys, client certificates, etc.) once a vulnerability to access files is present and exploited.\n\nMitigation: Consider using a Vault (Secret Storage) to securely store and access config secrets (like credentials, private keys, client certificates, etc.)."
+              },
+              "help": {
+                "text": "GetAttribute a Vault (Secret Storage) in place?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-522",
+                "function": "architecture",
+                "security-severity": "5.0",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "missing-waf",
+              "name": "Missing Web Application Firewall (WAF)",
+              "shortDescription": {
+                "text": "To have a first line of filtering defense, security architectures with web-services or web-applications should include a WAF in front of them. Even though a WAF is not a replacement for security (all components must be secure even without a WAF) it adds another layer of defense to the overall system by delaying some attacks and having easier attack alerting through it."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to apply standard attack pattern tests at great speed without any filtering.\n\nMitigation: Consider placing a Web Application Firewall (WAF) in front of the web-services and/or web-applications. For cloud environments many cloud providers offer pre-configured WAFs. Even reverse proxies can be enhances by a WAF component via ModSecurity plugins."
+              },
+              "help": {
+                "text": "GetAttribute a Web Application Firewall (WAF) in place?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Virtual_Patching_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-1008",
+                "function": "operations",
+                "security-severity": "5.0",
+                "stride": "tampering"
+              }
+            },
+            {
+              "id": "mixed-targets-on-shared-runtime",
+              "name": "Mixed Targets on Shared Runtime",
+              "shortDescription": {
+                "text": "Different attacker targets (like frontend and backend/datastore components) should not be running on the same shared (underlying) runtime."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers successfully attacking other components of the system might have an easy path towards more valuable targets, as they are running on the same shared runtime.\n\nMitigation: Use separate runtime environments for running different target components or apply similar separation styles to prevent load- or breach-related problems originating from one more attacker-facing asset impacts also the other more critical rated backend/datastore assets."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-1008",
+                "function": "operations",
+                "security-severity": "5.0",
+                "stride": "elevation-of-privilege"
+              }
+            },
+            {
+              "id": "path-traversal",
+              "name": "Path-Traversal",
+              "shortDescription": {
+                "text": "When a filesystem is accessed Path-Traversal or Local-File-Inclusion (LFI) risks might arise. The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to read sensitive files (configuration data, key/credential files, deployment files, business data files, etc.) from the filesystem of affected components.\n\nMitigation: Before accessing the file cross-check that it resides in the expected folder and is of the expected type and filename/suffix. Try to use a mapping if possible instead of directly accessing by a filename which is (partly or fully) provided by the caller. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-22",
+                "function": "development",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "server-side-request-forgery",
+              "name": "Server-Side Request Forgery (SSRF)",
+              "shortDescription": {
+                "text": "When a server system (i.e. not a client) is accessing other server systems via typical web protocols Server-Side Request Forgery (SSRF) or Local-File-Inclusion (LFI) or Remote-File-Inclusion (RFI) risks might arise. "
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to access sensitive services or files of network-reachable components by modifying outgoing calls of affected components.\n\nMitigation: Try to avoid constructing the outgoing target URL with caller controllable values. Alternatively use a mapping (whitelist) when accessing outgoing URLs instead of creating them including caller controllable values. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Server_Side_Request_Forgery_Prevention_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-918",
+                "function": "development",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "sql-nosql-injection",
+              "name": "SQL/NoSQL-Injection",
+              "shortDescription": {
+                "text": "When a database is accessed via database access protocols SQL/NoSQL-Injection risks might arise. The risk rating depends on the sensitivity technical asset itself and of the data assets processed."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to modify SQL/NoSQL queries to steal and modify data and eventually further escalate towards a deeper system penetration via code executions.\n\nMitigation: Try to use parameter binding to be safe from injection vulnerabilities. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/SQL_Injection_Prevention_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-89",
+                "function": "development",
+                "security-severity": "8.0",
+                "stride": "tampering"
+              }
+            },
+            {
+              "id": "unchecked-deployment",
+              "name": "Unchecked Deployment",
+              "shortDescription": {
+                "text": "For each build-pipeline component Unchecked Deployment risks might arise when the build-pipeline does not include established DevSecOps best-practices. DevSecOps best-practices scan as part of CI/CD pipelines for vulnerabilities in source- or byte-code, dependencies, container layers, and dynamically against running test systems. There are several open-source and commercial tools existing in the categories DAST, SAST, and IAST."
+              },
+              "fullDescription": {
+                "text": "If this risk remains unmitigated, vulnerabilities in custom-developed software or their dependencies might not be identified during continuous deployment cycles.\n\nMitigation: Apply DevSecOps best-practices and use scanning tools to identify vulnerabilities in source- or byte-code,dependencies, container layers, and optionally also via dynamic scans against running test systems."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Vulnerable_Dependency_Management_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-1127",
+                "function": "architecture",
+                "security-severity": "5.0",
+                "stride": "tampering"
+              }
+            },
+            {
+              "id": "unencrypted-asset",
+              "name": "Unencrypted Technical Assets",
+              "shortDescription": {
+                "text": "Due to the confidentiality rating of the technical asset itself and/or the stored data assets this technical asset must be encrypted. The risk rating depends on the sensitivity technical asset itself and of the data assets stored."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to access unencrypted data when successfully compromising sensitive components.\n\nMitigation: Apply encryption to the technical asset."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-311",
+                "function": "operations",
+                "security-severity": "5.0",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "unencrypted-communication",
+              "name": "Unencrypted Communication",
+              "shortDescription": {
+                "text": "Due to the confidentiality and/or integrity rating of the data assets transferred over the communication link this connection must be encrypted."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, network attackers might be able to to eavesdrop on unencrypted sensitive data sent between components.\n\nMitigation: Apply transport layer encryption to the communication link."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Transport_Layer_Protection_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-319",
+                "function": "operations",
+                "security-severity": "6.5",
+                "stride": "information-disclosure"
+              }
+            },
+            {
+              "id": "unguarded-access-from-internet",
+              "name": "Unguarded Access From Internet",
+              "shortDescription": {
+                "text": "Internet-exposed assets must be guarded by a protecting service, application, or reverse-proxy."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to directly attack sensitive systems without any hardening components in-between due to them being directly exposed on the internet.\n\nMitigation: Encapsulate the asset behind a guarding service, application, or reverse-proxy. For admin maintenance a bastion-host should be used as a jump-server. For file transfer a store-and-forward-host should be used as an indirect file exchange platform."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-501",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "elevation-of-privilege"
+              }
+            },
+            {
+              "id": "unguarded-direct-datastore-access",
+              "name": "Unguarded Direct Datastore Access",
+              "shortDescription": {
+                "text": "Data stores accessed across trust boundaries must be guarded by some protecting service or application."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to directly attack sensitive data stores without any protecting components in-between.\n\nMitigation: Encapsulate the datastore access behind a guarding service or application."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-501",
+                "function": "architecture",
+                "security-severity": "6.5",
+                "stride": "elevation-of-privilege"
+              }
+            },
+            {
+              "id": "unnecessary-technical-asset",
+              "name": "Unnecessary Technical Asset",
+              "shortDescription": {
+                "text": "When a technical asset does not process any data assets, this is an indicator for an unnecessary technical asset (or for an incomplete model). This is also the case if the asset has no communication links (either outgoing or incoming)."
+              },
+              "fullDescription": {
+                "text": "If this risk is unmitigated, attackers might be able to target unnecessary technical assets.\n\nMitigation: Try to avoid using technical assets that do not process or store anything."
+              },
+              "help": {
+                "text": "Are recommendations from the linked cheat sheet and referenced ASVS chapter applied?"
+              },
+              "helpUri": "https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html",
+              "properties": {
+                "cwe": "CWE-1008",
+                "function": "architecture",
+                "security-severity": "2.0",
+                "stride": "elevation-of-privilege"
+              }
+            }
+          ]
+        }
+      },
+      "results": [
+        {
+          "ruleId": "accidental-secret-leak",
+          "ruleIndex": 0,
+          "level": "warning",
+          "message": {
+            "text": "Accidental Secret Leak(Git) risk at VaultNote Source Repository: Git Leak Prevention"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "accidental-secret-leak@source-repo"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "source-repo",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "ai-ml-adversarial-input-no-shield",
+          "ruleIndex": 1,
+          "level": "warning",
+          "message": {
+            "text": "Adversarial Input No Shield: LLM endpoint LLM Note Summarizer has no input shielding layer, exposing it to prompt injection and jailbreak attacks"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "ai-ml-adversarial-input-no-shield@llm-summarizer"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "llm-summarizer",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "ai-ml-inference-endpoint-no-auth",
+          "ruleIndex": 2,
+          "level": "warning",
+          "message": {
+            "text": "Inference Endpoint No Auth: LLM inference endpoint LLM Note Summarizer is internet-accessible without authentication"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "ai-ml-inference-endpoint-no-auth@llm-summarizer"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "llm-summarizer",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "ai-ml-inference-endpoint-no-rate-limiting",
+          "ruleIndex": 3,
+          "level": "warning",
+          "message": {
+            "text": "Inference Endpoint No Rate Limiting: LLM endpoint LLM Note Summarizer has no rate limiting, enabling prompt flooding and cost amplification"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "ai-ml-inference-endpoint-no-rate-limiting@llm-summarizer"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "llm-summarizer",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "ai-ml-inference-logs-pii",
+          "ruleIndex": 4,
+          "level": "warning",
+          "message": {
+            "text": "Inference Logs PII: LLM endpoint LLM Note Summarizer processes PII without log sanitization, creating uncontrolled PII copies in logs"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "ai-ml-inference-logs-pii@llm-summarizer"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "llm-summarizer",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "ai-ml-llm-api-key-hardcoded",
+          "ruleIndex": 5,
+          "level": "warning",
+          "message": {
+            "text": "LLM API Key Hardcoded Risk: LLM endpoint LLM Note Summarizer has custom code without a secrets manager, risking hardcoded credentials"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "ai-ml-llm-api-key-hardcoded@llm-summarizer"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "llm-summarizer",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "ai-ml-prompt-injection-rag-context",
+          "ruleIndex": 6,
+          "level": "warning",
+          "message": {
+            "text": "Prompt Injection via RAG: RAG pipeline Note RAG Pipeline lacks input validation enabling prompt injection through retrieved context"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "ai-ml-prompt-injection-rag-context@rag-pipeline"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "rag-pipeline",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "ai-ml-rag-no-retrieval-filtering",
+          "ruleIndex": 7,
+          "level": "warning",
+          "message": {
+            "text": "RAG No Retrieval Filtering: RAG pipeline Note RAG Pipeline injects retrieved documents without access-level filtering, enabling unauthorized disclosure"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "ai-ml-rag-no-retrieval-filtering@rag-pipeline"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "rag-pipeline",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "ai-ml-vector-store-no-encryption",
+          "ruleIndex": 8,
+          "level": "warning",
+          "message": {
+            "text": "Vector Store No Encryption: vector store VaultNote Vector Store persists embeddings without encryption at rest"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "ai-ml-vector-store-no-encryption@vector-store"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "vector-store",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "code-backdooring",
+          "ruleIndex": 9,
+          "level": "warning",
+          "message": {
+            "text": "Code Backdooring risk at GitHub Actions Build Pipeline"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "code-backdooring@build-pipeline"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "build-pipeline",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "code-backdooring",
+          "ruleIndex": 9,
+          "level": "warning",
+          "message": {
+            "text": "Code Backdooring risk at AWS ECR Container Registry"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "code-backdooring@container-registry"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "container-registry",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "code-backdooring",
+          "ruleIndex": 9,
+          "level": "warning",
+          "message": {
+            "text": "Code Backdooring risk at VaultNote Source Repository"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "code-backdooring@source-repo"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "source-repo",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "container-baseimage-backdooring",
+          "ruleIndex": 10,
+          "level": "warning",
+          "message": {
+            "text": "Container Base Image Backdooring risk at API Server"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "container-baseimage-backdooring@api-server"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "api-server",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "container-baseimage-backdooring",
+          "ruleIndex": 10,
+          "level": "warning",
+          "message": {
+            "text": "Container Base Image Backdooring risk at MinIO Object Storage"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "container-baseimage-backdooring@minio-storage"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "minio-storage",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "container-baseimage-backdooring",
+          "ruleIndex": 10,
+          "level": "warning",
+          "message": {
+            "text": "Container Base Image Backdooring risk at Nginx Reverse Proxy"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "container-baseimage-backdooring@nginx-proxy"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "nginx-proxy",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "container-baseimage-backdooring",
+          "ruleIndex": 10,
+          "level": "warning",
+          "message": {
+            "text": "Container Base Image Backdooring risk at PostgreSQL Database"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "container-baseimage-backdooring@postgresql-db"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "postgresql-db",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "container-baseimage-backdooring",
+          "ruleIndex": 10,
+          "level": "warning",
+          "message": {
+            "text": "Container Base Image Backdooring risk at Note RAG Pipeline"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "container-baseimage-backdooring@rag-pipeline"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "rag-pipeline",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "container-baseimage-backdooring",
+          "ruleIndex": 10,
+          "level": "warning",
+          "message": {
+            "text": "Container Base Image Backdooring risk at Redis Cache"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "container-baseimage-backdooring@redis-cache"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "redis-cache",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "container-baseimage-backdooring",
+          "ruleIndex": 10,
+          "level": "warning",
+          "message": {
+            "text": "Container Base Image Backdooring risk at VaultNote Vector Store"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "container-baseimage-backdooring@vector-store"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "vector-store",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "container-platform-escape",
+          "ruleIndex": 11,
+          "level": "warning",
+          "message": {
+            "text": "Container Platform Escape risk at ECS Container Platform"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "container-platform-escape@ecs-platform"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "ECS on Fargate provides VM-level task isolation managed by AWS; no privileged containers or host mounts are configured. Residual platform escape risk is accepted as a managed-service dependency.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "ecs-platform",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "dos-risky-access-across-trust-boundary",
+          "ruleIndex": 12,
+          "level": "note",
+          "message": {
+            "text": "Denial-of-Service risky access of API Server by Browser SPA via HTTPS to Nginx forwarded via Nginx Reverse Proxy"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "dos-risky-access-across-trust-boundary@api-server@browser-spa@browser-spa\u003ehttps-to-nginx-\u003enginx-proxy\u003ehttp-to-api-server"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Low-severity DoS exposure on the browser→nginx→API→PostgreSQL chain is mitigated by the existing nginx rate limiting and connection pooling; additional per-operation limits are the VAULT-146 effort.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "api-server",
+            "severity": "low",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "dos-risky-access-across-trust-boundary",
+          "ruleIndex": 12,
+          "level": "note",
+          "message": {
+            "text": "Denial-of-Service risky access of Nginx Reverse Proxy by Browser SPA via HTTPS to Nginx"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "dos-risky-access-across-trust-boundary@nginx-proxy@browser-spa@browser-spa\u003ehttps-to-nginx-\u003e"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Low-severity DoS exposure on the browser→nginx→API→PostgreSQL chain is mitigated by the existing nginx rate limiting and connection pooling; additional per-operation limits are the VAULT-146 effort.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "nginx-proxy",
+            "severity": "low",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "dos-risky-access-across-trust-boundary",
+          "ruleIndex": 12,
+          "level": "note",
+          "message": {
+            "text": "Denial-of-Service risky access of PostgreSQL Database by API Server via PostgreSQL Connection"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "dos-risky-access-across-trust-boundary@postgresql-db@api-server@api-server\u003epostgresql-connection-\u003e"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Low-severity DoS exposure on the browser→nginx→API→PostgreSQL chain is mitigated by the existing nginx rate limiting and connection pooling; additional per-operation limits are the VAULT-146 effort.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "postgresql-db",
+            "severity": "low",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "exposed-default-credentials",
+          "ruleIndex": 13,
+          "level": "error",
+          "message": {
+            "text": "Exposed Default Credentials: MinIO Object Storage is tagged as intentional-misconfiguration and stores confidential data"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "exposed-default-credentials@minio-storage"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "very-likely",
+            "mostRelevantAsset": "minio-storage",
+            "severity": "high",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "lateral-movement-shared-runtime",
+          "ruleIndex": 14,
+          "level": "warning",
+          "message": {
+            "text": "Lateral Movement via Shared Runtime on Docker Host: assets from 3 trust zones co-located"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "lateral-movement-shared-runtime@docker-host"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "The single docker-host runtime is inherent to the self-hosted deployment tier (compose on one VM). Containers run unprivileged with no docker socket mounts (see mixed-targets acceptance VAULT-95); the AWS/ECS deployment removes the shared runtime entirely.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "nginx-proxy",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "missing-authentication",
+          "ruleIndex": 15,
+          "level": "warning",
+          "message": {
+            "text": "Missing Authentication covering communication link Route to ECS API from AWS API Gateway to API Server"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-authentication@aws-api-gateway\u003eroute-to-ecs-api@aws-api-gateway@api-server"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Intentional misconfiguration: the Nginx→API plaintext hop carries no link-level authentication (end-user JWTs are validated by the API server itself), and the API-Gateway→ECS route relies on the gateway JWT authorizer rather than mutual auth. Kept for training; production hardening (mTLS / signed service identity) re-evaluated at expiry.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "missing-authentication",
+          "ruleIndex": 15,
+          "level": "warning",
+          "message": {
+            "text": "Missing Authentication covering communication link HTTP to API Server from Nginx Reverse Proxy to API Server"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-authentication@nginx-proxy\u003ehttp-to-api-server@nginx-proxy@api-server"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Intentional misconfiguration: the Nginx→API plaintext hop carries no link-level authentication (end-user JWTs are validated by the API server itself), and the API-Gateway→ECS route relies on the gateway JWT authorizer rather than mutual auth. Kept for training; production hardening (mTLS / signed service identity) re-evaluated at expiry.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "missing-authentication-second-factor",
+          "ruleIndex": 16,
+          "level": "warning",
+          "message": {
+            "text": "Missing Two-Factor Authentication covering communication link HTTP to API Server from Browser SPA forwarded via Nginx Reverse Proxy to API Server"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-authentication-second-factor@nginx-proxy\u003ehttp-to-api-server@nginx-proxy@api-server"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "MFA for end users is on the product roadmap but out of scope for the current release; session hardening (short-lived JWTs + Redis revocation list, VAULT-143) is the compensating control.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "api-server",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "missing-build-infrastructure",
+          "ruleIndex": 17,
+          "level": "warning",
+          "message": {
+            "text": "Missing Build Infrastructure in the threat model (referencing asset API Server as an example)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-build-infrastructure@api-server"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Build infrastructure exists and is fully modeled (source-repo, build-pipeline, container-registry in the External CI/CD boundary); the rule fires because the build assets sit outside the asset's own network boundary, which is exactly the GitHub-hosted topology.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "api-server",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "missing-cloud-hardening",
+          "ruleIndex": 18,
+          "level": "warning",
+          "message": {
+            "text": "Missing Cloud Hardening (AWS) risk at AWS Cloud: CIS Benchmark for AWS"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-cloud-hardening@aws-cloud@aws"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "very-high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "missing-cloud-hardening",
+          "ruleIndex": 18,
+          "level": "warning",
+          "message": {
+            "text": "Missing Cloud Hardening risk at Docker Host"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-cloud-hardening@docker-host"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "very-high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "missing-cloud-hardening",
+          "ruleIndex": 18,
+          "level": "warning",
+          "message": {
+            "text": "Missing Cloud Hardening risk at External CI/CD"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-cloud-hardening@external-cicd"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "missing-csp-header",
+          "ruleIndex": 19,
+          "level": "warning",
+          "message": {
+            "text": "Missing Content-Security-Policy: Nginx Reverse Proxy serves browser clients handling auth tokens without a verified CSP header"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-csp-header@nginx-proxy"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "nginx-proxy",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "missing-hardening",
+          "ruleIndex": 20,
+          "level": "warning",
+          "message": {
+            "text": "Missing Hardening risk at ECS Container Platform"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-hardening@ecs-platform"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "ecs-platform",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "missing-hardening",
+          "ruleIndex": 20,
+          "level": "warning",
+          "message": {
+            "text": "Missing Hardening risk at PostgreSQL Database"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-hardening@postgresql-db"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "postgresql-db",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "missing-hardening",
+          "ruleIndex": 20,
+          "level": "warning",
+          "message": {
+            "text": "Missing Hardening risk at AWS RDS PostgreSQL"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-hardening@rds-postgresql"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "rds-postgresql",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "missing-identity-store",
+          "ruleIndex": 21,
+          "level": "warning",
+          "message": {
+            "text": "Missing Identity Store in the threat model (referencing asset Nginx Reverse Proxy as an example)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-identity-store@nginx-proxy"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "User identities live in the PostgreSQL users table (modeled as the user-credentials data asset) with bcrypt password hashing; there is no separate IdP by design for this product size. The rule expects a dedicated identity-store asset type.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "nginx-proxy",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "missing-vault",
+          "ruleIndex": 22,
+          "level": "warning",
+          "message": {
+            "text": "Missing Vault (Secret Storage) in the threat model (referencing asset API Server as an example)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-vault@api-server"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "api-server",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "missing-waf",
+          "ruleIndex": 23,
+          "level": "warning",
+          "message": {
+            "text": "Missing Web Application Firewall (WAF) risk at API Server"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "missing-waf@api-server"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "api-server",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "mixed-targets-on-shared-runtime",
+          "ruleIndex": 24,
+          "level": "warning",
+          "message": {
+            "text": "Mixed Targets on Shared Runtime named Docker Host might enable attackers moving from one less valuable target to a more valuable one"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "mixed-targets-on-shared-runtime@docker-host"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Docker containers run without privileged mode and with no host path mounts except the named volumes. The Docker socket is not mounted into any container. Risk is accepted for this demo environment.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "path-traversal",
+          "ruleIndex": 25,
+          "level": "warning",
+          "message": {
+            "text": "Path-Traversal risk at API Server against filesystem MinIO Object Storage via MinIO File Storage"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "path-traversal@api-server@minio-storage@api-server\u003eminio-file-storage"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "very-likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "path-traversal",
+          "ruleIndex": 25,
+          "level": "warning",
+          "message": {
+            "text": "Path-Traversal risk at GitHub Actions Build Pipeline against filesystem AWS ECR Container Registry via Push Image to Registry"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "path-traversal@build-pipeline@container-registry@build-pipeline\u003epush-image-to-registry"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "build-pipeline",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "path-traversal",
+          "ruleIndex": 25,
+          "level": "warning",
+          "message": {
+            "text": "Path-Traversal risk at ECS Container Platform against filesystem AWS ECR Container Registry via Pull Images from ECR"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "path-traversal@ecs-platform@container-registry@ecs-platform\u003epull-images-from-ecr"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "ecs-platform",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "server-side-request-forgery",
+          "ruleIndex": 26,
+          "level": "warning",
+          "message": {
+            "text": "Server-Side Request Forgery (SSRF) risk at API Server server-side web-requesting the target MinIO Object Storage via MinIO File Storage"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "server-side-request-forgery@api-server@minio-storage@api-server\u003eminio-file-storage"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "server-side-request-forgery",
+          "ruleIndex": 26,
+          "level": "warning",
+          "message": {
+            "text": "Server-Side Request Forgery (SSRF) risk at GitHub Actions Build Pipeline server-side web-requesting the target AWS ECR Container Registry via Push Image to Registry"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "server-side-request-forgery@build-pipeline@container-registry@build-pipeline\u003epush-image-to-registry"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "build-pipeline",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "server-side-request-forgery",
+          "ruleIndex": 26,
+          "level": "warning",
+          "message": {
+            "text": "Server-Side Request Forgery (SSRF) risk at ECS Container Platform server-side web-requesting the target AWS ECR Container Registry via Pull Images from ECR"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "server-side-request-forgery@ecs-platform@container-registry@ecs-platform\u003epull-images-from-ecr"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "ecs-platform",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "server-side-request-forgery",
+          "ruleIndex": 26,
+          "level": "warning",
+          "message": {
+            "text": "Server-Side Request Forgery (SSRF) risk at Lambda Email Notifier server-side web-requesting the target AWS SES via SES Email Send"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "server-side-request-forgery@lambda-notifier@aws-ses@lambda-notifier\u003eses-email-send"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "lambda-notifier",
+            "severity": "elevated",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "server-side-request-forgery",
+          "ruleIndex": 26,
+          "level": "warning",
+          "message": {
+            "text": "Server-Side Request Forgery (SSRF) risk at LLM Note Summarizer server-side web-requesting the target Note RAG Pipeline via Call RAG Pipeline"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "server-side-request-forgery@llm-summarizer@rag-pipeline@llm-summarizer\u003ecall-rag-pipeline"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "llm-summarizer",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "server-side-request-forgery",
+          "ruleIndex": 26,
+          "level": "warning",
+          "message": {
+            "text": "Server-Side Request Forgery (SSRF) risk at LLM Note Summarizer server-side web-requesting the target VaultNote Vector Store via Query Vector Store"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "server-side-request-forgery@llm-summarizer@vector-store@llm-summarizer\u003equery-vector-store"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "llm-summarizer",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "server-side-request-forgery",
+          "ruleIndex": 26,
+          "level": "warning",
+          "message": {
+            "text": "Server-Side Request Forgery (SSRF) risk at Note RAG Pipeline server-side web-requesting the target VaultNote Vector Store via Retrieve from Vector Store"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "server-side-request-forgery@rag-pipeline@vector-store@rag-pipeline\u003eretrieve-from-vector-store"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "rag-pipeline",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "server-side-request-forgery",
+          "ruleIndex": 26,
+          "level": "warning",
+          "message": {
+            "text": "Server-Side Request Forgery (SSRF) risk at VaultNote Source Repository server-side web-requesting the target GitHub Actions Build Pipeline via Push to Pipeline"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "server-side-request-forgery@source-repo@build-pipeline@source-repo\u003epush-to-pipeline"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Every flagged outbound call targets a static, configuration-defined endpoint: MinIO endpoint URL, AWS SES via SDK, ECR registry pulls by digest, GitHub→Actions webhooks, and fixed internal AI-service URLs. No user-controlled URL or hostname is ever fetched, which is the precondition for SSRF.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "source-repo",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "sql-nosql-injection",
+          "ruleIndex": 27,
+          "level": "error",
+          "message": {
+            "text": "SQL/NoSQL-Injection risk at API Server against database PostgreSQL Database via PostgreSQL Connection"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "sql-nosql-injection@api-server@postgresql-db@api-server\u003epostgresql-connection"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "All application-level SQL queries against PostgreSQL use parameterized statements via the `pg` library (no string-concatenated queries). The generic protocol-based finding is acknowledged and mitigated by code review + the Semgrep SAST rules tracked in VAULT-121.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "very-likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "high",
+            "status": "mitigated"
+          }
+        },
+        {
+          "ruleId": "sql-nosql-injection",
+          "ruleIndex": 27,
+          "level": "warning",
+          "message": {
+            "text": "SQL/NoSQL-Injection risk at API Server against database Redis Cache via Redis Session Store"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "sql-nosql-injection@api-server@redis-cache@api-server\u003eredis-session-store"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Redis is accessed exclusively through ioredis command methods with discrete arguments (no Lua scripts built from user input, no EVAL of concatenated strings). The injection detection keys on the datastore protocol and does not apply to this access pattern.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "probable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "very-likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "unchecked-deployment",
+          "ruleIndex": 28,
+          "level": "warning",
+          "message": {
+            "text": "Unchecked Deployment risk at GitHub Actions Build Pipeline"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unchecked-deployment@build-pipeline"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "build-pipeline",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "unchecked-deployment",
+          "ruleIndex": 28,
+          "level": "note",
+          "message": {
+            "text": "Unchecked Deployment risk at AWS ECR Container Registry"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unchecked-deployment@container-registry"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "container-registry",
+            "severity": "low",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "unchecked-deployment",
+          "ruleIndex": 28,
+          "level": "warning",
+          "message": {
+            "text": "Unchecked Deployment risk at VaultNote Source Repository"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unchecked-deployment@source-repo"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "source-repo",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "unencrypted-asset",
+          "ruleIndex": 29,
+          "level": "warning",
+          "message": {
+            "text": "Unencrypted Technical Asset named MinIO Object Storage"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unencrypted-asset@minio-storage"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "minio-storage",
+            "severity": "medium",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "unencrypted-asset",
+          "ruleIndex": 29,
+          "level": "warning",
+          "message": {
+            "text": "Unencrypted Technical Asset named PostgreSQL Database missing end user individual encryption with data-with-end-user-individual-key"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unencrypted-asset@postgresql-db"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "The PostgreSQL volume runs on a host-level LUKS-encrypted partition in all production deployments. The Threagile finding is acknowledged as informational for this demo environment which uses unencrypted storage. Production database TDE via pgcrypto will be evaluated in Q3.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "postgresql-db",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "unencrypted-asset",
+          "ruleIndex": 29,
+          "level": "warning",
+          "message": {
+            "text": "Unencrypted Technical Asset named AWS RDS PostgreSQL missing end user individual encryption with data-with-end-user-individual-key"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unencrypted-asset@rds-postgresql"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Same intentional encryption-at-rest gap as the LINDDUN PII findings: RDS (storage_encrypted=false), S3 (no SSE), and Redis are deliberately unencrypted in this training environment. Direct entries exist for postgresql-db and minio-storage; this acceptance covers the remaining managed-service variants until the next review.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "rds-postgresql",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "unencrypted-asset",
+          "ruleIndex": 29,
+          "level": "warning",
+          "message": {
+            "text": "Unencrypted Technical Asset named Redis Cache"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unencrypted-asset@redis-cache"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Same intentional encryption-at-rest gap as the LINDDUN PII findings: RDS (storage_encrypted=false), S3 (no SSE), and Redis are deliberately unencrypted in this training environment. Direct entries exist for postgresql-db and minio-storage; this acceptance covers the remaining managed-service variants until the next review.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "redis-cache",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "unencrypted-asset",
+          "ruleIndex": 29,
+          "level": "warning",
+          "message": {
+            "text": "Unencrypted Technical Asset named AWS S3 Notes Bucket"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unencrypted-asset@s3-notes-bucket"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Same intentional encryption-at-rest gap as the LINDDUN PII findings: RDS (storage_encrypted=false), S3 (no SSE), and Redis are deliberately unencrypted in this training environment. Direct entries exist for postgresql-db and minio-storage; this acceptance covers the remaining managed-service variants until the next review.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "s3-notes-bucket",
+            "severity": "medium",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "unencrypted-communication",
+          "ruleIndex": 30,
+          "level": "warning",
+          "message": {
+            "text": "Unencrypted Communication named MinIO File Storage between API Server and MinIO Object Storage transferring authentication data (like credentials, token, session-id, etc.)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unencrypted-communication@api-server\u003eminio-file-storage@api-server@minio-storage"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "unencrypted-communication",
+          "ruleIndex": 30,
+          "level": "warning",
+          "message": {
+            "text": "Unencrypted Communication named PostgreSQL Connection between API Server and PostgreSQL Database transferring authentication data (like credentials, token, session-id, etc.)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unencrypted-communication@api-server\u003epostgresql-connection@api-server@postgresql-db"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "unencrypted-communication",
+          "ruleIndex": 30,
+          "level": "warning",
+          "message": {
+            "text": "Unencrypted Communication named Redis Session Store between API Server and Redis Cache transferring authentication data (like credentials, token, session-id, etc.)"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unencrypted-communication@api-server\u003eredis-session-store@api-server@redis-cache"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "high",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "unencrypted-communication",
+          "ruleIndex": 30,
+          "level": "warning",
+          "message": {
+            "text": "Unencrypted Communication named HTTP to API Server between Nginx Reverse Proxy and API Server"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unencrypted-communication@nginx-proxy\u003ehttp-to-api-server@nginx-proxy@api-server"
+          },
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "nginx-proxy",
+            "severity": "elevated",
+            "status": "in-progress"
+          }
+        },
+        {
+          "ruleId": "unguarded-access-from-internet",
+          "ruleIndex": 31,
+          "level": "warning",
+          "message": {
+            "text": "Unguarded Access from Internet of API Server by AWS API Gateway via Route to ECS API"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unguarded-access-from-internet@api-server@aws-api-gateway@aws-api-gateway\u003eroute-to-ecs-api"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "The API Gateway route is the designed public entry point of the AWS deployment; requests pass the gateway JWT authorizer and (pending VAULT-149 WAF work) gateway throttling. Re-review at expiry.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "very-likely",
+            "mostRelevantAsset": "api-server",
+            "severity": "elevated",
+            "status": "accepted"
+          }
+        },
+        {
+          "ruleId": "unguarded-access-from-internet",
+          "ruleIndex": 31,
+          "level": "warning",
+          "message": {
+            "text": "Unguarded Access from Internet of GitHub Actions Build Pipeline by VaultNote Source Repository via Push to Pipeline"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unguarded-access-from-internet@build-pipeline@source-repo@source-repo\u003epush-to-pipeline"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Remaining matches are authenticated SaaS/service flows mis-detected as unguarded: GitHub→Actions and Actions→ECR use OIDC/registry auth, and the LLM-summarizer→RAG/vector-store calls are service-to-service inside the AI Services network (flagged only because the summarizer asset is internet-facing).\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "very-likely",
+            "mostRelevantAsset": "build-pipeline",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "unguarded-access-from-internet",
+          "ruleIndex": 31,
+          "level": "warning",
+          "message": {
+            "text": "Unguarded Access from Internet of AWS ECR Container Registry by GitHub Actions Build Pipeline via Push Image to Registry"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unguarded-access-from-internet@container-registry@build-pipeline@build-pipeline\u003epush-image-to-registry"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Remaining matches are authenticated SaaS/service flows mis-detected as unguarded: GitHub→Actions and Actions→ECR use OIDC/registry auth, and the LLM-summarizer→RAG/vector-store calls are service-to-service inside the AI Services network (flagged only because the summarizer asset is internet-facing).\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "very-likely",
+            "mostRelevantAsset": "container-registry",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "unguarded-access-from-internet",
+          "ruleIndex": 31,
+          "level": "warning",
+          "message": {
+            "text": "Unguarded Access from Internet of Note RAG Pipeline by LLM Note Summarizer via Call RAG Pipeline"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unguarded-access-from-internet@rag-pipeline@llm-summarizer@llm-summarizer\u003ecall-rag-pipeline"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Remaining matches are authenticated SaaS/service flows mis-detected as unguarded: GitHub→Actions and Actions→ECR use OIDC/registry auth, and the LLM-summarizer→RAG/vector-store calls are service-to-service inside the AI Services network (flagged only because the summarizer asset is internet-facing).\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "very-likely",
+            "mostRelevantAsset": "rag-pipeline",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "unguarded-access-from-internet",
+          "ruleIndex": 31,
+          "level": "warning",
+          "message": {
+            "text": "Unguarded Access from Internet of VaultNote Vector Store by LLM Note Summarizer via Query Vector Store"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unguarded-access-from-internet@vector-store@llm-summarizer@llm-summarizer\u003equery-vector-store"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "Remaining matches are authenticated SaaS/service flows mis-detected as unguarded: GitHub→Actions and Actions→ECR use OIDC/registry auth, and the LLM-summarizer→RAG/vector-store calls are service-to-service inside the AI Services network (flagged only because the summarizer asset is internet-facing).\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "possible",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "very-likely",
+            "mostRelevantAsset": "vector-store",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "unguarded-direct-datastore-access",
+          "ruleIndex": 32,
+          "level": "warning",
+          "message": {
+            "text": "Unguarded Direct Datastore Access of MinIO Object Storage by API Server via MinIO File Storage"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unguarded-direct-datastore-access@api-server\u003eminio-file-storage@api-server@minio-storage"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "The API server is the identity-providing application tier; its direct access to its own PostgreSQL/Redis/MinIO backing stores is the standard three-tier pattern. The finding triggers on datastore RAA attractiveness, not on an actual missing guard.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "minio-storage",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "unguarded-direct-datastore-access",
+          "ruleIndex": 32,
+          "level": "warning",
+          "message": {
+            "text": "Unguarded Direct Datastore Access of PostgreSQL Database by API Server via PostgreSQL Connection"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unguarded-direct-datastore-access@api-server\u003epostgresql-connection@api-server@postgresql-db"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "The API server is the identity-providing application tier; its direct access to its own PostgreSQL/Redis/MinIO backing stores is the standard three-tier pattern. The finding triggers on datastore RAA attractiveness, not on an actual missing guard.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "medium",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "postgresql-db",
+            "severity": "elevated",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "unguarded-direct-datastore-access",
+          "ruleIndex": 32,
+          "level": "warning",
+          "message": {
+            "text": "Unguarded Direct Datastore Access of Redis Cache by API Server via Redis Session Store"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unguarded-direct-datastore-access@api-server\u003eredis-session-store@api-server@redis-cache"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "The API server is the identity-providing application tier; its direct access to its own PostgreSQL/Redis/MinIO backing stores is the standard three-tier pattern. The finding triggers on datastore RAA attractiveness, not on an actual missing guard.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "likely",
+            "mostRelevantAsset": "redis-cache",
+            "severity": "medium",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "unnecessary-technical-asset",
+          "ruleIndex": 33,
+          "level": "note",
+          "message": {
+            "text": "Unnecessary Technical Asset named AWS RDS PostgreSQL"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unnecessary-technical-asset@rds-postgresql"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "RDS and the S3 notes bucket belong to the AWS deployment variant of the dual-deployment model (self-hosted compose + AWS/ECS); they are unused only from the self-hosted tier's perspective.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "rds-postgresql",
+            "severity": "low",
+            "status": "false-positive"
+          }
+        },
+        {
+          "ruleId": "unnecessary-technical-asset",
+          "ruleIndex": 33,
+          "level": "note",
+          "message": {
+            "text": "Unnecessary Technical Asset named AWS S3 Notes Bucket"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile.yaml"
+                }
+              }
+            }
+          ],
+          "partialFingerprints": {
+            "threagileSyntheticId": "unnecessary-technical-asset@s3-notes-bucket"
+          },
+          "suppressions": [
+            {
+              "kind": "external",
+              "justification": "RDS and the S3 notes bucket belong to the AWS deployment variant of the dual-deployment model (self-hosted compose + AWS/ECS); they are unused only from the self-hosted tier's perspective.\n"
+            }
+          ],
+          "properties": {
+            "confidence": 0,
+            "dataBreachProbability": "improbable",
+            "exploitationImpact": "low",
+            "exploitationLikelihood": "unlikely",
+            "mostRelevantAsset": "s3-notes-bucket",
+            "severity": "low",
+            "status": "false-positive"
+          }
+        }
+      ]
+    }
+  ]
+}
