@@ -1,0 +1,34 @@
+Attack-path analysis: 7 entry point(s) → 15 crown-jewel target(s)
+
+15 path(s) (shortest first):
+
+  [0 hop(s)] aws-api-gateway (directly internet-facing)
+            exposes: file-attachments, note-content, user-credentials
+  [0 hop(s)] aws-ses (directly internet-facing)
+            exposes: notification-payloads
+  [0 hop(s)] browser-spa (directly internet-facing)
+            exposes: file-attachments, note-content, user-credentials
+  [0 hop(s)] llm-summarizer (directly internet-facing)
+            exposes: ai-model-responses, embedding-vectors, note-content
+  [1 hop(s)] aws-api-gateway --(Route to ECS API)--> api-server
+            exposes: file-attachments, note-content, session-tokens, user-credentials
+  [1 hop(s)] browser-spa --(HTTPS to Nginx)--> nginx-proxy
+            exposes: file-attachments, note-content, user-credentials
+  [1 hop(s)] llm-summarizer --(Call RAG Pipeline)--> rag-pipeline
+            exposes: embedding-vectors, note-content
+  [1 hop(s)] llm-summarizer --(Query Vector Store)--> vector-store
+            exposes: embedding-vectors, note-content
+  [2 hop(s)] aws-api-gateway --(Route to ECS API)--> api-server --(MinIO File Storage)--> minio-storage
+            exposes: file-attachments
+  [2 hop(s)] aws-api-gateway --(Route to ECS API)--> api-server --(PostgreSQL Connection)--> postgresql-db
+            exposes: note-content, user-credentials
+  [2 hop(s)] aws-api-gateway --(Route to ECS API)--> api-server --(Redis Session Store)--> redis-cache
+            exposes: session-tokens
+  [2 hop(s)] browser-spa --(HTTPS to Nginx)--> nginx-proxy --(HTTP to API Server)--> api-server
+            exposes: file-attachments, note-content, session-tokens, user-credentials
+  [3 hop(s)] browser-spa --(HTTPS to Nginx)--> nginx-proxy --(HTTP to API Server)--> api-server --(MinIO File Storage)--> minio-storage
+            exposes: file-attachments
+  [3 hop(s)] browser-spa --(HTTPS to Nginx)--> nginx-proxy --(HTTP to API Server)--> api-server --(PostgreSQL Connection)--> postgresql-db
+            exposes: note-content, user-credentials
+  [3 hop(s)] browser-spa --(HTTPS to Nginx)--> nginx-proxy --(HTTP to API Server)--> api-server --(Redis Session Store)--> redis-cache
+            exposes: session-tokens
