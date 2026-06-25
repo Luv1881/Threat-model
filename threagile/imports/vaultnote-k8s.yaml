@@ -1,0 +1,122 @@
+# Representative Kubernetes deployment of the VaultNote stack (mirrors
+# docker-compose.yml: nginx, api, postgres, redis, minio), used to exercise
+# `threagile import kubernetes`. Generate + analyze with:
+#
+#   threagile import kubernetes --manifests imports/vaultnote-k8s.yaml \
+#     --output imports/vaultnote-k8s-model.yaml --label k8s
+#   threagile analyze-model --model imports/vaultnote-k8s-model.yaml --output imports/out
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: vaultnote
+  labels: {app: nginx, tier: frontend}
+spec:
+  replicas: 2
+  template:
+    metadata: {labels: {app: nginx, tier: frontend}}
+    spec:
+      securityContext: {runAsNonRoot: true}
+      containers:
+        - name: nginx
+          image: nginx:alpine
+          ports: [{containerPort: 443, name: https}]
+---
+apiVersion: v1
+kind: Service
+metadata: {name: nginx, namespace: vaultnote}
+spec:
+  type: LoadBalancer
+  selector: {app: nginx}
+  ports: [{port: 443, targetPort: 443}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api
+  namespace: vaultnote
+  labels: {app: api, tier: backend}
+spec:
+  replicas: 3
+  template:
+    metadata: {labels: {app: api, tier: backend}}
+    spec:
+      serviceAccountName: vaultnote-api
+      containers:
+        - name: api
+          image: vaultnote/api:latest
+          ports: [{containerPort: 3000}]
+---
+apiVersion: v1
+kind: Service
+metadata: {name: api, namespace: vaultnote}
+spec:
+  type: ClusterIP
+  selector: {app: api}
+  ports: [{port: 3000}]
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: {name: vaultnote, namespace: vaultnote}
+spec:
+  rules:
+    - host: vaultnote.example.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend: {service: {name: nginx}}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: vaultnote
+  labels: {app: postgres, tier: data}
+spec:
+  template:
+    metadata: {labels: {app: postgres, tier: data}}
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16-alpine
+          ports: [{containerPort: 5432}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: vaultnote
+  labels: {app: redis, tier: data}
+spec:
+  template:
+    metadata: {labels: {app: redis, tier: data}}
+    spec:
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports: [{containerPort: 6379}]
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: minio
+  namespace: vaultnote
+  labels: {app: minio, tier: data}
+spec:
+  template:
+    metadata: {labels: {app: minio, tier: data}}
+    spec:
+      containers:
+        - name: minio
+          image: minio/minio
+          ports: [{containerPort: 9000}]
+---
+apiVersion: v1
+kind: Secret
+metadata: {name: vaultnote-secrets, namespace: vaultnote}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata: {name: pgdata, namespace: vaultnote}
