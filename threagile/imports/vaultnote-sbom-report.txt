@@ -1,0 +1,7 @@
+SBOM intel correlation: 6 component(s), 3 vulnerability(ies), 0 KEV-listed
+(1 VEX-suppressed)
+
+  CVE-2022-24434     [high     cvss 7.5] EPSS 3%
+    affects: multer@1.4.5-lts.1
+  CVE-2024-28849     [medium   cvss 6.5] EPSS 1%
+    affects: follow-redirects@1.15.3

@@ -1,0 +1,36 @@
+{
+  "bomFormat": "CycloneDX",
+  "specVersion": "1.5",
+  "metadata": {
+    "component": { "type": "application", "name": "vaultnote-api", "version": "1.0.0" }
+  },
+  "components": [
+    { "type": "library", "name": "express", "version": "4.18.2", "purl": "pkg:npm/express@4.18.2", "bom-ref": "pkg:npm/express@4.18.2" },
+    { "type": "library", "name": "jsonwebtoken", "version": "9.0.2", "purl": "pkg:npm/jsonwebtoken@9.0.2", "bom-ref": "pkg:npm/jsonwebtoken@9.0.2" },
+    { "type": "library", "name": "multer", "version": "1.4.5-lts.1", "purl": "pkg:npm/multer@1.4.5-lts.1", "bom-ref": "pkg:npm/multer@1.4.5-lts.1" },
+    { "type": "library", "name": "follow-redirects", "version": "1.15.3", "purl": "pkg:npm/follow-redirects@1.15.3", "bom-ref": "pkg:npm/follow-redirects@1.15.3" },
+    { "type": "library", "name": "pg", "version": "8.11.3", "purl": "pkg:npm/pg@8.11.3", "bom-ref": "pkg:npm/pg@8.11.3" },
+    { "type": "library", "name": "bcrypt", "version": "5.1.1", "purl": "pkg:npm/bcrypt@5.1.1", "bom-ref": "pkg:npm/bcrypt@5.1.1" }
+  ],
+  "vulnerabilities": [
+    {
+      "id": "CVE-2022-24434",
+      "source": { "name": "NVD" },
+      "ratings": [ { "score": 7.5, "severity": "high", "method": "CVSSv31" } ],
+      "affects": [ { "ref": "pkg:npm/multer@1.4.5-lts.1" } ]
+    },
+    {
+      "id": "CVE-2024-28849",
+      "source": { "name": "NVD" },
+      "ratings": [ { "score": 6.5, "severity": "medium", "method": "CVSSv31" } ],
+      "affects": [ { "ref": "pkg:npm/follow-redirects@1.15.3" } ]
+    },
+    {
+      "id": "CVE-2022-23529",
+      "source": { "name": "NVD" },
+      "ratings": [ { "score": 7.6, "severity": "high", "method": "CVSSv31" } ],
+      "affects": [ { "ref": "pkg:npm/jsonwebtoken@9.0.2" } ],
+      "analysis": { "state": "not_affected", "detail": "Patched in jsonwebtoken 9.x; VaultNote pins ^9.0.2" }
+    }
+  ]
+}
