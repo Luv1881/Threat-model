@@ -1,0 +1,4382 @@
+{
+  "type": "bundle",
+  "id": "bundle--839ff124-6b7e-5985-875f-7cb0c1a2b7c0",
+  "objects": [
+    {
+      "type": "identity",
+      "spec_version": "2.1",
+      "id": "identity--2abb6a94-93c0-523c-ae81-aae158fd5714",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "VaultNote Threat Model",
+      "description": "Threagile threat model",
+      "identity_class": "system"
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "API Server",
+      "description": "Node.js/Express REST API. Handles authentication (JWT/bcrypt), CRUD on notes, file uploads to MinIO. Bridges the frontend and backend networks. Single most security-critical component — compromise equals full data access.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--161f8524-b592-564d-adc2-376bebbe406a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "AWS API Gateway",
+      "description": "AWS API Gateway (HTTP API) fronting the ECS API containers in production. Routes traffic from the ALB to backend ECS tasks. INTENTIONAL: No usage plan or throttling policy configured. No WAF association on the API gateway stage. Auth relies entirely on the API server (JWT) — no gateway-level auth enforcement.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--7997a211-b77b-5c19-8b4c-8ab136aadd45",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "AWS SES",
+      "description": "AWS Simple Email Service used for transactional email delivery (note-share invitations, account verification). Managed service — not custom-developed. SES sending identity (domain) is verified; DKIM and SPF records are configured. No dedicated sending quota alarm; a compromised Lambda could exhaust the daily send limit and cause notification delivery failure.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--26f020e7-1400-5a5a-89a9-2b1d2a461c5f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Browser SPA",
+      "description": "React Single Page Application served from Nginx. Users authenticate, manage notes, and upload files through this interface.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--f4a1fcb0-b77a-5dce-90bd-47ff8f948de8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "GitHub Actions Build Pipeline",
+      "description": "GitHub Actions CI/CD pipeline. Builds Docker images, runs tests, pushes to ECR. INTENTIONAL: No SBOM generation (no Syft or CycloneDX step configured). No build provenance attestation (no SLSA provenance step). Hardcoded AWS_SECRET_ACCESS_KEY in workflow environment variables.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--00db7b86-bbf2-520b-95da-fe013ba227cf",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "AWS ECR Container Registry",
+      "description": "AWS Elastic Container Registry storing VaultNote Docker images (api, nginx). INTENTIONAL: Image vulnerability scanning is disabled (ECR Basic scanning only, not Enhanced/Inspector). Images are not signed — no Cosign/Sigstore policy enforced. Repository is private but no admission controller validates signatures at deploy time.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--62048905-9a2a-533f-8c5d-f5e7c6fd945b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "ECS Container Platform",
+      "description": "AWS ECS (Fargate) running the API and Nginx containers in production. INTENTIONAL: ECR Enhanced Scanning (Inspector v2) is not enabled. Running containers are not scanned post-deployment for newly disclosed CVEs. Container images are pulled from ECR without signature verification.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--39aae63e-a959-5e39-9437-55b18fab94a5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Lambda Email Notifier",
+      "description": "AWS Lambda function that sends transactional emails (note-share invitations, account verification) triggered by SQS messages from the API server. Processes user email addresses (PII) and note titles in notification payloads. INTENTIONAL: No dead letter queue (DLQ) configured on the SQS event source. Failed notifications are silently dropped after 3 retries with no audit trail.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--4ef8fff1-2372-5230-b069-eb7c0e03c4ce",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "LLM Note Summarizer",
+      "description": "OpenAI-compatible LLM inference endpoint used to generate AI summaries of user notes on demand. Deployed as a containerised model proxy (LiteLLM) with a public API endpoint for testing. INTENTIONAL: Endpoint is internet-accessible and lacks authentication — the has-authentication tag is intentionally absent to demonstrate the finding. No adversarial input shield (Llama Guard or guardrails) is configured. System prompt contains internal business context visible to adversarial probing.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--2ac776b6-f772-5a2e-b57c-022d7146f8a6",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "MinIO Object Storage",
+      "description": "S3-compatible object store for file attachments. INTENTIONAL MISCONFIGURATION: Uses default minioadmin/minioadmin credentials (visible in docker-compose.yml) and stores files without encryption at rest. HTTP-only (no TLS) within the Docker network.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--9146c542-9cbb-5a22-b896-4cdb5fabf5e8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Nginx Reverse Proxy",
+      "description": "Nginx terminates TLS and forwards all API traffic to the Express server over plain HTTP (port 3000). This is the DMZ entry point.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--d214b3b2-98ed-5190-a85e-109e46da8256",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "PostgreSQL Database",
+      "description": "Primary relational datastore. Contains users table (email + bcrypt password hash), notes table (title + content), and attachments metadata. INTENTIONAL MISCONFIGURATION: No encryption at rest (encryption: none).",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--650b6213-127d-51d1-b4a7-6dfd3a85d75c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Note RAG Pipeline",
+      "description": "Retrieval-Augmented Generation pipeline that assembles context chunks from the vector store before forwarding to the LLM. Built on LangChain. INTENTIONAL: No input validation or injection guard on retrieved chunks (has-input-validation absent). A note containing prompt injection payloads could be retrieved as context and alter LLM behavior. No retrieval filtering — all results from the vector store are injected into context without relevance threshold or content sanitisation.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--ac1cfdf5-bda7-58af-816e-62df1af69b02",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "AWS RDS PostgreSQL",
+      "description": "AWS RDS PostgreSQL instance (production). Replaces the Docker-based PostgreSQL in production deployments. Automated backups enabled (7-day retention). INTENTIONAL: Encryption at rest is disabled (storage_encrypted = false in Terraform). Public accessibility is off but subnet group is in app subnet (not data subnet), creating potential exposure via compromised app instances.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--ac1c1a49-130c-59f5-a691-86129a2bdb15",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Redis Cache",
+      "description": "In-memory store used as session store and JWT revocation list. INTENTIONAL MISCONFIGURATION: No encryption at rest. If Redis persistence is enabled and the RDB file is exfiltrated, session tokens are exposed.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--c99f8947-adf8-5363-8cce-79ea835e5a43",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "AWS S3 Notes Bucket",
+      "description": "AWS S3 bucket storing file attachments for production deployments. Replaces MinIO S3-compatible storage in the cloud environment. Bucket is private (Block Public Access enabled) but server-side encryption is not configured. INTENTIONAL: SSE-S3 or SSE-KMS not enabled. Objects are stored unencrypted at the storage layer — provider-side access exposes raw data.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--a1314e57-83d9-5494-af25-2c39398c8026",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "VaultNote Source Repository",
+      "description": "GitHub repository hosting the VaultNote monorepo (API, frontend, Terraform). Contains application secrets in compose files (minioadmin credentials visible in git history) and Terraform state references. INTENTIONAL: No branch protection rules configured — developers push directly to main, bypassing review and signed-commit requirements.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "infrastructure",
+      "spec_version": "2.1",
+      "id": "infrastructure--f06a6f94-d5b0-5c6f-ad53-25f0f3c50398",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "VaultNote Vector Store",
+      "description": "Qdrant vector database storing embedding vectors for semantic search and RAG context retrieval. Vectors are generated by the embedding service from user note content. INTENTIONAL: No encryption at rest configured (encryption: none). The vector store is queryable by the LLM pipeline and the API server without row-level isolation — all user embeddings share the same collection. No access control list separates per-user embedding queries.",
+      "infrastructure_types": [
+        "unknown"
+      ]
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--35f8ae09-3fe2-5a30-a4f8-68f80b4ad73b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eAccidental Secret Leak(Git)\u003c/b\u003e risk at \u003cb\u003eVaultNote Source Repository\u003c/b\u003e: \u003cu\u003eGit Leak Prevention\u003c/u\u003e",
+      "description": "Risk 'Accidental Secret Leak' has been flagged for technical asset 'source-repo' because out_of_scope of technical asset 'source-repo' is \u003cnil\u003e, and attributes.sourcecode-repository of technologies of technical asset 'source-repo' is true",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-200",
+          "url": "https://cwe.mitre.org/data/definitions/200.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--614087e9-dad7-5a07-9562-a5d95279ee4a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--a1314e57-83d9-5494-af25-2c39398c8026",
+      "target_ref": "vulnerability--35f8ae09-3fe2-5a30-a4f8-68f80b4ad73b"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--dc5e4f03-1094-5965-8de6-b9af854b1653",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Unsecured Credentials",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1552",
+          "url": "https://attack.mitre.org/techniques/T1552"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c4dfc0f2-fd67-54f3-81af-ed8eb98d5473",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--dc5e4f03-1094-5965-8de6-b9af854b1653",
+      "target_ref": "vulnerability--35f8ae09-3fe2-5a30-a4f8-68f80b4ad73b"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--c4489928-de90-5790-a03c-dc56a4c9d32b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Unsecured Credentials: Credentials In Files",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1552.001",
+          "url": "https://attack.mitre.org/techniques/T1552/001"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--89d73a04-fc40-58f3-b432-b8c9f3211ef4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--c4489928-de90-5790-a03c-dc56a4c9d32b",
+      "target_ref": "vulnerability--35f8ae09-3fe2-5a30-a4f8-68f80b4ad73b"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--5064a600-5182-52df-affb-9d8cbb139bba",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Retrieve Embedded Sensitive Data",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "external_id": "CAPEC-37",
+          "url": "https://capec.mitre.org/data/definitions/37.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--5cd7c4c8-0da9-5b74-b919-0eff2eecdae8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5064a600-5182-52df-affb-9d8cbb139bba",
+      "target_ref": "vulnerability--35f8ae09-3fe2-5a30-a4f8-68f80b4ad73b"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--b7d123d8-1fff-56b2-9af8-f95181f72fd5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Accidental Secret Leak — mitigation",
+      "description": "Establish measures preventing accidental check-in or package-in of secrets into sourcecode repositories and artifact registries. This starts by using good .gitignore and .dockerignore files, but does not stop there. See for example tools like \u003ci\u003e\\\"git-secrets\\\"\u003c/i\u003e or \u003ci\u003e\\\"Talisman\\\"\u003c/i\u003e to have check-in preventive measures for secrets. Consider also to regularly scan your repositories for secrets accidentally checked-in using scanning tools like \u003ci\u003e\"gitleaks\"\u003c/i\u003e or \u003ci\u003e\"gitrob\"\u003c/i\u003e."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--babed2b6-a32f-58be-b525-601c6d372ce9",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--b7d123d8-1fff-56b2-9af8-f95181f72fd5",
+      "target_ref": "vulnerability--35f8ae09-3fe2-5a30-a4f8-68f80b4ad73b"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--e83b92be-fb1b-5a89-ad2b-2ac801415b9a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eCode Backdooring\u003c/b\u003e risk at \u003cb\u003eGitHub Actions Build Pipeline\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--f8ef1b82-8270-5093-903a-f6c4a6d4f1cf",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--f4a1fcb0-b77a-5dce-90bd-47ff8f948de8",
+      "target_ref": "vulnerability--e83b92be-fb1b-5a89-ad2b-2ac801415b9a"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--d14a8d82-ce61-5344-abe4-5d71bb25404b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Supply Chain Compromise: Compromise Software Supply Chain",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1195.002",
+          "url": "https://attack.mitre.org/techniques/T1195/002"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--2f8c88f0-2872-55b3-acc1-fccb6efcbf70",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--d14a8d82-ce61-5344-abe4-5d71bb25404b",
+      "target_ref": "vulnerability--e83b92be-fb1b-5a89-ad2b-2ac801415b9a"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--115275e7-a820-5243-881f-b23ffbb07d50",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Compromise Host Software Binary",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1554",
+          "url": "https://attack.mitre.org/techniques/T1554"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e948eb66-ce3f-5b32-b065-6c990a70a288",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--115275e7-a820-5243-881f-b23ffbb07d50",
+      "target_ref": "vulnerability--e83b92be-fb1b-5a89-ad2b-2ac801415b9a"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--6fddc03f-56a9-5c24-ac02-16018f301340",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Software Integrity Attack",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "external_id": "CAPEC-184",
+          "url": "https://capec.mitre.org/data/definitions/184.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--fb8c2d9e-ad99-5ab2-9020-e8396a44fd56",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--6fddc03f-56a9-5c24-ac02-16018f301340",
+      "target_ref": "vulnerability--e83b92be-fb1b-5a89-ad2b-2ac801415b9a"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--c5b7c0c4-6fb1-59c9-ae03-c2dd5ebb13b4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Code Backdooring — mitigation",
+      "description": "Reduce the attack surface of backdooring the build pipeline by not directly exposing the build pipeline components on the public internet and also not exposing it in front of unmanaged (out-of-scope) developer clients.Also consider the use of code signing to prevent code modifications."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a5a06ac3-71fd-5fda-b144-c11920d87396",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--c5b7c0c4-6fb1-59c9-ae03-c2dd5ebb13b4",
+      "target_ref": "vulnerability--e83b92be-fb1b-5a89-ad2b-2ac801415b9a"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--bfda4e30-91fc-50c5-9c7a-ddcab0530d38",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eCode Backdooring\u003c/b\u003e risk at \u003cb\u003eAWS ECR Container Registry\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e3212192-12eb-5edb-970d-553a1614947d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--00db7b86-bbf2-520b-95da-fe013ba227cf",
+      "target_ref": "vulnerability--bfda4e30-91fc-50c5-9c7a-ddcab0530d38"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--7c3eca3c-df01-5b27-8c3d-03d2c8d8013d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--d14a8d82-ce61-5344-abe4-5d71bb25404b",
+      "target_ref": "vulnerability--bfda4e30-91fc-50c5-9c7a-ddcab0530d38"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--015f155f-ad97-52e9-aa6e-42c2f9cb106a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--115275e7-a820-5243-881f-b23ffbb07d50",
+      "target_ref": "vulnerability--bfda4e30-91fc-50c5-9c7a-ddcab0530d38"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ecb06945-4369-5d3b-b3ce-52f75d452b22",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--6fddc03f-56a9-5c24-ac02-16018f301340",
+      "target_ref": "vulnerability--bfda4e30-91fc-50c5-9c7a-ddcab0530d38"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--dccd66c5-f037-5344-a2e1-40f1804383f5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--c5b7c0c4-6fb1-59c9-ae03-c2dd5ebb13b4",
+      "target_ref": "vulnerability--bfda4e30-91fc-50c5-9c7a-ddcab0530d38"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--28f95f68-3733-5edb-8d56-1f506ead0c3b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eCode Backdooring\u003c/b\u003e risk at \u003cb\u003eVaultNote Source Repository\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--2f248cf1-253a-507d-ac46-9894584f0dae",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--a1314e57-83d9-5494-af25-2c39398c8026",
+      "target_ref": "vulnerability--28f95f68-3733-5edb-8d56-1f506ead0c3b"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e4b46581-2044-5dc8-8179-c1c8e46e00a7",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--d14a8d82-ce61-5344-abe4-5d71bb25404b",
+      "target_ref": "vulnerability--28f95f68-3733-5edb-8d56-1f506ead0c3b"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--f207486c-f34c-55c4-bee1-83017cedc8d6",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--115275e7-a820-5243-881f-b23ffbb07d50",
+      "target_ref": "vulnerability--28f95f68-3733-5edb-8d56-1f506ead0c3b"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--94ad7543-dc04-50b4-88fc-a4d2d0efcc8c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--6fddc03f-56a9-5c24-ac02-16018f301340",
+      "target_ref": "vulnerability--28f95f68-3733-5edb-8d56-1f506ead0c3b"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--0fa916ad-ecce-59b0-aa6c-c5338f7d0dd6",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--c5b7c0c4-6fb1-59c9-ae03-c2dd5ebb13b4",
+      "target_ref": "vulnerability--28f95f68-3733-5edb-8d56-1f506ead0c3b"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--0b581154-f9fc-5a0f-8ee8-f2c5bcb7895c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eContainer Base Image Backdooring\u003c/b\u003e risk at \u003cb\u003eAPI Server\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--8082a5a3-6c97-5732-870b-a18e48fcbb0e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--0b581154-f9fc-5a0f-8ee8-f2c5bcb7895c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--b5b5ec46-4891-5741-8b9b-aa2aa8462de4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--d14a8d82-ce61-5344-abe4-5d71bb25404b",
+      "target_ref": "vulnerability--0b581154-f9fc-5a0f-8ee8-f2c5bcb7895c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--d0c7fc6a-a19f-5eef-bfaf-c4e4d61d0d76",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--6fddc03f-56a9-5c24-ac02-16018f301340",
+      "target_ref": "vulnerability--0b581154-f9fc-5a0f-8ee8-f2c5bcb7895c"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--1126c241-9da7-5b8d-9b82-163b1c54c868",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Container Base Image Backdooring — mitigation",
+      "description": "Apply hardening of all container infrastructures (see for example the \u003ci\u003eCIS-Benchmarks for Docker and Kubernetes\u003c/i\u003e and the \u003ci\u003eDocker Bench for Security\u003c/i\u003e). Use only trusted base images of the original vendors, verify digital signatures and apply image creation best practices. Also consider using Google's \u003ci\u003eDistroless\u003c/i\u003e base images or otherwise very small base images. Regularly execute container image scans with tools checking the layers for vulnerable components."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--f808e000-cbbe-53f0-b1b5-2654f4ac5daa",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--1126c241-9da7-5b8d-9b82-163b1c54c868",
+      "target_ref": "vulnerability--0b581154-f9fc-5a0f-8ee8-f2c5bcb7895c"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--edea52e8-243b-5a63-af56-0a55daab9f04",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eContainer Base Image Backdooring\u003c/b\u003e risk at \u003cb\u003eMinIO Object Storage\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--0eeb07e6-e78f-5144-938c-a184db5a344d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--2ac776b6-f772-5a2e-b57c-022d7146f8a6",
+      "target_ref": "vulnerability--edea52e8-243b-5a63-af56-0a55daab9f04"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--8772be5a-d706-5229-8684-4530e3285e70",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--d14a8d82-ce61-5344-abe4-5d71bb25404b",
+      "target_ref": "vulnerability--edea52e8-243b-5a63-af56-0a55daab9f04"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3d83e051-1284-5482-ab85-119a00595a99",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--6fddc03f-56a9-5c24-ac02-16018f301340",
+      "target_ref": "vulnerability--edea52e8-243b-5a63-af56-0a55daab9f04"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--116df49e-9edf-5310-b187-3c2121942826",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--1126c241-9da7-5b8d-9b82-163b1c54c868",
+      "target_ref": "vulnerability--edea52e8-243b-5a63-af56-0a55daab9f04"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--86ab312b-7c71-527a-9c78-ba0fd3c91320",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eContainer Base Image Backdooring\u003c/b\u003e risk at \u003cb\u003eNginx Reverse Proxy\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3a408e9e-61d1-5934-bbf2-7c414b2637be",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--9146c542-9cbb-5a22-b896-4cdb5fabf5e8",
+      "target_ref": "vulnerability--86ab312b-7c71-527a-9c78-ba0fd3c91320"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--725a9a64-0a11-552b-b219-cbeacde6c018",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--d14a8d82-ce61-5344-abe4-5d71bb25404b",
+      "target_ref": "vulnerability--86ab312b-7c71-527a-9c78-ba0fd3c91320"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--cff2636f-7e56-53aa-8805-24d9e527d7d8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--6fddc03f-56a9-5c24-ac02-16018f301340",
+      "target_ref": "vulnerability--86ab312b-7c71-527a-9c78-ba0fd3c91320"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--8a08e3a0-96cd-5ce2-baa5-7481e54e61cb",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--1126c241-9da7-5b8d-9b82-163b1c54c868",
+      "target_ref": "vulnerability--86ab312b-7c71-527a-9c78-ba0fd3c91320"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--ceadaaea-e2a5-5c0f-93bc-22195dbc87b5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eContainer Base Image Backdooring\u003c/b\u003e risk at \u003cb\u003ePostgreSQL Database\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--91a0ef59-e025-582d-aa19-d2503c1287fd",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--d214b3b2-98ed-5190-a85e-109e46da8256",
+      "target_ref": "vulnerability--ceadaaea-e2a5-5c0f-93bc-22195dbc87b5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--44c9dba3-b004-5582-a6a2-3eea84fc8e49",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--d14a8d82-ce61-5344-abe4-5d71bb25404b",
+      "target_ref": "vulnerability--ceadaaea-e2a5-5c0f-93bc-22195dbc87b5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--18201481-0c2f-531b-8eb6-1a9dd22e20ba",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--6fddc03f-56a9-5c24-ac02-16018f301340",
+      "target_ref": "vulnerability--ceadaaea-e2a5-5c0f-93bc-22195dbc87b5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--72bf3dd3-b5e5-55ce-9314-aaa2db48e9ef",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--1126c241-9da7-5b8d-9b82-163b1c54c868",
+      "target_ref": "vulnerability--ceadaaea-e2a5-5c0f-93bc-22195dbc87b5"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--350435b2-1d26-5c12-8832-bfd1b1339d6c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eContainer Base Image Backdooring\u003c/b\u003e risk at \u003cb\u003eNote RAG Pipeline\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--bbd2b9d8-8e4d-5b0f-b1af-c36852f9ee39",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--650b6213-127d-51d1-b4a7-6dfd3a85d75c",
+      "target_ref": "vulnerability--350435b2-1d26-5c12-8832-bfd1b1339d6c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--535aa029-415f-5510-971a-643ccb90bacc",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--d14a8d82-ce61-5344-abe4-5d71bb25404b",
+      "target_ref": "vulnerability--350435b2-1d26-5c12-8832-bfd1b1339d6c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--9a785466-d4c9-5d56-ad79-ca4ee15f9d6f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--6fddc03f-56a9-5c24-ac02-16018f301340",
+      "target_ref": "vulnerability--350435b2-1d26-5c12-8832-bfd1b1339d6c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c000bbda-42dd-5681-9a98-8f371cd63f97",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--1126c241-9da7-5b8d-9b82-163b1c54c868",
+      "target_ref": "vulnerability--350435b2-1d26-5c12-8832-bfd1b1339d6c"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--f1714dea-955e-5878-840c-73b3190713b8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eContainer Base Image Backdooring\u003c/b\u003e risk at \u003cb\u003eRedis Cache\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--d421052d-8ebe-566d-939b-36cf76012359",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--ac1c1a49-130c-59f5-a691-86129a2bdb15",
+      "target_ref": "vulnerability--f1714dea-955e-5878-840c-73b3190713b8"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--44cdfba2-3701-59a4-a3cc-c16e360b96e4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--d14a8d82-ce61-5344-abe4-5d71bb25404b",
+      "target_ref": "vulnerability--f1714dea-955e-5878-840c-73b3190713b8"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--175b1224-178b-5cba-8830-1f1368400072",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--6fddc03f-56a9-5c24-ac02-16018f301340",
+      "target_ref": "vulnerability--f1714dea-955e-5878-840c-73b3190713b8"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--5524d08d-ad47-57bd-8492-2203096cd99d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--1126c241-9da7-5b8d-9b82-163b1c54c868",
+      "target_ref": "vulnerability--f1714dea-955e-5878-840c-73b3190713b8"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--bf137df7-d0a8-5129-8624-64f919cf5a91",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eContainer Base Image Backdooring\u003c/b\u003e risk at \u003cb\u003eVaultNote Vector Store\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--0695e367-206d-5b7c-9d78-d2233fe79bb1",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--f06a6f94-d5b0-5c6f-ad53-25f0f3c50398",
+      "target_ref": "vulnerability--bf137df7-d0a8-5129-8624-64f919cf5a91"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--5cda00c2-5acf-5c7d-b4bc-cd20262d8f4d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--d14a8d82-ce61-5344-abe4-5d71bb25404b",
+      "target_ref": "vulnerability--bf137df7-d0a8-5129-8624-64f919cf5a91"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--4d75bfdc-efe6-5786-a8a9-c6c074fedd71",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--6fddc03f-56a9-5c24-ac02-16018f301340",
+      "target_ref": "vulnerability--bf137df7-d0a8-5129-8624-64f919cf5a91"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--959d6e51-58f1-55c5-b80e-dd6ea5e74898",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--1126c241-9da7-5b8d-9b82-163b1c54c868",
+      "target_ref": "vulnerability--bf137df7-d0a8-5129-8624-64f919cf5a91"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--57249491-68b1-523b-b4fd-3cbca2e5f6b3",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eContainer Platform Escape\u003c/b\u003e risk at \u003cb\u003eECS Container Platform\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--b7fffed0-20b3-5bec-82ab-ef782bb0196b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--62048905-9a2a-533f-8c5d-f5e7c6fd945b",
+      "target_ref": "vulnerability--57249491-68b1-523b-b4fd-3cbca2e5f6b3"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--59f348cb-9ef6-5341-9b2e-325eadda7b79",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Escape to Host",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1611",
+          "url": "https://attack.mitre.org/techniques/T1611"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--fad7e4c4-1b67-5be9-aae3-638a36d9cb5e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--59f348cb-9ef6-5341-9b2e-325eadda7b79",
+      "target_ref": "vulnerability--57249491-68b1-523b-b4fd-3cbca2e5f6b3"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--f9a0ed4c-4227-54f8-98c3-927b7ee74c7d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Container Platform Escape — mitigation",
+      "description": "Apply hardening of all container infrastructures. \u003cp\u003eSee for example the \u003ci\u003eCIS-Benchmarks for Docker and Kubernetes\u003c/i\u003e as well as the \u003ci\u003eDocker Bench for Security\u003c/i\u003e ( \u003ca href=\"https://github.com/docker/docker-bench-security\"\u003ehttps://github.com/docker/docker-bench-security\u003c/a\u003e ) or \u003ci\u003eInSpec Checks for Docker and Kubernetes\u003c/i\u003e ( \u003ca href=\"https://github.com/dev-sec/cis-kubernetes-benchmark\"\u003ehttps://github.com/dev-sec/cis-docker-benchmark\u003c/a\u003e and \u003ca href=\"https://github.com/dev-sec/cis-kubernetes-benchmark\"\u003ehttps://github.com/dev-sec/cis-kubernetes-benchmark\u003c/a\u003e ). Use only trusted base images, verify digital signatures and apply image creation best practices. Also consider using Google's \u003cb\u003eDistroless\u003c/i\u003e base images or otherwise very small base images. Apply namespace isolation and nod affinity to separate pods from each other in terms of access and nodes the same style as you separate data."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--81a7d0fa-59b2-5879-a236-df193c2edc1f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--f9a0ed4c-4227-54f8-98c3-927b7ee74c7d",
+      "target_ref": "vulnerability--57249491-68b1-523b-b4fd-3cbca2e5f6b3"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--ab7d18ab-a5b6-540b-aba0-06860a8c6e58",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eDenial-of-Service\u003c/b\u003e risky access of \u003cb\u003eAPI Server\u003c/b\u003e by \u003cb\u003eBrowser SPA\u003c/b\u003e via \u003cb\u003eHTTPS to Nginx\u003c/b\u003e forwarded via \u003cb\u003eNginx Reverse Proxy\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-400",
+          "url": "https://cwe.mitre.org/data/definitions/400.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--fa19cc82-0124-5f34-bc2f-665a6456febe",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--ab7d18ab-a5b6-540b-aba0-06860a8c6e58"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--15983b63-d99e-55d9-9324-bf68f3de5563",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Endpoint Denial of Service",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1499",
+          "url": "https://attack.mitre.org/techniques/T1499"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e94a0f3f-a6ff-5cdb-ba71-7b9ee4158e84",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--15983b63-d99e-55d9-9324-bf68f3de5563",
+      "target_ref": "vulnerability--ab7d18ab-a5b6-540b-aba0-06860a8c6e58"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--bf96dfba-71d8-5dcb-a111-0813368f2777",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Flooding",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "external_id": "CAPEC-125",
+          "url": "https://capec.mitre.org/data/definitions/125.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--338384d8-16e2-5dd2-8978-11eb7ea719d0",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--bf96dfba-71d8-5dcb-a111-0813368f2777",
+      "target_ref": "vulnerability--ab7d18ab-a5b6-540b-aba0-06860a8c6e58"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--1faf7a99-a16d-50ae-8409-6fda5f3b0700",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "DoS-risky Access Across Trust-Boundary — mitigation",
+      "description": "Apply anti-DoS techniques like throttling and/or per-client load blocking with quotas. Also for maintenance access routes consider applying a VPN instead of public reachable interfaces. Generally applying redundancy on the targeted technical asset reduces the risk of DoS."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ab7d7276-4626-577c-9dd5-3866d25ccd35",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--1faf7a99-a16d-50ae-8409-6fda5f3b0700",
+      "target_ref": "vulnerability--ab7d18ab-a5b6-540b-aba0-06860a8c6e58"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--c3dfb3d6-843d-567f-b3ff-7a9e48b0a570",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eDenial-of-Service\u003c/b\u003e risky access of \u003cb\u003eNginx Reverse Proxy\u003c/b\u003e by \u003cb\u003eBrowser SPA\u003c/b\u003e via \u003cb\u003eHTTPS to Nginx\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-400",
+          "url": "https://cwe.mitre.org/data/definitions/400.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c8b1c56c-d47d-5a7c-9bee-460a180af7ce",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--9146c542-9cbb-5a22-b896-4cdb5fabf5e8",
+      "target_ref": "vulnerability--c3dfb3d6-843d-567f-b3ff-7a9e48b0a570"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--8c9a9759-ce08-5b37-97e9-573c0fcc37e4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--15983b63-d99e-55d9-9324-bf68f3de5563",
+      "target_ref": "vulnerability--c3dfb3d6-843d-567f-b3ff-7a9e48b0a570"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ede40afe-a588-525d-9de3-d9a6aca3242d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--bf96dfba-71d8-5dcb-a111-0813368f2777",
+      "target_ref": "vulnerability--c3dfb3d6-843d-567f-b3ff-7a9e48b0a570"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--23ebd569-0706-5fe4-acfd-afd0b91b1551",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--1faf7a99-a16d-50ae-8409-6fda5f3b0700",
+      "target_ref": "vulnerability--c3dfb3d6-843d-567f-b3ff-7a9e48b0a570"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--0e1cbd27-71d0-5628-a81b-bf95b43fccae",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eDenial-of-Service\u003c/b\u003e risky access of \u003cb\u003ePostgreSQL Database\u003c/b\u003e by \u003cb\u003eAPI Server\u003c/b\u003e via \u003cb\u003ePostgreSQL Connection\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-400",
+          "url": "https://cwe.mitre.org/data/definitions/400.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--58d12cd0-df93-56c4-b50b-9b1b28b45f6a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--d214b3b2-98ed-5190-a85e-109e46da8256",
+      "target_ref": "vulnerability--0e1cbd27-71d0-5628-a81b-bf95b43fccae"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--17f49702-fdcd-5fd4-bd83-fa2bf08038b7",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--15983b63-d99e-55d9-9324-bf68f3de5563",
+      "target_ref": "vulnerability--0e1cbd27-71d0-5628-a81b-bf95b43fccae"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--5cf7cf35-5594-526c-bce5-e376e26ef969",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--bf96dfba-71d8-5dcb-a111-0813368f2777",
+      "target_ref": "vulnerability--0e1cbd27-71d0-5628-a81b-bf95b43fccae"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--98c7a4f0-7a41-50e5-9020-0e7c1559e9fd",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--1faf7a99-a16d-50ae-8409-6fda5f3b0700",
+      "target_ref": "vulnerability--0e1cbd27-71d0-5628-a81b-bf95b43fccae"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--f10e4d1e-3088-5452-9261-944696280b75",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eExposed Default Credentials\u003c/b\u003e: \u003cb\u003eMinIO Object Storage\u003c/b\u003e is tagged as intentional-misconfiguration and stores confidential data",
+      "description": "Risk 'Asset Using Known Default or Hardcoded Credentials' has been flagged for technical asset 'minio-storage'",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1392",
+          "url": "https://cwe.mitre.org/data/definitions/1392.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--8a30d158-329b-5e10-bb4e-becf38e53551",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--2ac776b6-f772-5a2e-b57c-022d7146f8a6",
+      "target_ref": "vulnerability--f10e4d1e-3088-5452-9261-944696280b75"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--de70c912-f2cd-5897-a69b-bd02a5e9fb39",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Valid Accounts: Default Accounts",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1078.001",
+          "url": "https://attack.mitre.org/techniques/T1078/001"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--43ccbf80-7143-5afc-8f41-2a0db522e305",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--de70c912-f2cd-5897-a69b-bd02a5e9fb39",
+      "target_ref": "vulnerability--f10e4d1e-3088-5452-9261-944696280b75"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--2933c69f-8200-5e75-8038-7271495534a0",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Try Common or Default Usernames and Passwords",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "external_id": "CAPEC-70",
+          "url": "https://capec.mitre.org/data/definitions/70.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--2e01348e-d117-5414-b2cf-e51eee4db58f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2933c69f-8200-5e75-8038-7271495534a0",
+      "target_ref": "vulnerability--f10e4d1e-3088-5452-9261-944696280b75"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--db6e3391-8188-5e0a-af27-4696730827c0",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Asset Using Known Default or Hardcoded Credentials — mitigation",
+      "description": "Replace all default credentials with randomly generated secrets (minimum 32 chars). Store in a secrets manager (Vault, AWS Secrets Manager, etc.) rather than environment variables or compose files. Add credential rotation to the pre-deployment checklist.\n"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--da40720f-00b0-5a9b-bd67-a932d72c639a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--db6e3391-8188-5e0a-af27-4696730827c0",
+      "target_ref": "vulnerability--f10e4d1e-3088-5452-9261-944696280b75"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--59b36127-f29e-5208-b192-1307c4cc1b0b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eLateral Movement via Shared Runtime\u003c/b\u003e on \u003cb\u003eDocker Host\u003c/b\u003e: assets from 3 trust zones co-located"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--44b4cb60-1fcf-53a4-9142-b75b8f1c8696",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--9146c542-9cbb-5a22-b896-4cdb5fabf5e8",
+      "target_ref": "vulnerability--59b36127-f29e-5208-b192-1307c4cc1b0b"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e26451c2-381a-5681-88b3-9fe88c4d5e5a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Remote Services",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1021",
+          "url": "https://attack.mitre.org/techniques/T1021"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--0e9c101a-4ed9-50bb-a8c4-6efc2d8a06aa",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--e26451c2-381a-5681-88b3-9fe88c4d5e5a",
+      "target_ref": "vulnerability--59b36127-f29e-5208-b192-1307c4cc1b0b"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--09445e1e-32eb-5bf1-b099-e8a506c930db",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Lateral Movement via Shared Runtime — mitigation",
+      "description": "Separate assets from different trust zones onto dedicated runtimes (separate node pools, dedicated VMs, distinct container namespaces with NetworkPolicy). Apply seccomp/AppArmor profiles and disable privilege escalation."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--78f007e7-baa0-5513-8a2e-ee4a845c4018",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--09445e1e-32eb-5bf1-b099-e8a506c930db",
+      "target_ref": "vulnerability--59b36127-f29e-5208-b192-1307c4cc1b0b"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--4c150328-61b0-5260-8dbe-488f96358183",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Two-Factor Authentication\u003c/b\u003e covering communication link \u003cb\u003eHTTP to API Server\u003c/b\u003e from \u003cb\u003eBrowser SPA\u003c/b\u003e forwarded via \u003cb\u003eNginx Reverse Proxy\u003c/b\u003e to \u003cb\u003eAPI Server\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-308",
+          "url": "https://cwe.mitre.org/data/definitions/308.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--78789629-5842-5bd9-8ef7-ede0ce696397",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--4c150328-61b0-5260-8dbe-488f96358183"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--5817493e-ef12-5a84-adbd-e6ff66112ecd",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Valid Accounts",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1078",
+          "url": "https://attack.mitre.org/techniques/T1078"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--64b34cc5-02b6-51fa-9552-c39327ebdc91",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5817493e-ef12-5a84-adbd-e6ff66112ecd",
+      "target_ref": "vulnerability--4c150328-61b0-5260-8dbe-488f96358183"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--e495c720-b0e7-511c-aa50-ac161fdc3d5c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Authentication Bypass",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "external_id": "CAPEC-115",
+          "url": "https://capec.mitre.org/data/definitions/115.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--8f7d3254-69b9-56af-b2d9-0141721e7695",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--e495c720-b0e7-511c-aa50-ac161fdc3d5c",
+      "target_ref": "vulnerability--4c150328-61b0-5260-8dbe-488f96358183"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--65d68b2d-07e5-5ea0-9d18-163e4fe4a38a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Missing Two-Factor Authentication (2FA) — mitigation",
+      "description": "Apply an authentication method to the technical asset protecting highly sensitive data via two-factor authentication for human users."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ccc2474e-e7fa-574c-b1d2-40acf6d2d699",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--65d68b2d-07e5-5ea0-9d18-163e4fe4a38a",
+      "target_ref": "vulnerability--4c150328-61b0-5260-8dbe-488f96358183"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--92d92308-82bd-5d0e-9819-8bf1c6b449c5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Authentication\u003c/b\u003e covering communication link \u003cb\u003eRoute to ECS API\u003c/b\u003e from \u003cb\u003eAWS API Gateway\u003c/b\u003e to \u003cb\u003eAPI Server\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-306",
+          "url": "https://cwe.mitre.org/data/definitions/306.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--85cab780-7a83-5dfb-8bf7-c9acd0b18b27",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--92d92308-82bd-5d0e-9819-8bf1c6b449c5"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Exploit Public-Facing Application",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1190",
+          "url": "https://attack.mitre.org/techniques/T1190"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--46157a81-3758-53b4-a19d-acbf52f2e771",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--92d92308-82bd-5d0e-9819-8bf1c6b449c5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--5c8835a2-64f5-5900-8947-3b5fb66146d2",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5817493e-ef12-5a84-adbd-e6ff66112ecd",
+      "target_ref": "vulnerability--92d92308-82bd-5d0e-9819-8bf1c6b449c5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--26bbdaa8-8389-54b2-82e0-fd4a8f461be6",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--e495c720-b0e7-511c-aa50-ac161fdc3d5c",
+      "target_ref": "vulnerability--92d92308-82bd-5d0e-9819-8bf1c6b449c5"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--e2f3b7c3-3c56-5c2b-9aae-d032cc469c8b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Missing Authentication — mitigation",
+      "description": "Apply an authentication method to the technical asset. To protect highly sensitive data consider the use of two-factor authentication for human users."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--f5b8c1d0-5ba6-5a18-a466-db38c904100e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--e2f3b7c3-3c56-5c2b-9aae-d032cc469c8b",
+      "target_ref": "vulnerability--92d92308-82bd-5d0e-9819-8bf1c6b449c5"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--37bbc4a1-5023-5cb2-bda9-07ce17c3a812",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Authentication\u003c/b\u003e covering communication link \u003cb\u003eHTTP to API Server\u003c/b\u003e from \u003cb\u003eNginx Reverse Proxy\u003c/b\u003e to \u003cb\u003eAPI Server\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-306",
+          "url": "https://cwe.mitre.org/data/definitions/306.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--22618a05-0920-5c44-8876-3e2a89ff76cf",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--37bbc4a1-5023-5cb2-bda9-07ce17c3a812"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--419a9ae3-4118-550c-a68e-4a6a49a6e39e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--37bbc4a1-5023-5cb2-bda9-07ce17c3a812"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3a0344e6-bf8a-59f7-8f1d-82ee0679a879",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5817493e-ef12-5a84-adbd-e6ff66112ecd",
+      "target_ref": "vulnerability--37bbc4a1-5023-5cb2-bda9-07ce17c3a812"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--b9a65790-8898-5587-af80-1e8480561185",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--e495c720-b0e7-511c-aa50-ac161fdc3d5c",
+      "target_ref": "vulnerability--37bbc4a1-5023-5cb2-bda9-07ce17c3a812"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e7d0d81e-2b92-5c77-a313-8e0f6d28a79f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--e2f3b7c3-3c56-5c2b-9aae-d032cc469c8b",
+      "target_ref": "vulnerability--37bbc4a1-5023-5cb2-bda9-07ce17c3a812"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--7fbef85c-1ef7-50d6-829b-ad1c2ac364b5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Build Infrastructure\u003c/b\u003e in the threat model (referencing asset \u003cb\u003eAPI Server\u003c/b\u003e as an example)",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1127",
+          "url": "https://cwe.mitre.org/data/definitions/1127.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--b0d696f5-73ab-5569-a9c2-b58230077e1d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--7fbef85c-1ef7-50d6-829b-ad1c2ac364b5"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--a2bbc1a7-f032-500e-86d9-c38716e236cb",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Supply Chain Compromise",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1195",
+          "url": "https://attack.mitre.org/techniques/T1195"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--393e3ce6-cd67-541a-818b-cbc0afe2ddcb",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--a2bbc1a7-f032-500e-86d9-c38716e236cb",
+      "target_ref": "vulnerability--7fbef85c-1ef7-50d6-829b-ad1c2ac364b5"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--ad73b69c-d1e7-5fb2-afb9-5e9670ca23a8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Missing Build Infrastructure — mitigation",
+      "description": "Include the build infrastructure in the model."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--aeef3158-3ad8-5b0c-a7d5-3f01518cd7ba",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--ad73b69c-d1e7-5fb2-afb9-5e9670ca23a8",
+      "target_ref": "vulnerability--7fbef85c-1ef7-50d6-829b-ad1c2ac364b5"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--14cfd08e-2c43-523d-9675-19ff10ac336b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Cloud Hardening (AWS)\u003c/b\u003e risk at \u003cb\u003eAWS Cloud\u003c/b\u003e: \u003cu\u003eCIS Benchmark for AWS\u003c/u\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--339ae7d8-d927-5729-b290-a1bd5400da01",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--14cfd08e-2c43-523d-9675-19ff10ac336b"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--9980e27d-108d-566c-990e-d78fb8b4eece",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Missing Cloud Hardening — mitigation",
+      "description": "Apply hardening of all cloud components and services, taking special care to follow the individual risk descriptions (which depend on the cloud provider tags in the model). \u003cbr\u003e\u003cbr\u003eFor \u003cb\u003eAmazon Web Services (AWS)\u003c/b\u003e: Follow the \u003ci\u003eCIS Benchmark for Amazon Web Services\u003c/i\u003e (see also the automated checks of cloud audit tools like \u003ci\u003e\"PacBot\", \"CloudSploit\", \"CloudMapper\", \"ScoutSuite\", or \"Prowler AWS CIS Benchmark Tool\"\u003c/i\u003e). \u003cbr\u003eFor EC2 and other servers running Amazon Linux, follow the \u003ci\u003eCIS Benchmark for Amazon Linux\u003c/i\u003e and switch to IMDSv2. \u003cbr\u003eFor S3 buckets follow the \u003ci\u003eSecurity Best Practices for Amazon S3\u003c/i\u003e at \u003ca href=\"https://docs.aws.amazon.com/AmazonS3/latest/dev/security-best-practices.html\"\u003ehttps://docs.aws.amazon.com/AmazonS3/latest/dev/security-best-practices.html\u003c/a\u003e to avoid accidental leakage. \u003cbr\u003eAlso take a look at some of these tools: \u003ca href=\"https://github.com/toniblyx/my-arsenal-of-aws-security-tools\"\u003ehttps://github.com/toniblyx/my-arsenal-of-aws-security-tools\u003c/a\u003e \u003cbr\u003e\u003cbr\u003eFor \u003cb\u003eMicrosoft Azure\u003c/b\u003e: Follow the \u003ci\u003eCIS Benchmark for Microsoft Azure\u003c/i\u003e (see also the automated checks of cloud audit tools like \u003ci\u003e\"CloudSploit\" or \"ScoutSuite\"\u003c/i\u003e).\u003cbr\u003e\u003cbr\u003eFor \u003cb\u003eGoogle Cloud Platform\u003c/b\u003e: Follow the \u003ci\u003eCIS Benchmark for Google Cloud Computing Platform\u003c/i\u003e (see also the automated checks of cloud audit tools like \u003ci\u003e\"CloudSploit\" or \"ScoutSuite\"\u003c/i\u003e). \u003cbr\u003e\u003cbr\u003eFor \u003cb\u003eOracle Cloud Platform\u003c/b\u003e: Follow the hardening best practices (see also the automated checks of cloud audit tools like \u003ci\u003e\"CloudSploit\"\u003c/i\u003e)."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--7cbf229d-3a86-574e-8e9d-f3b7be1279d4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--9980e27d-108d-566c-990e-d78fb8b4eece",
+      "target_ref": "vulnerability--14cfd08e-2c43-523d-9675-19ff10ac336b"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--03b88726-5d4d-557b-ba7e-c33fab8d3fc8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Cloud Hardening\u003c/b\u003e risk at \u003cb\u003eDocker Host\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c9a8860e-9629-53a6-86f3-692f571a63f3",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--03b88726-5d4d-557b-ba7e-c33fab8d3fc8"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--4672f37b-41a9-5f2d-a51b-80a7331b1f5e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--9980e27d-108d-566c-990e-d78fb8b4eece",
+      "target_ref": "vulnerability--03b88726-5d4d-557b-ba7e-c33fab8d3fc8"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--1f0e4c63-5225-5582-b99c-6d63c5a65d45",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Cloud Hardening\u003c/b\u003e risk at \u003cb\u003eExternal CI/CD\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--4f41bd84-c8a8-56a2-b01f-e6f12bceb9ea",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--1f0e4c63-5225-5582-b99c-6d63c5a65d45"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ad75e0b0-f43e-567e-a584-d3ab0ae326e2",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--9980e27d-108d-566c-990e-d78fb8b4eece",
+      "target_ref": "vulnerability--1f0e4c63-5225-5582-b99c-6d63c5a65d45"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--0dbab908-bd59-5716-bce2-299fa092af25",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Content-Security-Policy\u003c/b\u003e: \u003cb\u003eNginx Reverse Proxy\u003c/b\u003e serves browser clients handling auth tokens without a verified CSP header",
+      "description": "Risk 'Missing Content-Security-Policy Header on Web Entry Point' has been flagged for technical asset 'nginx-proxy' because out_of_scope of technical asset 'nginx-proxy' is \u003cnil\u003e, and attributes.reverse-proxy of technologies of technical asset 'nginx-proxy' is true, and data_assets.user-credentials.has_pii of threat model is true",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-693",
+          "url": "https://cwe.mitre.org/data/definitions/693.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--9de5b3a2-bdaa-592d-a904-3e21af7b7ba5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--9146c542-9cbb-5a22-b896-4cdb5fabf5e8",
+      "target_ref": "vulnerability--0dbab908-bd59-5716-bce2-299fa092af25"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--cf1a76cc-6ce8-5456-b1b4-ec8b2b50db4e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Missing Content-Security-Policy Header on Web Entry Point — mitigation",
+      "description": "Add a strict Content-Security-Policy header to all responses served to browser clients. At minimum use: default-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'. Combine with Subresource Integrity (SRI) for external scripts and avoid inline event handlers. Once deployed, tag the asset has-csp to suppress this finding.\n"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--4bb091e0-59ab-511d-8819-6d29021f096d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--cf1a76cc-6ce8-5456-b1b4-ec8b2b50db4e",
+      "target_ref": "vulnerability--0dbab908-bd59-5716-bce2-299fa092af25"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--a9839605-c230-5f07-ad84-89a7f2759ad9",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Hardening\u003c/b\u003e risk at \u003cb\u003eECS Container Platform\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-16",
+          "url": "https://cwe.mitre.org/data/definitions/16.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a0d002a3-3e43-5470-be7c-bfe44ef7e646",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--62048905-9a2a-533f-8c5d-f5e7c6fd945b",
+      "target_ref": "vulnerability--a9839605-c230-5f07-ad84-89a7f2759ad9"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--7f4674e0-b46a-5ee0-8b6d-2cf0d5df78bf",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--a9839605-c230-5f07-ad84-89a7f2759ad9"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--db58b2e9-1f17-575d-bf75-606a368d94bf",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Missing Hardening — mitigation",
+      "description": "Try to apply all hardening best practices (like CIS benchmarks, OWASP recommendations, vendor recommendations, DevSec Hardening Framework, DBSAT for Oracle databases, and others)."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--776b9c41-ef74-55f9-a905-e504a4257764",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--db58b2e9-1f17-575d-bf75-606a368d94bf",
+      "target_ref": "vulnerability--a9839605-c230-5f07-ad84-89a7f2759ad9"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--c396067b-1c08-57d4-b9c6-3410800de5d2",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Hardening\u003c/b\u003e risk at \u003cb\u003ePostgreSQL Database\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-16",
+          "url": "https://cwe.mitre.org/data/definitions/16.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--71dcd929-80fc-5daf-9625-a7bdc80e4566",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--d214b3b2-98ed-5190-a85e-109e46da8256",
+      "target_ref": "vulnerability--c396067b-1c08-57d4-b9c6-3410800de5d2"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--5b57073c-165c-5ac0-8d5d-1fca3d6ed9ce",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--c396067b-1c08-57d4-b9c6-3410800de5d2"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--b998eb77-00a9-53ff-ae83-41ce75cbee6a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--db58b2e9-1f17-575d-bf75-606a368d94bf",
+      "target_ref": "vulnerability--c396067b-1c08-57d4-b9c6-3410800de5d2"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--6cc0b742-f1ce-5479-a623-2b8cd2468415",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Hardening\u003c/b\u003e risk at \u003cb\u003eAWS RDS PostgreSQL\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-16",
+          "url": "https://cwe.mitre.org/data/definitions/16.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a091c1a4-d7e0-588e-bed5-164fd4d7188f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--ac1cfdf5-bda7-58af-816e-62df1af69b02",
+      "target_ref": "vulnerability--6cc0b742-f1ce-5479-a623-2b8cd2468415"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--730c755f-700c-5907-9c11-3875ff6d6a85",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--6cc0b742-f1ce-5479-a623-2b8cd2468415"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--012114bc-aa69-5653-8dc0-75904b75b78e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--db58b2e9-1f17-575d-bf75-606a368d94bf",
+      "target_ref": "vulnerability--6cc0b742-f1ce-5479-a623-2b8cd2468415"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--2e8308b8-1f2f-5014-bdc8-10bd2fef2b99",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Identity Store\u003c/b\u003e in the threat model (referencing asset \u003cb\u003eNginx Reverse Proxy\u003c/b\u003e as an example)",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-287",
+          "url": "https://cwe.mitre.org/data/definitions/287.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--df5ca7a9-0b8e-5505-b3b9-8c83786f8449",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--9146c542-9cbb-5a22-b896-4cdb5fabf5e8",
+      "target_ref": "vulnerability--2e8308b8-1f2f-5014-bdc8-10bd2fef2b99"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--9de55d70-e443-58e0-be7e-0b765a309e2c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5817493e-ef12-5a84-adbd-e6ff66112ecd",
+      "target_ref": "vulnerability--2e8308b8-1f2f-5014-bdc8-10bd2fef2b99"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--a134bc78-b29a-580b-9e8e-80c0d6324788",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Missing Identity Store — mitigation",
+      "description": "Include an identity store in the model if the application has a login."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--67c77c36-5377-5aa0-8698-31b95f66bb48",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--a134bc78-b29a-580b-9e8e-80c0d6324788",
+      "target_ref": "vulnerability--2e8308b8-1f2f-5014-bdc8-10bd2fef2b99"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--81b28636-9241-5081-93ea-96580c1a9307",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Vault (Secret Storage)\u003c/b\u003e in the threat model (referencing asset \u003cb\u003eAPI Server\u003c/b\u003e as an example)",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-522",
+          "url": "https://cwe.mitre.org/data/definitions/522.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--f1407e1e-ed99-5ea4-a0d0-1940942c898d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--81b28636-9241-5081-93ea-96580c1a9307"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ea549779-417a-5066-ada5-818a4d1a3abb",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--dc5e4f03-1094-5965-8de6-b9af854b1653",
+      "target_ref": "vulnerability--81b28636-9241-5081-93ea-96580c1a9307"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--96c2f109-74a1-524c-ae14-0156b13cba7c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5064a600-5182-52df-affb-9d8cbb139bba",
+      "target_ref": "vulnerability--81b28636-9241-5081-93ea-96580c1a9307"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--c45e12e2-6045-58e6-9ad6-64248648eb98",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Missing Vault (Secret Storage) — mitigation",
+      "description": "Consider using a Vault (Secret Storage) to securely store and access config secrets (like credentials, private keys, client certificates, etc.)."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--08a39b50-a145-55c2-8e66-6386ecce5a5f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--c45e12e2-6045-58e6-9ad6-64248648eb98",
+      "target_ref": "vulnerability--81b28636-9241-5081-93ea-96580c1a9307"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--afa82252-e5a4-5f07-aa52-ed88ab97c744",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMissing Web Application Firewall (WAF)\u003c/b\u003e risk at \u003cb\u003eAPI Server\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ba2b0c35-7fb0-54c7-87a0-4d9757dd165b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--afa82252-e5a4-5f07-aa52-ed88ab97c744"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--04de2caf-1801-5393-a008-0f71750cf6c1",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--afa82252-e5a4-5f07-aa52-ed88ab97c744"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--ca0cd946-68b2-55f4-b874-95b6daa68c03",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Missing Web Application Firewall (WAF) — mitigation",
+      "description": "Consider placing a Web Application Firewall (WAF) in front of the web-services and/or web-applications. For cloud environments many cloud providers offer pre-configured WAFs. Even reverse proxies can be enhances by a WAF component via ModSecurity plugins."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--485ff02c-47b1-5df6-8d92-a59bc9763d08",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--ca0cd946-68b2-55f4-b874-95b6daa68c03",
+      "target_ref": "vulnerability--afa82252-e5a4-5f07-aa52-ed88ab97c744"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--05753b79-136b-5efa-9aac-fa4ec56c23b7",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eMixed Targets on Shared Runtime\u003c/b\u003e named \u003cb\u003eDocker Host\u003c/b\u003e might enable attackers moving from one less valuable target to a more valuable one",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3bd5cc95-8c74-56c1-ac41-97fcb63074d5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--59f348cb-9ef6-5341-9b2e-325eadda7b79",
+      "target_ref": "vulnerability--05753b79-136b-5efa-9aac-fa4ec56c23b7"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--0e53e3b5-c732-526e-8094-b34fec19b11b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Mixed Targets on Shared Runtime — mitigation",
+      "description": "Use separate runtime environments for running different target components or apply similar separation styles to prevent load- or breach-related problems originating from one more attacker-facing asset impacts also the other more critical rated backend/datastore assets."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--6a754f30-e218-5614-a85b-7959a54c32d7",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--0e53e3b5-c732-526e-8094-b34fec19b11b",
+      "target_ref": "vulnerability--05753b79-136b-5efa-9aac-fa4ec56c23b7"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--36bd18d7-cf5b-5af3-b438-39538d063fa4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003ePath-Traversal\u003c/b\u003e risk at \u003cb\u003eAPI Server\u003c/b\u003e against filesystem \u003cb\u003eMinIO Object Storage\u003c/b\u003e via \u003cb\u003eMinIO File Storage\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-22",
+          "url": "https://cwe.mitre.org/data/definitions/22.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--0b103bbd-57c7-5459-a4ab-68a7f93de0ae",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--36bd18d7-cf5b-5af3-b438-39538d063fa4"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--f9020f0e-bbe3-57fa-9ab2-efe2387177a5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--36bd18d7-cf5b-5af3-b438-39538d063fa4"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--5d4f3482-da19-5c2a-9f5c-b4aebcbb7c04",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Data from Local System",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1005",
+          "url": "https://attack.mitre.org/techniques/T1005"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--8563721d-8a5c-5076-a649-f5025232b1f2",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5d4f3482-da19-5c2a-9f5c-b4aebcbb7c04",
+      "target_ref": "vulnerability--36bd18d7-cf5b-5af3-b438-39538d063fa4"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--93fb7341-2731-590a-8bcb-503301cfbbd6",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Path Traversal",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "external_id": "CAPEC-126",
+          "url": "https://capec.mitre.org/data/definitions/126.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--81dc841b-bfb0-5f55-a7ba-6dd243241d1f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--93fb7341-2731-590a-8bcb-503301cfbbd6",
+      "target_ref": "vulnerability--36bd18d7-cf5b-5af3-b438-39538d063fa4"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--31853515-3366-5e23-bf26-363d99a448d8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Path-Traversal — mitigation",
+      "description": "Before accessing the file cross-check that it resides in the expected folder and is of the expected type and filename/suffix. Try to use a mapping if possible instead of directly accessing by a filename which is (partly or fully) provided by the caller. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--fa88d8b0-fd47-5fce-84af-92cda6cd6add",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--31853515-3366-5e23-bf26-363d99a448d8",
+      "target_ref": "vulnerability--36bd18d7-cf5b-5af3-b438-39538d063fa4"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--cb944542-9ee8-59de-9e8b-e2f8dba8fa7d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003ePath-Traversal\u003c/b\u003e risk at \u003cb\u003eGitHub Actions Build Pipeline\u003c/b\u003e against filesystem \u003cb\u003eAWS ECR Container Registry\u003c/b\u003e via \u003cb\u003ePush Image to Registry\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-22",
+          "url": "https://cwe.mitre.org/data/definitions/22.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--fbaf197d-d256-505d-a299-50f85c690754",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--f4a1fcb0-b77a-5dce-90bd-47ff8f948de8",
+      "target_ref": "vulnerability--cb944542-9ee8-59de-9e8b-e2f8dba8fa7d"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--14cd96a3-003d-591a-ab52-2ca6c8eb9b35",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--cb944542-9ee8-59de-9e8b-e2f8dba8fa7d"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--44248240-5ca4-5eb0-8963-084524d60fb3",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5d4f3482-da19-5c2a-9f5c-b4aebcbb7c04",
+      "target_ref": "vulnerability--cb944542-9ee8-59de-9e8b-e2f8dba8fa7d"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--6b8ddf03-8bb8-5932-8304-073651e121c8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--93fb7341-2731-590a-8bcb-503301cfbbd6",
+      "target_ref": "vulnerability--cb944542-9ee8-59de-9e8b-e2f8dba8fa7d"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--5e96f0e7-f100-5f9f-b2cc-261656e5ebf9",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--31853515-3366-5e23-bf26-363d99a448d8",
+      "target_ref": "vulnerability--cb944542-9ee8-59de-9e8b-e2f8dba8fa7d"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--59b16a5a-0230-5dce-bc00-d9b52686151e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003ePath-Traversal\u003c/b\u003e risk at \u003cb\u003eECS Container Platform\u003c/b\u003e against filesystem \u003cb\u003eAWS ECR Container Registry\u003c/b\u003e via \u003cb\u003ePull Images from ECR\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-22",
+          "url": "https://cwe.mitre.org/data/definitions/22.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a2c2dd1f-2d0f-5b2b-b70b-c9864daf88bd",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--62048905-9a2a-533f-8c5d-f5e7c6fd945b",
+      "target_ref": "vulnerability--59b16a5a-0230-5dce-bc00-d9b52686151e"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3feedeba-4172-5af4-b81c-eba3b5d7f0c7",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--59b16a5a-0230-5dce-bc00-d9b52686151e"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c0ebd92b-27c1-5d42-a4d5-7bb22fad4278",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5d4f3482-da19-5c2a-9f5c-b4aebcbb7c04",
+      "target_ref": "vulnerability--59b16a5a-0230-5dce-bc00-d9b52686151e"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--34d79067-07b1-5140-9c59-e5926dd6e454",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--93fb7341-2731-590a-8bcb-503301cfbbd6",
+      "target_ref": "vulnerability--59b16a5a-0230-5dce-bc00-d9b52686151e"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--baa501ff-f5ee-5572-9a1b-70096c67784b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--31853515-3366-5e23-bf26-363d99a448d8",
+      "target_ref": "vulnerability--59b16a5a-0230-5dce-bc00-d9b52686151e"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--0f14919b-f3b0-515a-950e-bf0b1bb244f8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eServer-Side Request Forgery (SSRF)\u003c/b\u003e risk at \u003cb\u003eAPI Server\u003c/b\u003e server-side web-requesting the target \u003cb\u003eMinIO Object Storage\u003c/b\u003e via \u003cb\u003eMinIO File Storage\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-918",
+          "url": "https://cwe.mitre.org/data/definitions/918.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e9c4d46a-4f2b-5879-aa73-fda11f4c804e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--0f14919b-f3b0-515a-950e-bf0b1bb244f8"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c448eb3f-876b-5a27-8959-939ebddebeb3",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--0f14919b-f3b0-515a-950e-bf0b1bb244f8"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--4571731c-7278-51cb-8188-ff14864690ec",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Server Side Request Forgery",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "external_id": "CAPEC-664",
+          "url": "https://capec.mitre.org/data/definitions/664.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--80508bcd-b6ee-5777-86a1-63d6512fef74",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--4571731c-7278-51cb-8188-ff14864690ec",
+      "target_ref": "vulnerability--0f14919b-f3b0-515a-950e-bf0b1bb244f8"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--dc647c64-0da7-532e-ba69-113e9bd33437",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Server-Side Request Forgery (SSRF) — mitigation",
+      "description": "Try to avoid constructing the outgoing target URL with caller controllable values. Alternatively use a mapping (whitelist) when accessing outgoing URLs instead of creating them including caller controllable values. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ac62f839-e908-52db-8bd0-85bfebae50c4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--dc647c64-0da7-532e-ba69-113e9bd33437",
+      "target_ref": "vulnerability--0f14919b-f3b0-515a-950e-bf0b1bb244f8"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--fd9f80d3-bb11-5216-aed7-f0e363b01ed9",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eServer-Side Request Forgery (SSRF)\u003c/b\u003e risk at \u003cb\u003eGitHub Actions Build Pipeline\u003c/b\u003e server-side web-requesting the target \u003cb\u003eAWS ECR Container Registry\u003c/b\u003e via \u003cb\u003ePush Image to Registry\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-918",
+          "url": "https://cwe.mitre.org/data/definitions/918.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--5ec38175-4a45-53ef-8809-0f0a70f62c80",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--f4a1fcb0-b77a-5dce-90bd-47ff8f948de8",
+      "target_ref": "vulnerability--fd9f80d3-bb11-5216-aed7-f0e363b01ed9"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--72302f7e-8392-55f1-bb37-93e3b4e09457",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--fd9f80d3-bb11-5216-aed7-f0e363b01ed9"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--da0fe290-a909-555f-97fb-e36bfe0604cc",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--4571731c-7278-51cb-8188-ff14864690ec",
+      "target_ref": "vulnerability--fd9f80d3-bb11-5216-aed7-f0e363b01ed9"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1a76947b-ae35-52c8-b084-502b6324344e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--dc647c64-0da7-532e-ba69-113e9bd33437",
+      "target_ref": "vulnerability--fd9f80d3-bb11-5216-aed7-f0e363b01ed9"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--4e2147f0-3d32-5010-893f-e69468dcc5a8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eServer-Side Request Forgery (SSRF)\u003c/b\u003e risk at \u003cb\u003eECS Container Platform\u003c/b\u003e server-side web-requesting the target \u003cb\u003eAWS ECR Container Registry\u003c/b\u003e via \u003cb\u003ePull Images from ECR\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-918",
+          "url": "https://cwe.mitre.org/data/definitions/918.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3f0b4de3-edc4-56b3-9c5f-9ce34a2c1fe3",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--62048905-9a2a-533f-8c5d-f5e7c6fd945b",
+      "target_ref": "vulnerability--4e2147f0-3d32-5010-893f-e69468dcc5a8"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--4774b380-2d08-5957-9c56-13ddb5c6bcd6",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--4e2147f0-3d32-5010-893f-e69468dcc5a8"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1c91e52d-4bcc-5795-a69f-21a8ed9c8a15",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--4571731c-7278-51cb-8188-ff14864690ec",
+      "target_ref": "vulnerability--4e2147f0-3d32-5010-893f-e69468dcc5a8"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--2a00aff1-e650-51a3-88e9-0e71583c6b8b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--dc647c64-0da7-532e-ba69-113e9bd33437",
+      "target_ref": "vulnerability--4e2147f0-3d32-5010-893f-e69468dcc5a8"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--c3f2f1dd-bc0d-5c4a-b105-6229de1b37a0",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eServer-Side Request Forgery (SSRF)\u003c/b\u003e risk at \u003cb\u003eLambda Email Notifier\u003c/b\u003e server-side web-requesting the target \u003cb\u003eAWS SES\u003c/b\u003e via \u003cb\u003eSES Email Send\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-918",
+          "url": "https://cwe.mitre.org/data/definitions/918.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--5c286adc-4f7d-5329-9570-f80d4432ebb0",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--39aae63e-a959-5e39-9437-55b18fab94a5",
+      "target_ref": "vulnerability--c3f2f1dd-bc0d-5c4a-b105-6229de1b37a0"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--bde2e651-1ee7-59c6-900e-12b2683d6a45",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--c3f2f1dd-bc0d-5c4a-b105-6229de1b37a0"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--6b3041e0-8860-5b89-9a5a-f4c49fcbb692",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--4571731c-7278-51cb-8188-ff14864690ec",
+      "target_ref": "vulnerability--c3f2f1dd-bc0d-5c4a-b105-6229de1b37a0"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--fddb5a4a-c662-5941-bbab-c3d330903372",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--dc647c64-0da7-532e-ba69-113e9bd33437",
+      "target_ref": "vulnerability--c3f2f1dd-bc0d-5c4a-b105-6229de1b37a0"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--aa1b597c-3c7f-57df-bfb2-d6ab518484f4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eServer-Side Request Forgery (SSRF)\u003c/b\u003e risk at \u003cb\u003eLLM Note Summarizer\u003c/b\u003e server-side web-requesting the target \u003cb\u003eNote RAG Pipeline\u003c/b\u003e via \u003cb\u003eCall RAG Pipeline\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-918",
+          "url": "https://cwe.mitre.org/data/definitions/918.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1ee87d35-4722-52ba-adf7-d64edb22f839",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--4ef8fff1-2372-5230-b069-eb7c0e03c4ce",
+      "target_ref": "vulnerability--aa1b597c-3c7f-57df-bfb2-d6ab518484f4"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--11d6317c-3cfe-52d2-8182-b5b395323441",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--aa1b597c-3c7f-57df-bfb2-d6ab518484f4"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--36de14ba-f80e-57b9-afcf-b314997d35e7",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--4571731c-7278-51cb-8188-ff14864690ec",
+      "target_ref": "vulnerability--aa1b597c-3c7f-57df-bfb2-d6ab518484f4"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--15650cb2-f4da-5aeb-9833-9a5ca525dbd8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--dc647c64-0da7-532e-ba69-113e9bd33437",
+      "target_ref": "vulnerability--aa1b597c-3c7f-57df-bfb2-d6ab518484f4"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--68d4bca4-8675-5735-8723-75389bc1cb7b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eServer-Side Request Forgery (SSRF)\u003c/b\u003e risk at \u003cb\u003eLLM Note Summarizer\u003c/b\u003e server-side web-requesting the target \u003cb\u003eVaultNote Vector Store\u003c/b\u003e via \u003cb\u003eQuery Vector Store\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-918",
+          "url": "https://cwe.mitre.org/data/definitions/918.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a88ae911-e085-5e9e-a535-2e1c73a935b2",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--4ef8fff1-2372-5230-b069-eb7c0e03c4ce",
+      "target_ref": "vulnerability--68d4bca4-8675-5735-8723-75389bc1cb7b"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--70ecf1f0-b073-51e7-9bd7-1cc6e80c91c7",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--68d4bca4-8675-5735-8723-75389bc1cb7b"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--f66fb808-54bb-5e13-a60e-87e4230412d6",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--4571731c-7278-51cb-8188-ff14864690ec",
+      "target_ref": "vulnerability--68d4bca4-8675-5735-8723-75389bc1cb7b"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--2037fb67-0d74-56e5-ae0c-daf30d553834",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--dc647c64-0da7-532e-ba69-113e9bd33437",
+      "target_ref": "vulnerability--68d4bca4-8675-5735-8723-75389bc1cb7b"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--bd4cf236-bc9c-58d6-ad3f-85b2e0bf7a83",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eServer-Side Request Forgery (SSRF)\u003c/b\u003e risk at \u003cb\u003eNote RAG Pipeline\u003c/b\u003e server-side web-requesting the target \u003cb\u003eVaultNote Vector Store\u003c/b\u003e via \u003cb\u003eRetrieve from Vector Store\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-918",
+          "url": "https://cwe.mitre.org/data/definitions/918.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--33098987-46d2-5ca6-bd94-61b3b74bf15f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--650b6213-127d-51d1-b4a7-6dfd3a85d75c",
+      "target_ref": "vulnerability--bd4cf236-bc9c-58d6-ad3f-85b2e0bf7a83"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--9fa00453-8e5e-56d4-919f-9853651c0bff",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--bd4cf236-bc9c-58d6-ad3f-85b2e0bf7a83"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3713348a-44a8-5a56-b274-338e1623f578",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--4571731c-7278-51cb-8188-ff14864690ec",
+      "target_ref": "vulnerability--bd4cf236-bc9c-58d6-ad3f-85b2e0bf7a83"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--becc44a9-59cb-596c-b829-0504c830d43d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--dc647c64-0da7-532e-ba69-113e9bd33437",
+      "target_ref": "vulnerability--bd4cf236-bc9c-58d6-ad3f-85b2e0bf7a83"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--98558dd0-a57a-5d8e-8cc0-1f4e8862968c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eServer-Side Request Forgery (SSRF)\u003c/b\u003e risk at \u003cb\u003eVaultNote Source Repository\u003c/b\u003e server-side web-requesting the target \u003cb\u003eGitHub Actions Build Pipeline\u003c/b\u003e via \u003cb\u003ePush to Pipeline\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-918",
+          "url": "https://cwe.mitre.org/data/definitions/918.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--d1950151-8488-5cc5-8d11-77bdd7c687b2",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--a1314e57-83d9-5494-af25-2c39398c8026",
+      "target_ref": "vulnerability--98558dd0-a57a-5d8e-8cc0-1f4e8862968c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--5125192a-41b7-55a8-a4fb-317d1a92f219",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--98558dd0-a57a-5d8e-8cc0-1f4e8862968c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--abc2ae7f-09c0-5979-bbd0-cf79daaee33a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--4571731c-7278-51cb-8188-ff14864690ec",
+      "target_ref": "vulnerability--98558dd0-a57a-5d8e-8cc0-1f4e8862968c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--f3537ec0-1a15-57ca-b25d-71ccbe8a0587",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--dc647c64-0da7-532e-ba69-113e9bd33437",
+      "target_ref": "vulnerability--98558dd0-a57a-5d8e-8cc0-1f4e8862968c"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--50544a7e-9034-5d2b-91a5-0b88365ceae4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eSQL/NoSQL-Injection\u003c/b\u003e risk at \u003cb\u003eAPI Server\u003c/b\u003e against database \u003cb\u003ePostgreSQL Database\u003c/b\u003e via \u003cb\u003ePostgreSQL Connection\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-89",
+          "url": "https://cwe.mitre.org/data/definitions/89.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--17255817-5c63-52fa-91bc-78585245de3f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--50544a7e-9034-5d2b-91a5-0b88365ceae4"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e6eb846a-0680-5b6c-9272-2344fa5e1cd1",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--50544a7e-9034-5d2b-91a5-0b88365ceae4"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--1c9b29ef-9595-5561-9bfb-dcd5a24651dc",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "SQL Injection",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "external_id": "CAPEC-66",
+          "url": "https://capec.mitre.org/data/definitions/66.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e718981c-406f-5363-a945-93d5c28511e4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--1c9b29ef-9595-5561-9bfb-dcd5a24651dc",
+      "target_ref": "vulnerability--50544a7e-9034-5d2b-91a5-0b88365ceae4"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--04c3d846-c83c-5b98-9220-8a3154246e28",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Blind SQL Injection",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "external_id": "CAPEC-7",
+          "url": "https://capec.mitre.org/data/definitions/7.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--330c9bac-e2dc-53fc-a6e6-24223a490f82",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--04c3d846-c83c-5b98-9220-8a3154246e28",
+      "target_ref": "vulnerability--50544a7e-9034-5d2b-91a5-0b88365ceae4"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--cf81a641-9e5d-5ac7-abb4-566afb29f293",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "SQL/NoSQL-Injection — mitigation",
+      "description": "Try to use parameter binding to be safe from injection vulnerabilities. When a third-party product is used instead of custom developed software, check if the product applies the proper mitigation and ensure a reasonable patch-level."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--39fe92b7-1b4b-506f-b80f-04bc8286405b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--cf81a641-9e5d-5ac7-abb4-566afb29f293",
+      "target_ref": "vulnerability--50544a7e-9034-5d2b-91a5-0b88365ceae4"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--c6f04f57-3c31-5e0b-b4a5-7cf9c80940e5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eSQL/NoSQL-Injection\u003c/b\u003e risk at \u003cb\u003eAPI Server\u003c/b\u003e against database \u003cb\u003eRedis Cache\u003c/b\u003e via \u003cb\u003eRedis Session Store\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-89",
+          "url": "https://cwe.mitre.org/data/definitions/89.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a73a87cc-f9c3-5315-b1f4-51f75de14fd1",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--c6f04f57-3c31-5e0b-b4a5-7cf9c80940e5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--85aab528-90d7-5379-bda4-f520d6930126",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--c6f04f57-3c31-5e0b-b4a5-7cf9c80940e5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--7e7a62da-7905-5555-92ab-cc1f54ce9eef",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--1c9b29ef-9595-5561-9bfb-dcd5a24651dc",
+      "target_ref": "vulnerability--c6f04f57-3c31-5e0b-b4a5-7cf9c80940e5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--6bae00eb-8919-5e63-9e44-daa899fb91f1",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--04c3d846-c83c-5b98-9220-8a3154246e28",
+      "target_ref": "vulnerability--c6f04f57-3c31-5e0b-b4a5-7cf9c80940e5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--08d9f914-289a-5acc-9a9f-e9008299e76f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--cf81a641-9e5d-5ac7-abb4-566afb29f293",
+      "target_ref": "vulnerability--c6f04f57-3c31-5e0b-b4a5-7cf9c80940e5"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--584ca19e-d188-5c3b-b664-224d48cc9fa0",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnchecked Deployment\u003c/b\u003e risk at \u003cb\u003eGitHub Actions Build Pipeline\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1127",
+          "url": "https://cwe.mitre.org/data/definitions/1127.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--0bea6da9-f09b-5e64-8363-c4ffcaca5bb2",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--f4a1fcb0-b77a-5dce-90bd-47ff8f948de8",
+      "target_ref": "vulnerability--584ca19e-d188-5c3b-b664-224d48cc9fa0"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ae62a961-4cac-558a-a3e7-9835672f4d1d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--a2bbc1a7-f032-500e-86d9-c38716e236cb",
+      "target_ref": "vulnerability--584ca19e-d188-5c3b-b664-224d48cc9fa0"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--3e7cf83b-4a1e-5604-b09e-fc3ead5e57a8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Unchecked Deployment — mitigation",
+      "description": "Apply DevSecOps best-practices and use scanning tools to identify vulnerabilities in source- or byte-code,dependencies, container layers, and optionally also via dynamic scans against running test systems."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ed834da5-f275-5065-8628-2c9b68bc50ae",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--3e7cf83b-4a1e-5604-b09e-fc3ead5e57a8",
+      "target_ref": "vulnerability--584ca19e-d188-5c3b-b664-224d48cc9fa0"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--dfb364dd-6903-568e-8b58-1072226acca6",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnchecked Deployment\u003c/b\u003e risk at \u003cb\u003eAWS ECR Container Registry\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1127",
+          "url": "https://cwe.mitre.org/data/definitions/1127.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--30d9c3a6-3227-5471-baa3-685eccffff24",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--00db7b86-bbf2-520b-95da-fe013ba227cf",
+      "target_ref": "vulnerability--dfb364dd-6903-568e-8b58-1072226acca6"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1e681e6e-cc65-50c0-b68a-17bea0fc0e7e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--a2bbc1a7-f032-500e-86d9-c38716e236cb",
+      "target_ref": "vulnerability--dfb364dd-6903-568e-8b58-1072226acca6"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a2d1ae0e-a261-5c66-a4fc-c341a62d6a89",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--3e7cf83b-4a1e-5604-b09e-fc3ead5e57a8",
+      "target_ref": "vulnerability--dfb364dd-6903-568e-8b58-1072226acca6"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--bca5af0d-71e1-55b5-b870-624efc910ec5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnchecked Deployment\u003c/b\u003e risk at \u003cb\u003eVaultNote Source Repository\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1127",
+          "url": "https://cwe.mitre.org/data/definitions/1127.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--072154f2-2316-519d-9f41-d7c67f7f71fd",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--a1314e57-83d9-5494-af25-2c39398c8026",
+      "target_ref": "vulnerability--bca5af0d-71e1-55b5-b870-624efc910ec5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--dcd754a6-36e0-5975-9407-faffe4cb9619",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--a2bbc1a7-f032-500e-86d9-c38716e236cb",
+      "target_ref": "vulnerability--bca5af0d-71e1-55b5-b870-624efc910ec5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3021ca86-2ab7-5585-a343-4cbc4dfc2bab",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--3e7cf83b-4a1e-5604-b09e-fc3ead5e57a8",
+      "target_ref": "vulnerability--bca5af0d-71e1-55b5-b870-624efc910ec5"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--d057aac9-a652-50c1-a4bf-4e8ed9e5ac58",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnencrypted Technical Asset\u003c/b\u003e named \u003cb\u003eMinIO Object Storage\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-311",
+          "url": "https://cwe.mitre.org/data/definitions/311.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--67a242d7-bffb-5bb1-a532-152b4c417da2",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--2ac776b6-f772-5a2e-b57c-022d7146f8a6",
+      "target_ref": "vulnerability--d057aac9-a652-50c1-a4bf-4e8ed9e5ac58"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3ab2c2a1-dd26-5c7a-a3aa-7b2d2ff21c22",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5d4f3482-da19-5c2a-9f5c-b4aebcbb7c04",
+      "target_ref": "vulnerability--d057aac9-a652-50c1-a4bf-4e8ed9e5ac58"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--12537976-1fff-5b13-9215-55c73ae8b344",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5064a600-5182-52df-affb-9d8cbb139bba",
+      "target_ref": "vulnerability--d057aac9-a652-50c1-a4bf-4e8ed9e5ac58"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--80b102b1-4114-5b5f-b0d1-e31b1096e182",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Unencrypted Technical Assets — mitigation",
+      "description": "Apply encryption to the technical asset."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--8e169828-a8a7-5e88-a589-8fd1094cba21",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--80b102b1-4114-5b5f-b0d1-e31b1096e182",
+      "target_ref": "vulnerability--d057aac9-a652-50c1-a4bf-4e8ed9e5ac58"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--b5f7586f-ac51-5cfb-b891-50072eea92d8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnencrypted Technical Asset\u003c/b\u003e named \u003cb\u003ePostgreSQL Database\u003c/b\u003e missing end user individual encryption with data-with-end-user-individual-key",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-311",
+          "url": "https://cwe.mitre.org/data/definitions/311.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1f116048-d9c5-5513-859f-6981f62e8bd7",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--d214b3b2-98ed-5190-a85e-109e46da8256",
+      "target_ref": "vulnerability--b5f7586f-ac51-5cfb-b891-50072eea92d8"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c90344f9-d6cb-5de7-8e37-80d77bbd01a3",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5d4f3482-da19-5c2a-9f5c-b4aebcbb7c04",
+      "target_ref": "vulnerability--b5f7586f-ac51-5cfb-b891-50072eea92d8"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--cf747821-193d-55fe-84fd-4d3bad331a3a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5064a600-5182-52df-affb-9d8cbb139bba",
+      "target_ref": "vulnerability--b5f7586f-ac51-5cfb-b891-50072eea92d8"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--55fa4324-5169-5533-8ad6-b16dd9aa7e77",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--80b102b1-4114-5b5f-b0d1-e31b1096e182",
+      "target_ref": "vulnerability--b5f7586f-ac51-5cfb-b891-50072eea92d8"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--401c7926-8046-5222-9efb-689811590eb1",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnencrypted Technical Asset\u003c/b\u003e named \u003cb\u003eAWS RDS PostgreSQL\u003c/b\u003e missing end user individual encryption with data-with-end-user-individual-key",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-311",
+          "url": "https://cwe.mitre.org/data/definitions/311.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--257355c8-4240-51fd-8f9e-ee6b41d365fd",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--ac1cfdf5-bda7-58af-816e-62df1af69b02",
+      "target_ref": "vulnerability--401c7926-8046-5222-9efb-689811590eb1"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c31d67d7-27b1-56e0-8288-f7fa5d954f2d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5d4f3482-da19-5c2a-9f5c-b4aebcbb7c04",
+      "target_ref": "vulnerability--401c7926-8046-5222-9efb-689811590eb1"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--764becbb-a426-5b0a-8974-b354be51656d",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5064a600-5182-52df-affb-9d8cbb139bba",
+      "target_ref": "vulnerability--401c7926-8046-5222-9efb-689811590eb1"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c19256a5-8262-50f9-982f-78f6ab2352d2",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--80b102b1-4114-5b5f-b0d1-e31b1096e182",
+      "target_ref": "vulnerability--401c7926-8046-5222-9efb-689811590eb1"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--2b216a3b-3703-52ae-a3e8-69580f69eb25",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnencrypted Technical Asset\u003c/b\u003e named \u003cb\u003eRedis Cache\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-311",
+          "url": "https://cwe.mitre.org/data/definitions/311.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--727116e0-0060-52f1-a358-733635d3a48a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--ac1c1a49-130c-59f5-a691-86129a2bdb15",
+      "target_ref": "vulnerability--2b216a3b-3703-52ae-a3e8-69580f69eb25"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--63d3d389-33db-58dc-ad13-d344b3a80171",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5d4f3482-da19-5c2a-9f5c-b4aebcbb7c04",
+      "target_ref": "vulnerability--2b216a3b-3703-52ae-a3e8-69580f69eb25"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--b55d9c27-4eb9-5b3d-aef9-67cd30db9115",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5064a600-5182-52df-affb-9d8cbb139bba",
+      "target_ref": "vulnerability--2b216a3b-3703-52ae-a3e8-69580f69eb25"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--d95386cc-d612-5cf8-9152-621a8c69353a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--80b102b1-4114-5b5f-b0d1-e31b1096e182",
+      "target_ref": "vulnerability--2b216a3b-3703-52ae-a3e8-69580f69eb25"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--46d2bf75-0d86-5bd0-b7ad-c3ab954d5d2a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnencrypted Technical Asset\u003c/b\u003e named \u003cb\u003eAWS S3 Notes Bucket\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-311",
+          "url": "https://cwe.mitre.org/data/definitions/311.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e574205b-2a5e-5381-90c8-dbcea32bd330",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--c99f8947-adf8-5363-8cce-79ea835e5a43",
+      "target_ref": "vulnerability--46d2bf75-0d86-5bd0-b7ad-c3ab954d5d2a"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--675cad80-7687-57de-a8ae-f84492b02275",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5d4f3482-da19-5c2a-9f5c-b4aebcbb7c04",
+      "target_ref": "vulnerability--46d2bf75-0d86-5bd0-b7ad-c3ab954d5d2a"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--cd16ac37-f111-53b8-96bf-799a3dd45ab4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--5064a600-5182-52df-affb-9d8cbb139bba",
+      "target_ref": "vulnerability--46d2bf75-0d86-5bd0-b7ad-c3ab954d5d2a"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--965be161-8a98-535f-97e0-0bf6ad74d053",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--80b102b1-4114-5b5f-b0d1-e31b1096e182",
+      "target_ref": "vulnerability--46d2bf75-0d86-5bd0-b7ad-c3ab954d5d2a"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--63392d73-67db-550b-9d05-d19f5d891e98",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnencrypted Communication\u003c/b\u003e named \u003cb\u003eMinIO File Storage\u003c/b\u003e between \u003cb\u003eAPI Server\u003c/b\u003e and \u003cb\u003eMinIO Object Storage\u003c/b\u003e transferring authentication data (like credentials, token, session-id, etc.)",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-319",
+          "url": "https://cwe.mitre.org/data/definitions/319.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--fb5e991a-3315-514e-9a2f-0a3b871f9f19",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--63392d73-67db-550b-9d05-d19f5d891e98"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--05c9ee42-89b4-57c8-a0fc-7f031f825405",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Network Sniffing",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1040",
+          "url": "https://attack.mitre.org/techniques/T1040"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ce52ce95-f37b-5817-b851-a7cad9e10c4c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--05c9ee42-89b4-57c8-a0fc-7f031f825405",
+      "target_ref": "vulnerability--63392d73-67db-550b-9d05-d19f5d891e98"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--06c109c8-8e07-5b04-b7b8-bf0681292f05",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Adversary-in-the-Middle",
+      "external_references": [
+        {
+          "source_name": "mitre-attack",
+          "external_id": "T1557",
+          "url": "https://attack.mitre.org/techniques/T1557"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--096b3299-38a1-5059-9034-17c3fd9a4c31",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--06c109c8-8e07-5b04-b7b8-bf0681292f05",
+      "target_ref": "vulnerability--63392d73-67db-550b-9d05-d19f5d891e98"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--277ddf3a-753b-5124-ba4d-a3bcb465cd13",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Sniffing Attacks",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "external_id": "CAPEC-157",
+          "url": "https://capec.mitre.org/data/definitions/157.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--59e32ef0-5385-5183-8415-49c2719970c1",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--277ddf3a-753b-5124-ba4d-a3bcb465cd13",
+      "target_ref": "vulnerability--63392d73-67db-550b-9d05-d19f5d891e98"
+    },
+    {
+      "type": "attack-pattern",
+      "spec_version": "2.1",
+      "id": "attack-pattern--73ce6f77-bf77-5559-a8d9-416a77673da5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Interception",
+      "external_references": [
+        {
+          "source_name": "capec",
+          "external_id": "CAPEC-117",
+          "url": "https://capec.mitre.org/data/definitions/117.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ceba0dab-50c0-53c6-82d5-bfc24d62d389",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--73ce6f77-bf77-5559-a8d9-416a77673da5",
+      "target_ref": "vulnerability--63392d73-67db-550b-9d05-d19f5d891e98"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--7e05c56b-6a1a-5fc3-86a0-cb109238af31",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Unencrypted Communication — mitigation",
+      "description": "Apply transport layer encryption to the communication link."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--781880bd-925e-5ed4-b025-657198c39887",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--7e05c56b-6a1a-5fc3-86a0-cb109238af31",
+      "target_ref": "vulnerability--63392d73-67db-550b-9d05-d19f5d891e98"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--032d08bf-b3a4-5a2b-9235-e9560557b87c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnencrypted Communication\u003c/b\u003e named \u003cb\u003ePostgreSQL Connection\u003c/b\u003e between \u003cb\u003eAPI Server\u003c/b\u003e and \u003cb\u003ePostgreSQL Database\u003c/b\u003e transferring authentication data (like credentials, token, session-id, etc.)",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-319",
+          "url": "https://cwe.mitre.org/data/definitions/319.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--a862b03b-ffc1-5b1a-a619-80f1f2a8fdc8",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--032d08bf-b3a4-5a2b-9235-e9560557b87c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--8f5cd943-b3ba-5b59-b552-226485dfc20b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--05c9ee42-89b4-57c8-a0fc-7f031f825405",
+      "target_ref": "vulnerability--032d08bf-b3a4-5a2b-9235-e9560557b87c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--b13bd181-bd8d-5e0d-b2f4-2044b6ca45af",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--06c109c8-8e07-5b04-b7b8-bf0681292f05",
+      "target_ref": "vulnerability--032d08bf-b3a4-5a2b-9235-e9560557b87c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--976eefbd-9cc5-5d36-9927-e8dbe1da0101",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--277ddf3a-753b-5124-ba4d-a3bcb465cd13",
+      "target_ref": "vulnerability--032d08bf-b3a4-5a2b-9235-e9560557b87c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--906803bb-685a-5e51-840e-207a9c7fe6d1",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--73ce6f77-bf77-5559-a8d9-416a77673da5",
+      "target_ref": "vulnerability--032d08bf-b3a4-5a2b-9235-e9560557b87c"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1818fcf5-710b-5fa5-8504-6ed20d90c770",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--7e05c56b-6a1a-5fc3-86a0-cb109238af31",
+      "target_ref": "vulnerability--032d08bf-b3a4-5a2b-9235-e9560557b87c"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--56d3debb-cb10-5cb9-a81d-dc9fb04d95ed",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnencrypted Communication\u003c/b\u003e named \u003cb\u003eRedis Session Store\u003c/b\u003e between \u003cb\u003eAPI Server\u003c/b\u003e and \u003cb\u003eRedis Cache\u003c/b\u003e transferring authentication data (like credentials, token, session-id, etc.)",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-319",
+          "url": "https://cwe.mitre.org/data/definitions/319.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--dff3a1a9-e5b6-5441-a8ed-930108949d73",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--56d3debb-cb10-5cb9-a81d-dc9fb04d95ed"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ac68a617-6ce5-5c6f-a4bf-e9c77631b4d6",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--05c9ee42-89b4-57c8-a0fc-7f031f825405",
+      "target_ref": "vulnerability--56d3debb-cb10-5cb9-a81d-dc9fb04d95ed"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e08bd01e-c034-50fe-878d-4de0bf6089bd",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--06c109c8-8e07-5b04-b7b8-bf0681292f05",
+      "target_ref": "vulnerability--56d3debb-cb10-5cb9-a81d-dc9fb04d95ed"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--02c0ee3c-d909-5e4a-8112-8d8d07b67edd",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--277ddf3a-753b-5124-ba4d-a3bcb465cd13",
+      "target_ref": "vulnerability--56d3debb-cb10-5cb9-a81d-dc9fb04d95ed"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--994b230b-d0c6-5909-b216-95d90ceec829",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--73ce6f77-bf77-5559-a8d9-416a77673da5",
+      "target_ref": "vulnerability--56d3debb-cb10-5cb9-a81d-dc9fb04d95ed"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e56111cf-b9ec-57b5-90f5-43c678350a87",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--7e05c56b-6a1a-5fc3-86a0-cb109238af31",
+      "target_ref": "vulnerability--56d3debb-cb10-5cb9-a81d-dc9fb04d95ed"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--8a792030-2d1c-5d5d-a046-eb9c47ea44e1",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnencrypted Communication\u003c/b\u003e named \u003cb\u003eHTTP to API Server\u003c/b\u003e between \u003cb\u003eNginx Reverse Proxy\u003c/b\u003e and \u003cb\u003eAPI Server\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-319",
+          "url": "https://cwe.mitre.org/data/definitions/319.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--80c445a4-113e-5b75-b4e5-b45e5f8a8a93",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--9146c542-9cbb-5a22-b896-4cdb5fabf5e8",
+      "target_ref": "vulnerability--8a792030-2d1c-5d5d-a046-eb9c47ea44e1"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--4e89bb92-43dc-5d7f-86ee-bbf27425e5fb",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--05c9ee42-89b4-57c8-a0fc-7f031f825405",
+      "target_ref": "vulnerability--8a792030-2d1c-5d5d-a046-eb9c47ea44e1"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--6b6934c0-0063-5358-af59-8d807cabf891",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--06c109c8-8e07-5b04-b7b8-bf0681292f05",
+      "target_ref": "vulnerability--8a792030-2d1c-5d5d-a046-eb9c47ea44e1"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e0dcb06d-3a16-58bd-a1bc-a568258db06f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--277ddf3a-753b-5124-ba4d-a3bcb465cd13",
+      "target_ref": "vulnerability--8a792030-2d1c-5d5d-a046-eb9c47ea44e1"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--b5412cb4-58c3-5a84-81a1-56c16b9a503a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--73ce6f77-bf77-5559-a8d9-416a77673da5",
+      "target_ref": "vulnerability--8a792030-2d1c-5d5d-a046-eb9c47ea44e1"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3a78d607-3653-57f8-883e-0daa0218a5fb",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--7e05c56b-6a1a-5fc3-86a0-cb109238af31",
+      "target_ref": "vulnerability--8a792030-2d1c-5d5d-a046-eb9c47ea44e1"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--c5a4b4de-114a-5106-8fcb-4a75afb21546",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnguarded Access from Internet\u003c/b\u003e of \u003cb\u003eAPI Server\u003c/b\u003e by \u003cb\u003eAWS API Gateway\u003c/b\u003e via \u003cb\u003eRoute to ECS API\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-501",
+          "url": "https://cwe.mitre.org/data/definitions/501.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--4d5827f1-df33-5150-a34a-b125dbeb6dc0",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--cfa5893a-1d8c-56cf-8d00-d2f69690f4e7",
+      "target_ref": "vulnerability--c5a4b4de-114a-5106-8fcb-4a75afb21546"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--2f6833af-3ff0-557a-8ed9-573683e474a0",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--c5a4b4de-114a-5106-8fcb-4a75afb21546"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--09fb287d-44d5-57ea-a81b-8cde403cc634",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Unguarded Access From Internet — mitigation",
+      "description": "Encapsulate the asset behind a guarding service, application, or reverse-proxy. For admin maintenance a bastion-host should be used as a jump-server. For file transfer a store-and-forward-host should be used as an indirect file exchange platform."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--15ef195d-e606-52c3-b8a8-a475df3cdf48",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--09fb287d-44d5-57ea-a81b-8cde403cc634",
+      "target_ref": "vulnerability--c5a4b4de-114a-5106-8fcb-4a75afb21546"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--1338382e-db99-58b0-b262-58ce3f391f54",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnguarded Access from Internet\u003c/b\u003e of \u003cb\u003eGitHub Actions Build Pipeline\u003c/b\u003e by \u003cb\u003eVaultNote Source Repository\u003c/b\u003e via \u003cb\u003ePush to Pipeline\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-501",
+          "url": "https://cwe.mitre.org/data/definitions/501.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--17d17146-827d-53f3-83b9-fe90fe03da52",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--f4a1fcb0-b77a-5dce-90bd-47ff8f948de8",
+      "target_ref": "vulnerability--1338382e-db99-58b0-b262-58ce3f391f54"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e1f64d4c-150e-5519-9d28-56002d834c44",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--1338382e-db99-58b0-b262-58ce3f391f54"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--0ac2766d-c8a4-51a8-afaa-bc32e4c85fdc",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--09fb287d-44d5-57ea-a81b-8cde403cc634",
+      "target_ref": "vulnerability--1338382e-db99-58b0-b262-58ce3f391f54"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--fd9c3d19-e447-5b2a-862a-ef5d8064aece",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnguarded Access from Internet\u003c/b\u003e of \u003cb\u003eAWS ECR Container Registry\u003c/b\u003e by \u003cb\u003eGitHub Actions Build Pipeline\u003c/b\u003e via \u003cb\u003ePush Image to Registry\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-501",
+          "url": "https://cwe.mitre.org/data/definitions/501.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--1d9f08bd-a0c5-5ddd-a48c-463e5af24543",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--00db7b86-bbf2-520b-95da-fe013ba227cf",
+      "target_ref": "vulnerability--fd9c3d19-e447-5b2a-862a-ef5d8064aece"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e247abed-3a70-5707-b1a1-10a860d9ed05",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--fd9c3d19-e447-5b2a-862a-ef5d8064aece"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--9c8097ef-8568-5ca4-9e72-b16e7eac376a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--09fb287d-44d5-57ea-a81b-8cde403cc634",
+      "target_ref": "vulnerability--fd9c3d19-e447-5b2a-862a-ef5d8064aece"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--e20a8bf9-5bc6-501b-9c35-2a43a5e8be18",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnguarded Access from Internet\u003c/b\u003e of \u003cb\u003eNote RAG Pipeline\u003c/b\u003e by \u003cb\u003eLLM Note Summarizer\u003c/b\u003e via \u003cb\u003eCall RAG Pipeline\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-501",
+          "url": "https://cwe.mitre.org/data/definitions/501.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--7967b4f6-59a5-520e-91ac-dad245c97b0a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--650b6213-127d-51d1-b4a7-6dfd3a85d75c",
+      "target_ref": "vulnerability--e20a8bf9-5bc6-501b-9c35-2a43a5e8be18"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--3663a737-5b9f-5127-8aaa-0dc437c07651",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--e20a8bf9-5bc6-501b-9c35-2a43a5e8be18"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--780b3cc3-fa4c-5829-bcdd-7f50c317726e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--09fb287d-44d5-57ea-a81b-8cde403cc634",
+      "target_ref": "vulnerability--e20a8bf9-5bc6-501b-9c35-2a43a5e8be18"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--2e7cc437-b823-5a78-a48a-301929ebf666",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnguarded Access from Internet\u003c/b\u003e of \u003cb\u003eVaultNote Vector Store\u003c/b\u003e by \u003cb\u003eLLM Note Summarizer\u003c/b\u003e via \u003cb\u003eQuery Vector Store\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-501",
+          "url": "https://cwe.mitre.org/data/definitions/501.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--c178f429-3566-5da2-8771-dc56810c9371",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--f06a6f94-d5b0-5c6f-ad53-25f0f3c50398",
+      "target_ref": "vulnerability--2e7cc437-b823-5a78-a48a-301929ebf666"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--6722cb42-a4fc-5ce8-9658-568117963a0c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--2e7cc437-b823-5a78-a48a-301929ebf666"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--370cd5ab-3a22-57e0-9d50-f0366499a3c6",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--09fb287d-44d5-57ea-a81b-8cde403cc634",
+      "target_ref": "vulnerability--2e7cc437-b823-5a78-a48a-301929ebf666"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--70edb361-9f97-5302-8ee8-c3ad7f1d550a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnguarded Direct Datastore Access\u003c/b\u003e of \u003cb\u003eMinIO Object Storage\u003c/b\u003e by \u003cb\u003eAPI Server\u003c/b\u003e via \u003cb\u003eMinIO File Storage\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-501",
+          "url": "https://cwe.mitre.org/data/definitions/501.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--47276bb2-d6b3-552f-95da-88c24e46dcf4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--2ac776b6-f772-5a2e-b57c-022d7146f8a6",
+      "target_ref": "vulnerability--70edb361-9f97-5302-8ee8-c3ad7f1d550a"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--31f8e107-f93b-55df-bef6-7de5ff4dddf4",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--70edb361-9f97-5302-8ee8-c3ad7f1d550a"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--5f083980-651b-5b68-a54d-df955c5829fd",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Unguarded Direct Datastore Access — mitigation",
+      "description": "Encapsulate the datastore access behind a guarding service or application."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--6cf5b431-d125-5923-a0dc-694fa93911e9",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--5f083980-651b-5b68-a54d-df955c5829fd",
+      "target_ref": "vulnerability--70edb361-9f97-5302-8ee8-c3ad7f1d550a"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--ffbcff89-9b50-58bb-95c1-17394ee195f5",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnguarded Direct Datastore Access\u003c/b\u003e of \u003cb\u003ePostgreSQL Database\u003c/b\u003e by \u003cb\u003eAPI Server\u003c/b\u003e via \u003cb\u003ePostgreSQL Connection\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-501",
+          "url": "https://cwe.mitre.org/data/definitions/501.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--0e8a4d65-c571-5498-8b77-17edaa33ff5c",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--d214b3b2-98ed-5190-a85e-109e46da8256",
+      "target_ref": "vulnerability--ffbcff89-9b50-58bb-95c1-17394ee195f5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--33aa1953-380c-5fae-a0a7-d8361d0ede28",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--ffbcff89-9b50-58bb-95c1-17394ee195f5"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--ad5ddf5c-ba3b-528f-8b32-4a52b49e6a8a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--5f083980-651b-5b68-a54d-df955c5829fd",
+      "target_ref": "vulnerability--ffbcff89-9b50-58bb-95c1-17394ee195f5"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--baf24f6e-00c5-516c-b2b2-c3db0c0b787a",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnguarded Direct Datastore Access\u003c/b\u003e of \u003cb\u003eRedis Cache\u003c/b\u003e by \u003cb\u003eAPI Server\u003c/b\u003e via \u003cb\u003eRedis Session Store\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-501",
+          "url": "https://cwe.mitre.org/data/definitions/501.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--9d4cad26-db11-5800-8953-c35835b953d2",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--ac1c1a49-130c-59f5-a691-86129a2bdb15",
+      "target_ref": "vulnerability--baf24f6e-00c5-516c-b2b2-c3db0c0b787a"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--fdc1035b-0856-5a3f-8585-982d704d8f80",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "targets",
+      "source_ref": "attack-pattern--2e4d9280-53f9-5f98-9c79-9970f1080b3d",
+      "target_ref": "vulnerability--baf24f6e-00c5-516c-b2b2-c3db0c0b787a"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--27692840-617f-50aa-93f6-946d79dd1bb3",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--5f083980-651b-5b68-a54d-df955c5829fd",
+      "target_ref": "vulnerability--baf24f6e-00c5-516c-b2b2-c3db0c0b787a"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--41a2471d-df32-560f-b892-9ff40f994b9f",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnnecessary Technical Asset\u003c/b\u003e named \u003cb\u003eAWS RDS PostgreSQL\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--615be231-8ee1-50ea-8cc0-0101794a3430",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--ac1cfdf5-bda7-58af-816e-62df1af69b02",
+      "target_ref": "vulnerability--41a2471d-df32-560f-b892-9ff40f994b9f"
+    },
+    {
+      "type": "course-of-action",
+      "spec_version": "2.1",
+      "id": "course-of-action--9a1e75f5-00ce-5757-8d21-b1222d3d576b",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "Unnecessary Technical Asset — mitigation",
+      "description": "Try to avoid using technical assets that do not process or store anything."
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--d00f014e-e9a6-53d4-9f68-0fab049ccd03",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--9a1e75f5-00ce-5757-8d21-b1222d3d576b",
+      "target_ref": "vulnerability--41a2471d-df32-560f-b892-9ff40f994b9f"
+    },
+    {
+      "type": "vulnerability",
+      "spec_version": "2.1",
+      "id": "vulnerability--0eda8df7-63c5-52f0-9e4b-2180d5807a50",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "name": "\u003cb\u003eUnnecessary Technical Asset\u003c/b\u003e named \u003cb\u003eAWS S3 Notes Bucket\u003c/b\u003e",
+      "external_references": [
+        {
+          "source_name": "cwe",
+          "external_id": "CWE-1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--e563738a-3d3d-5098-a169-faeca6cf62bf",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "has",
+      "source_ref": "infrastructure--c99f8947-adf8-5363-8cce-79ea835e5a43",
+      "target_ref": "vulnerability--0eda8df7-63c5-52f0-9e4b-2180d5807a50"
+    },
+    {
+      "type": "relationship",
+      "spec_version": "2.1",
+      "id": "relationship--19b37458-fe1e-50f5-9a9f-8ae0f35ca54e",
+      "created": "2020-01-01T00:00:00.000Z",
+      "modified": "2020-01-01T00:00:00.000Z",
+      "relationship_type": "mitigates",
+      "source_ref": "course-of-action--9a1e75f5-00ce-5757-8d21-b1222d3d576b",
+      "target_ref": "vulnerability--0eda8df7-63c5-52f0-9e4b-2180d5807a50"
+    }
+  ]
+}
