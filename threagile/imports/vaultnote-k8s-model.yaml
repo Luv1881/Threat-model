@@ -1,0 +1,147 @@
+threagile_version: 1.0.0
+title: Imported from Kubernetes
+business_criticality: archive
+tags_available:
+    - credential
+    - run-as-non-root
+data_assets:
+    'Secret: vaultnote-secrets':
+        id: data-vaultnote-vaultnote-secrets-k8s
+        description: Kubernetes Secret (review for credentials / PII)
+        usage: business
+        tags:
+            - credential
+        quantity: very-few
+        confidentiality: strictly-confidential
+        integrity: critical
+        availability: critical
+technical_assets:
+    Ingress:
+        id: kubernetes-ingress-k8s
+        description: External traffic source generated from a Kubernetes Service/Ingress exposure
+        type: external-entity
+        usage: business
+        size: system
+        technology: client-system
+        internet: true
+        machine: physical
+        encryption: none
+        confidentiality: public
+        integrity: operational
+        availability: operational
+        communication_links:
+            Ingress to nginx:
+                target: vaultnote-nginx-k8s
+                description: Ingress to nginx
+                protocol: https
+                authentication: none
+                authorization: none
+                usage: business
+    Internet client (Service):
+        id: kubernetes-internet-client-k8s
+        description: External traffic source generated from a Kubernetes Service/Ingress exposure
+        type: external-entity
+        usage: business
+        size: system
+        technology: client-system
+        internet: true
+        machine: physical
+        encryption: none
+        confidentiality: public
+        integrity: operational
+        availability: operational
+        communication_links:
+            Service nginx (LoadBalancer):
+                target: vaultnote-nginx-k8s
+                description: Service nginx (LoadBalancer)
+                protocol: https
+                authentication: none
+                authorization: none
+                usage: business
+    'PVC: pgdata':
+        id: vaultnote-pgdata-pvc-k8s
+        description: Imported from Kubernetes PersistentVolumeClaim pgdata
+        type: datastore
+        usage: business
+        size: system
+        technology: block-storage
+        machine: container
+        encryption: none
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+    vaultnote/api:
+        id: vaultnote-api-k8s
+        description: 'Imported from Kubernetes Deployment "api" (images: vaultnote/api:latest)'
+        type: process
+        usage: business
+        size: system
+        technology: vault
+        machine: container
+        encryption: none
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+    vaultnote/minio:
+        id: vaultnote-minio-k8s
+        description: 'Imported from Kubernetes Deployment "minio" (images: minio/minio)'
+        type: datastore
+        usage: business
+        size: system
+        technology: file-server
+        machine: container
+        encryption: none
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+    vaultnote/nginx:
+        id: vaultnote-nginx-k8s
+        description: 'Imported from Kubernetes Deployment "nginx" (images: nginx:alpine)'
+        type: process
+        usage: business
+        size: system
+        technology: container-platform
+        tags:
+            - run-as-non-root
+        internet: true
+        machine: container
+        encryption: none
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+    vaultnote/postgres:
+        id: vaultnote-postgres-k8s
+        description: 'Imported from Kubernetes StatefulSet "postgres" (images: postgres:16-alpine)'
+        type: datastore
+        usage: business
+        size: system
+        technology: database
+        machine: container
+        encryption: none
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+    vaultnote/redis:
+        id: vaultnote-redis-k8s
+        description: 'Imported from Kubernetes Deployment "redis" (images: redis:7-alpine)'
+        type: datastore
+        usage: business
+        size: system
+        technology: database
+        machine: container
+        encryption: none
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+trust_boundaries:
+    'Namespace: vaultnote':
+        id: namespace-vaultnote-k8s
+        description: Kubernetes namespace vaultnote
+        type: network-policy-namespace-isolation
+        technical_assets_inside:
+            - vaultnote-api-k8s
+            - vaultnote-minio-k8s
+            - vaultnote-nginx-k8s
+            - vaultnote-pgdata-pvc-k8s
+            - vaultnote-postgres-k8s
+            - vaultnote-redis-k8s
