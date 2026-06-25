@@ -3,6 +3,7 @@ title: Imported from docker-compose
 business_criticality: archive
 tags_available:
     - credential
+    - review-mutable-image-tag
 data_assets:
     Application Secrets:
         id: application-secrets-compose
@@ -94,6 +95,8 @@ technical_assets:
         usage: business
         size: system
         technology: file-server
+        tags:
+            - review-mutable-image-tag
         machine: container
         encryption: none
         confidentiality: confidential
