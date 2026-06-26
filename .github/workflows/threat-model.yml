@@ -69,6 +69,12 @@ jobs:
           go-version-file: better-threagile/go.mod
           cache-dependency-path: better-threagile/go.sum
 
+      # Graphviz provides `dot`, needed to render the data-flow / data-asset
+      # diagrams that get embedded in the PDF report. Without it the PDF step
+      # fails and aborts the whole job (skipping the issue-sync below).
+      - name: Install Graphviz
+        run: sudo apt-get update && sudo apt-get install -y graphviz
+
       - name: Build better-threagile binary
         run: |
           cd better-threagile
@@ -81,7 +87,7 @@ jobs:
             --model      threagile/threagile.yaml \
             --output     threagile/output \
             --app-dir    better-threagile \
-            --background better-threagile/report/background.pdf \
+            --background report/template/background.pdf \
             --ignore-orphaned-risk-tracking
 
       # ── 4. Diff ──────────────────────────────────────────────────────────────
