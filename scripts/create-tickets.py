@@ -38,6 +38,7 @@ Usage:
 Environment:
   GITHUB_TOKEN  fallback if --token is not provided
 """
+import hashlib
 import json
 import re
 import sys
@@ -56,7 +57,23 @@ NVD_API_URL  = "https://services.nvd.nist.gov/rest/json/cves/2.0"
 KEV_FEED_URL = "https://www.cisa.gov/sites/default/files/feeds/known_exploited_vulnerabilities.json"
 EPSS_API_URL = "https://api.first.org/data/v1/epss"
 LABEL_PREFIX = "threagile:"
+GH_LABEL_MAX = 50  # GitHub rejects label names longer than this
 CVE_PATTERN  = re.compile(r'CVE-\d{4}-\d{4,7}', re.IGNORECASE)
+
+
+def tracking_label(syn_id):
+    """Build the GitHub tracking label for a finding's synthetic ID.
+
+    Synthetic IDs can be much longer than GitHub's 50-char label limit
+    (e.g. chained "a@b>c@d@e" identifiers), so long ones are truncated
+    and suffixed with a short content hash to stay unique and stable.
+    """
+    label = LABEL_PREFIX + syn_id
+    if len(label) <= GH_LABEL_MAX:
+        return label
+    digest = hashlib.sha1(syn_id.encode()).hexdigest()[:8]
+    avail = GH_LABEL_MAX - len(LABEL_PREFIX) - len(digest) - 1
+    return f"{LABEL_PREFIX}{syn_id[:avail]}-{digest}"
 
 # Base scores when no CVSS is available — midpoints of GitHub severity bands
 THREAGILE_BASE_SCORES = {
@@ -262,7 +279,7 @@ def ensure_label(repo, token, name, colour, description="", dry_run=False):
 def ensure_labels_for_risk(repo, token, syn_id, computed_sev, dry_run=False):
     """Ensure the tracking label, severity label, and base labels all exist."""
     colour = SEV_COLOURS.get(computed_sev, "ededed")
-    ensure_label(repo, token, LABEL_PREFIX + syn_id, "5319e7",
+    ensure_label(repo, token, tracking_label(syn_id), "5319e7",
                  f"Threagile finding: {syn_id}", dry_run)
     ensure_label(repo, token, f"severity: {computed_sev}", colour,
                  f"Security severity: {computed_sev}", dry_run)
@@ -295,7 +312,12 @@ def create_issue(repo, token, title, body, labels, dry_run=False):
         return None
     iss = _gh_request("POST", f"/repos/{repo}/issues", token,
                       {"title": title, "body": body, "labels": labels})
-    return iss["number"]
+    # Issue was created (no HTTPError raised); issue number may still be
+    # absent/unparseable in the response — don't fail the sync over it.
+    try:
+        return iss["number"]
+    except (KeyError, TypeError):
+        return None
 
 
 def close_issue(repo, token, number, dry_run=False):
@@ -585,7 +607,7 @@ def sync(args):
 
     for risk in risks:
         syn_id = risk.get("synthetic_id", "unknown")
-        label  = LABEL_PREFIX + syn_id
+        label  = tracking_label(syn_id)
         intel  = build_intel(risk)
         csev   = intel["severity"]
         title  = (
@@ -637,9 +659,13 @@ def sync(args):
         else:
             skipped += 1
 
-    # Close issues for findings no longer present
+    # Close issues for findings no longer present.
+    # Long synthetic IDs are truncated+hashed in their tracking label, so the
+    # syn_id can't be recovered by stripping the prefix — build a reverse map
+    # from every known (current + mitigated) syn_id instead.
+    label_to_syn = {tracking_label(sid): sid for sid in set(current_by_syn) | mitigated_ids}
     for lbl, iss in existing.items():
-        syn_id = lbl[len(LABEL_PREFIX):]
+        syn_id = label_to_syn.get(lbl, lbl[len(LABEL_PREFIX):])
         if syn_id not in current_by_syn and syn_id not in mitigated_ids:
             if iss["state"] == "open":
                 try:
