@@ -2,18 +2,24 @@
   {
     "severity": "info",
     "asset": "Application Network",
+    "file": "feature_api.yaml",
+    "line": 182,
     "message": "trust boundary contains only one (or zero) technical assets — verify this is intentional",
     "fix": "trust boundaries usually group 2+ assets; consider merging or removing if redundant"
   },
   {
     "severity": "info",
     "asset": "DMZ",
+    "file": "feature_frontend.yaml",
+    "line": 167,
     "message": "trust boundary contains only one (or zero) technical assets — verify this is intentional",
     "fix": "trust boundaries usually group 2+ assets; consider merging or removing if redundant"
   },
   {
     "severity": "info",
     "asset": "Internet",
+    "file": "feature_frontend.yaml",
+    "line": 156,
     "message": "trust boundary contains only one (or zero) technical assets — verify this is intentional",
     "fix": "trust boundaries usually group 2+ assets; consider merging or removing if redundant"
   },
