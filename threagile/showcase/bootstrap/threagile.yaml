@@ -1,0 +1,154 @@
+title: Bootstrapped threat model
+business_criticality: archive
+tags_available:
+    - credential
+    - review-mutable-image-tag
+data_assets:
+    Application Secrets:
+        id: application-secrets-compose
+        description: Secret-like environment variables (passwords/tokens/keys) found in compose services. Review and move to a secret store.
+        usage: business
+        tags:
+            - credential
+        quantity: very-few
+        confidentiality: strictly-confidential
+        integrity: critical
+        availability: important
+technical_assets:
+    Internet client:
+        id: external-internet-client-compose
+        description: External traffic source generated from host-published compose ports
+        type: external-entity
+        usage: business
+        size: system
+        technology: client-system
+        internet: true
+        machine: physical
+        encryption: none
+        confidentiality: public
+        integrity: operational
+        availability: operational
+        communication_links:
+            Published ports → nginx:
+                target: nginx-compose
+                description: Host-published docker-compose ports
+                protocol: https
+                authentication: none
+                authorization: none
+                usage: business
+    api:
+        id: api-compose
+        description: Imported from docker-compose service api (locally built)
+        type: process
+        usage: business
+        size: system
+        technology: web-server
+        machine: container
+        encryption: none
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+        custom_developed_parts: true
+        data_assets_processed:
+            - application-secrets-compose
+        communication_links:
+            api → db:
+                target: db-compose
+                description: depends_on db
+                protocol: https
+                authentication: none
+                authorization: none
+                usage: business
+            api → minio:
+                target: minio-compose
+                description: depends_on minio
+                protocol: https
+                authentication: none
+                authorization: none
+                usage: business
+            api → redis:
+                target: redis-compose
+                description: depends_on redis
+                protocol: https
+                authentication: none
+                authorization: none
+                usage: business
+    db:
+        id: db-compose
+        description: 'Imported from docker-compose service db (image: postgres:16-alpine)'
+        type: datastore
+        usage: business
+        size: system
+        technology: database
+        machine: container
+        encryption: none
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+        data_assets_processed:
+            - application-secrets-compose
+    minio:
+        id: minio-compose
+        description: 'Imported from docker-compose service minio (image: minio/minio)'
+        type: datastore
+        usage: business
+        size: system
+        technology: file-server
+        tags:
+            - review-mutable-image-tag
+        machine: container
+        encryption: none
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+        data_assets_processed:
+            - application-secrets-compose
+    nginx:
+        id: nginx-compose
+        description: 'Imported from docker-compose service nginx (image: nginx:alpine)'
+        type: process
+        usage: business
+        size: system
+        technology: reverse-proxy
+        internet: true
+        machine: container
+        encryption: none
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+        communication_links:
+            nginx → api:
+                target: api-compose
+                description: depends_on api
+                protocol: https
+                authentication: none
+                authorization: none
+                usage: business
+    redis:
+        id: redis-compose
+        description: 'Imported from docker-compose service redis (image: redis:7-alpine)'
+        type: datastore
+        usage: business
+        size: system
+        technology: database
+        machine: container
+        encryption: none
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+trust_boundaries:
+    'Network: backend-net':
+        id: network-backend-net-compose
+        description: docker-compose network backend-net
+        type: network-cloud-security-group
+        technical_assets_inside:
+            - api-compose
+            - db-compose
+            - minio-compose
+            - redis-compose
+    'Network: frontend-net':
+        id: network-frontend-net-compose
+        description: docker-compose network frontend-net
+        type: network-virtual-lan
+        technical_assets_inside:
+            - nginx-compose

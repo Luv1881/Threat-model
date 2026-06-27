@@ -177,6 +177,36 @@ jobs:
               });
             }
 
+      # ── 5b. Aggregate findings across the fork's cross-cutting rule packs ─────
+      # The default analysis is STRIDE only, so findings from the fork-added
+      # cloud-native / supply-chain / ai-ml packs never became tickets. Re-run
+      # the model through each pack (each one supersets STRIDE) and merge the
+      # results, de-duplicated by synthetic id, into all-risks.json — the
+      # complete set the issue sync should track.
+      - name: Aggregate findings across rule packs (for issue sync)
+        if: >
+          github.event_name == 'workflow_dispatch' ||
+          (github.event_name == 'push' && github.ref == 'refs/heads/main')
+        run: |
+          for pack in cloud-native supply-chain ai-ml; do
+            mkdir -p "threagile/output/packs/$pack"
+            better-threagile/bin/threagile analyze-model \
+              --model      threagile/threagile.yaml \
+              --output     "threagile/output/packs/$pack" \
+              --app-dir    better-threagile \
+              --rule-pack  "$pack" \
+              --ignore-orphaned-risk-tracking \
+              --skip-report-pdf --skip-report-adoc \
+              --skip-data-flow-diagram --skip-data-asset-diagram \
+              --skip-risks-excel --skip-tags-excel
+          done
+          python3 scripts/merge-risks.py \
+            threagile/output/all-risks.json \
+            threagile/output/risks.json \
+            threagile/output/packs/cloud-native/risks.json \
+            threagile/output/packs/supply-chain/risks.json \
+            threagile/output/packs/ai-ml/risks.json
+
       # ── 6. Full sync: create / close / reopen GitHub Issues ──────────────────
       # Syncs issues on push to main and on manual workflow_dispatch runs.
       # Skipped on pull_request events (those only get the diff comment).
@@ -186,7 +216,7 @@ jobs:
           (github.event_name == 'push' && github.ref == 'refs/heads/main')
         run: |
           python3 scripts/create-tickets.py \
-            --risks        threagile/output/risks.json \
+            --risks        threagile/output/all-risks.json \
             --assets       threagile/output/technical-assets.json \
             --min-severity medium \
             --repo         "${{ github.repository }}" \

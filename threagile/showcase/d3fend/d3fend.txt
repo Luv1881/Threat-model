@@ -1,0 +1,31 @@
+D3FEND defensive recommendations: 9 countermeasure(s)
+
+  D3-EAL    Executable Allowlisting  (10 finding(s))
+            addresses: code-backdooring, container-baseimage-backdooring
+            https://d3fend.mitre.org/technique/d3f:ExecutableAllowlisting/
+  D3-ITF    Inbound Traffic Filtering  (8 finding(s))
+            addresses: dos-risky-access-across-trust-boundary, missing-hardening, missing-waf, unguarded-access-from-internet
+            https://d3fend.mitre.org/technique/d3f:InboundTrafficFiltering/
+  D3-FE     File Encryption  (5 finding(s))
+            addresses: unencrypted-asset
+            https://d3fend.mitre.org/technique/d3f:FileEncryption/
+  D3-ET     Encrypted Tunnels  (4 finding(s))
+            addresses: unencrypted-communication
+            https://d3fend.mitre.org/technique/d3f:EncryptedTunnels/
+  D3-MA     Message Analysis  (4 finding(s))
+            addresses: missing-waf, path-traversal
+            https://d3fend.mitre.org/technique/d3f:MessageAnalysis/
+  D3-MENCR  Message Encryption  (4 finding(s))
+            addresses: unencrypted-communication
+            https://d3fend.mitre.org/technique/d3f:MessageEncryption/
+  D3-MFA    Multi-factor Authentication  (4 finding(s))
+            addresses: exposed-default-credentials, missing-authentication, missing-authentication-second-factor
+            https://d3fend.mitre.org/technique/d3f:Multi-factorAuthentication/
+  D3-NTA    Network Traffic Analysis  (4 finding(s))
+            addresses: dos-risky-access-across-trust-boundary, unguarded-access-from-internet
+            https://d3fend.mitre.org/technique/d3f:NetworkTrafficAnalysis/
+  D3-SPP    Strong Password Policy  (3 finding(s))
+            addresses: exposed-default-credentials, missing-authentication
+            https://d3fend.mitre.org/technique/d3f:StrongPasswordPolicy/
+
+Note: 8 finding category/categories have no D3FEND mapping: [accidental-secret-leak container-platform-escape lateral-movement-shared-runtime missing-cloud-hardening missing-csp-header missing-vault mixed-targets-on-shared-runtime unchecked-deployment]

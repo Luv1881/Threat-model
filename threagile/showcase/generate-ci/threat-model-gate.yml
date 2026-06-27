@@ -1,0 +1,79 @@
+name: Threat-model Gate
+
+on:
+  pull_request:
+    paths:
+      - 'threagile/threagile.yaml'
+      - 'policy.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run threat-model gate
+        id: gate
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/app/work" \
+            threagile/threagile:latest \
+            gate \
+            --model "/app/work/threagile/threagile.yaml" \
+            --policy "/app/work/policy.yaml" \
+            --format markdown \
+            --output /app/work/gate-report.md
+        continue-on-error: true
+
+      - name: Generate scorecard
+        # Adds the health score + the top findings-to-fix to the PR comment so the
+        # review is actionable, not just pass/fail. Best-effort.
+        continue-on-error: true
+        run: |
+          docker run --rm \
+            -v "${{ github.workspace }}:/app/work" \
+            threagile/threagile:latest \
+            summary \
+            --model "/app/work/threagile/threagile.yaml" \
+            --format markdown \
+            --output /app/work/summary.md
+
+      - name: Post scorecard + gate report as PR comment
+        # Best-effort: fork PRs run with a read-only token, so commenting may 403.
+        # Never let that fail the run — the gate step below owns pass/fail.
+        if: github.event_name == 'pull_request'
+        continue-on-error: true
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body = '';
+            if (fs.existsSync('summary.md')) {
+              body += fs.readFileSync('summary.md', 'utf8') + '\n\n---\n\n';
+            }
+            if (fs.existsSync('gate-report.md')) {
+              body += fs.readFileSync('gate-report.md', 'utf8');
+            }
+            if (body === '') {
+              core.warning('no scorecard or gate report produced.');
+              return;
+            }
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body,
+            });
+
+      - name: Fail if the gate failed
+        if: steps.gate.outcome != 'success'
+        run: |
+          echo "::error title=Threat-model gate failed::Policy violations — see the gate report (PR comment on pull requests, otherwise the job log artifact)."
+          cat gate-report.md 2>/dev/null || true
+          exit 1

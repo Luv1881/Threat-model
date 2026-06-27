@@ -1,0 +1,132 @@
+{
+  "name": "Threagile: VaultNote Threat Model",
+  "versions": {
+    "attack": "16",
+    "navigator": "4.9.1",
+    "layer": "4.5"
+  },
+  "domain": "enterprise-attack",
+  "description": "ATT\u0026CK techniques derived from Threagile risk findings. Score = number of findings; color = highest severity.",
+  "techniques": [
+    {
+      "techniqueID": "T1005",
+      "score": 8,
+      "color": "#ff8c00",
+      "comment": "Data from Local System — 8 finding(s) (max severity elevated) from: path-traversal, unencrypted-asset",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1021",
+      "score": 1,
+      "color": "#ff8c00",
+      "comment": "Remote Services — 1 finding(s) (max severity elevated) from: lateral-movement-shared-runtime",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1040",
+      "score": 4,
+      "color": "#ff8c00",
+      "comment": "Network Sniffing — 4 finding(s) (max severity elevated) from: unencrypted-communication",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1078",
+      "score": 3,
+      "color": "#ff8c00",
+      "comment": "Valid Accounts — 3 finding(s) (max severity elevated) from: missing-authentication, missing-authentication-second-factor",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1078.001",
+      "score": 1,
+      "color": "#e60000",
+      "comment": "Valid Accounts: Default Accounts — 1 finding(s) (max severity high) from: exposed-default-credentials",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1190",
+      "score": 13,
+      "color": "#ff8c00",
+      "comment": "Exploit Public-Facing Application — 13 finding(s) (max severity elevated) from: missing-authentication, missing-cloud-hardening, missing-hardening, missing-waf, path-traversal, unguarded-access-from-internet",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1195",
+      "score": 3,
+      "color": "#ffd966",
+      "comment": "Supply Chain Compromise — 3 finding(s) (max severity medium) from: unchecked-deployment",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1195.002",
+      "score": 10,
+      "color": "#ffd966",
+      "comment": "Supply Chain Compromise: Compromise Software Supply Chain — 10 finding(s) (max severity medium) from: code-backdooring, container-baseimage-backdooring",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1499",
+      "score": 3,
+      "color": "#ffd966",
+      "comment": "Endpoint Denial of Service — 3 finding(s) (max severity low) from: dos-risky-access-across-trust-boundary",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1552",
+      "score": 2,
+      "color": "#ffd966",
+      "comment": "Unsecured Credentials — 2 finding(s) (max severity medium) from: accidental-secret-leak, missing-vault",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1552.001",
+      "score": 1,
+      "color": "#ffd966",
+      "comment": "Unsecured Credentials: Credentials In Files — 1 finding(s) (max severity medium) from: accidental-secret-leak",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1554",
+      "score": 3,
+      "color": "#ffd966",
+      "comment": "Compromise Host Software Binary — 3 finding(s) (max severity medium) from: code-backdooring",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1557",
+      "score": 4,
+      "color": "#ff8c00",
+      "comment": "Adversary-in-the-Middle — 4 finding(s) (max severity elevated) from: unencrypted-communication",
+      "enabled": true
+    },
+    {
+      "techniqueID": "T1611",
+      "score": 2,
+      "color": "#ffd966",
+      "comment": "Escape to Host — 2 finding(s) (max severity medium) from: container-platform-escape, mixed-targets-on-shared-runtime",
+      "enabled": true
+    }
+  ],
+  "gradient": {
+    "colors": [
+      "#ffe766",
+      "#ff6666"
+    ],
+    "minValue": 0,
+    "maxValue": 13
+  },
+  "legendItems": [
+    {
+      "label": "Critical/High",
+      "color": "#e60000"
+    },
+    {
+      "label": "Elevated",
+      "color": "#ff8c00"
+    },
+    {
+      "label": "Medium/Low",
+      "color": "#ffd966"
+    }
+  ]
+}

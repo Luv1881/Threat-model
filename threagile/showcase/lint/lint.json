@@ -1,0 +1,50 @@
+[
+  {
+    "severity": "info",
+    "asset": "Application Network",
+    "message": "trust boundary contains only one (or zero) technical assets — verify this is intentional",
+    "fix": "trust boundaries usually group 2+ assets; consider merging or removing if redundant"
+  },
+  {
+    "severity": "info",
+    "asset": "DMZ",
+    "message": "trust boundary contains only one (or zero) technical assets — verify this is intentional",
+    "fix": "trust boundaries usually group 2+ assets; consider merging or removing if redundant"
+  },
+  {
+    "severity": "info",
+    "asset": "Internet",
+    "message": "trust boundary contains only one (or zero) technical assets — verify this is intentional",
+    "fix": "trust boundaries usually group 2+ assets; consider merging or removing if redundant"
+  },
+  {
+    "severity": "warning",
+    "asset": "aws-api-gateway",
+    "message": "internet-exposed asset has no entry_point_type declared",
+    "fix": "declare entry_point_type: api|web_ui|cli|file_upload|webhook|cron for PASTA analysis"
+  },
+  {
+    "severity": "warning",
+    "asset": "aws-ses",
+    "message": "internet-exposed asset has no entry_point_type declared",
+    "fix": "declare entry_point_type: api|web_ui|cli|file_upload|webhook|cron for PASTA analysis"
+  },
+  {
+    "severity": "warning",
+    "asset": "build-pipeline",
+    "message": "internet-exposed asset has no entry_point_type declared",
+    "fix": "declare entry_point_type: api|web_ui|cli|file_upload|webhook|cron for PASTA analysis"
+  },
+  {
+    "severity": "warning",
+    "asset": "container-registry",
+    "message": "internet-exposed asset has no entry_point_type declared",
+    "fix": "declare entry_point_type: api|web_ui|cli|file_upload|webhook|cron for PASTA analysis"
+  },
+  {
+    "severity": "warning",
+    "asset": "source-repo",
+    "message": "internet-exposed asset has no entry_point_type declared",
+    "fix": "declare entry_point_type: api|web_ui|cli|file_upload|webhook|cron for PASTA analysis"
+  }
+]

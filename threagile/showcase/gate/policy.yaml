@@ -1,0 +1,18 @@
+# VaultNote CI gate policy. See better-threagile/docs/gate.md.
+#
+# Run (from this directory):
+#   ../../better-threagile/bin/threagile --ignore-orphaned-risk-tracking gate \
+#     --model threagile.yaml --policy gate-policy.yaml
+#
+# VaultNote is a deliberately-vulnerable training app whose findings are fully
+# triaged in feature_risk_review.yaml (0 unchecked). The gate therefore enforces
+# that this stays true and that the dated acceptances on the intentional
+# misconfigurations have not silently expired.
+name: "VaultNote security gate"
+
+# Every Elevated+ finding must carry a tracking decision (not be left unchecked).
+require_tracking_at_or_above: elevated
+
+# Intentional misconfigurations are accepted with accepted_until dates — fail the
+# build once any of those acceptances lapses so they must be re-confirmed.
+fail_on_expired_acceptance: true
