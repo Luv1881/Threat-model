@@ -23,9 +23,10 @@ on:
 
 # ── Permissions ───────────────────────────────────────────────────────────────
 permissions:
-  contents: write      # commit updated baseline on main
-  issues: write        # auto-create tickets for critical risks
-  pull-requests: write # post risk-diff comment on PRs
+  contents: write        # commit updated baseline on main
+  issues: write          # auto-create tickets for critical risks
+  pull-requests: write   # post risk-diff comment on PRs
+  security-events: write # upload risk + model-hygiene SARIF to code scanning
 
 jobs:
   threat-model-analysis:
@@ -89,6 +90,34 @@ jobs:
             --app-dir    better-threagile \
             --background report/template/background.pdf \
             --ignore-orphaned-risk-tracking
+
+      # ── 3b. Code-scanning SARIF (risks + model hygiene) ──────────────────────
+      # analyze-model already wrote risks.sarif; also produce a model-hygiene
+      # SARIF from `lint` (stable rule IDs + file:line) and upload both so they
+      # show up under the repo's Security → Code scanning tab. continue-on-error
+      # so a repo without code scanning enabled still completes the pipeline.
+      - name: Generate model-hygiene SARIF (lint)
+        run: |
+          better-threagile/bin/threagile lint \
+            --model threagile/threagile.yaml \
+            --ignore-orphaned-risk-tracking \
+            --format sarif > threagile/output/lint.sarif
+
+      - name: Upload risk SARIF to code scanning
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: threagile/output/risks.sarif
+          category: threagile-risks
+
+      - name: Upload model-hygiene SARIF to code scanning
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: threagile/output/lint.sarif
+          category: threagile-lint
 
       # ── 4. Diff ──────────────────────────────────────────────────────────────
       - name: Diff risk output
