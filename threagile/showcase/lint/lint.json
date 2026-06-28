@@ -1,6 +1,7 @@
 [
   {
     "severity": "info",
+    "rule": "trust-boundary-too-few-assets",
     "asset": "Application Network",
     "file": "feature_api.yaml",
     "line": 182,
@@ -9,6 +10,7 @@
   },
   {
     "severity": "info",
+    "rule": "trust-boundary-too-few-assets",
     "asset": "DMZ",
     "file": "feature_frontend.yaml",
     "line": 167,
@@ -17,6 +19,7 @@
   },
   {
     "severity": "info",
+    "rule": "trust-boundary-too-few-assets",
     "asset": "Internet",
     "file": "feature_frontend.yaml",
     "line": 156,
@@ -25,31 +28,46 @@
   },
   {
     "severity": "warning",
+    "rule": "internet-asset-no-entry-point-type",
     "asset": "aws-api-gateway",
+    "file": "feature_cloud_services.yaml",
+    "line": 11,
     "message": "internet-exposed asset has no entry_point_type declared",
     "fix": "declare entry_point_type: api|web_ui|cli|file_upload|webhook|cron for PASTA analysis"
   },
   {
     "severity": "warning",
+    "rule": "internet-asset-no-entry-point-type",
     "asset": "aws-ses",
+    "file": "feature_cloud_services.yaml",
+    "line": 287,
     "message": "internet-exposed asset has no entry_point_type declared",
     "fix": "declare entry_point_type: api|web_ui|cli|file_upload|webhook|cron for PASTA analysis"
   },
   {
     "severity": "warning",
+    "rule": "internet-asset-no-entry-point-type",
     "asset": "build-pipeline",
+    "file": "feature_cicd.yaml",
+    "line": 72,
     "message": "internet-exposed asset has no entry_point_type declared",
     "fix": "declare entry_point_type: api|web_ui|cli|file_upload|webhook|cron for PASTA analysis"
   },
   {
     "severity": "warning",
+    "rule": "internet-asset-no-entry-point-type",
     "asset": "container-registry",
+    "file": "feature_cicd.yaml",
+    "line": 133,
     "message": "internet-exposed asset has no entry_point_type declared",
     "fix": "declare entry_point_type: api|web_ui|cli|file_upload|webhook|cron for PASTA analysis"
   },
   {
     "severity": "warning",
+    "rule": "internet-asset-no-entry-point-type",
     "asset": "source-repo",
+    "file": "feature_cicd.yaml",
+    "line": 11,
     "message": "internet-exposed asset has no entry_point_type declared",
     "fix": "declare entry_point_type: api|web_ui|cli|file_upload|webhook|cron for PASTA analysis"
   }

@@ -21,7 +21,7 @@ at once). Outputs are deterministic — re-running yields byte-identical files.
 | [`prioritize/`](./prioritize) | `prioritize --top 10` | "Fix these first": findings ranked by exploitability, with remediation |
 | [`requirements/`](./requirements) | `requirements` | Security-requirements backlog (Markdown checklist) + Gherkin test cases |
 | [`validate/`](./validate) | `validate --json` | Machine-readable model validation (CI-consumable) |
-| [`lint/`](./lint) | `lint --json` | Style / best-practice findings as JSON |
+| [`lint/`](./lint) | `lint --format json\|sarif` | Style / best-practice findings as JSON (`lint.json`, with stable rule IDs + file:line) and **SARIF** (`lint.sarif`) for code-scanning upload |
 | [`gate/`](./gate) | `gate --policy …` | Policy-as-code CI gate verdict (exit 3 on violation); `gate-strict-result.md` shows a failing run that **lists the offending findings** per rule |
 | [`policy/`](./policy) | `policy init --profile …` | Secure-by-default gate policies (prototype/balanced/strict/regulated) |
 | [`quantify/`](./quantify) | `quantify --estimates …` | FAIR Monte-Carlo ALE (financial risk) |

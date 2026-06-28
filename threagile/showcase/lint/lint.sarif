@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+  "runs": [
+    {
+      "results": [
+        {
+          "ruleId": "trust-boundary-too-few-assets",
+          "level": "note",
+          "message": {
+            "text": "trust boundary contains only one (or zero) technical assets — verify this is intentional"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile/feature_api.yaml"
+                },
+                "region": {
+                  "startLine": 182
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "trust-boundary-too-few-assets",
+          "level": "note",
+          "message": {
+            "text": "trust boundary contains only one (or zero) technical assets — verify this is intentional"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile/feature_frontend.yaml"
+                },
+                "region": {
+                  "startLine": 167
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "trust-boundary-too-few-assets",
+          "level": "note",
+          "message": {
+            "text": "trust boundary contains only one (or zero) technical assets — verify this is intentional"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile/feature_frontend.yaml"
+                },
+                "region": {
+                  "startLine": 156
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "internet-asset-no-entry-point-type",
+          "level": "warning",
+          "message": {
+            "text": "internet-exposed asset has no entry_point_type declared"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile/feature_cloud_services.yaml"
+                },
+                "region": {
+                  "startLine": 11
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "internet-asset-no-entry-point-type",
+          "level": "warning",
+          "message": {
+            "text": "internet-exposed asset has no entry_point_type declared"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile/feature_cloud_services.yaml"
+                },
+                "region": {
+                  "startLine": 287
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "internet-asset-no-entry-point-type",
+          "level": "warning",
+          "message": {
+            "text": "internet-exposed asset has no entry_point_type declared"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile/feature_cicd.yaml"
+                },
+                "region": {
+                  "startLine": 72
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "internet-asset-no-entry-point-type",
+          "level": "warning",
+          "message": {
+            "text": "internet-exposed asset has no entry_point_type declared"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile/feature_cicd.yaml"
+                },
+                "region": {
+                  "startLine": 133
+                }
+              }
+            }
+          ]
+        },
+        {
+          "ruleId": "internet-asset-no-entry-point-type",
+          "level": "warning",
+          "message": {
+            "text": "internet-exposed asset has no entry_point_type declared"
+          },
+          "locations": [
+            {
+              "physicalLocation": {
+                "artifactLocation": {
+                  "uri": "threagile/feature_cicd.yaml"
+                },
+                "region": {
+                  "startLine": 11
+                }
+              }
+            }
+          ]
+        }
+      ],
+      "tool": {
+        "driver": {
+          "informationUri": "https://github.com/Luv1881/better-threagile",
+          "name": "threagile-lint",
+          "rules": [
+            {
+              "id": "internet-asset-no-entry-point-type",
+              "name": "internet-asset-no-entry-point-type",
+              "shortDescription": {
+                "text": "internet asset no entry point type"
+              }
+            },
+            {
+              "id": "trust-boundary-too-few-assets",
+              "name": "trust-boundary-too-few-assets",
+              "shortDescription": {
+                "text": "trust boundary too few assets"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "version": "2.1.0"
+}
