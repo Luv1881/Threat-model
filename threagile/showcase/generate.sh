@@ -65,13 +65,9 @@ mkdir -p "$SHOW/quantify"
 "$THREAGILE" quantify --model "$MODEL" $IGN --estimates threagile/fair-estimates.yaml \
   --output-json "$SHOW/quantify/quantify.json" > "$SHOW/quantify/quantify.txt" 2>/dev/null || true
 
-echo ">> exports / interop"
-mkdir -p "$SHOW/stix";            "$THREAGILE" stix --model "$MODEL" $IGN > "$SHOW/stix/stix-bundle.json" 2>/dev/null
-mkdir -p "$SHOW/oscal";           "$THREAGILE" oscal --model "$MODEL" $IGN > "$SHOW/oscal/oscal-assessment-results.json" 2>/dev/null
-mkdir -p "$SHOW/attack-navigator";"$THREAGILE" attack-navigator --model "$MODEL" $IGN > "$SHOW/attack-navigator/layer.json" 2>/dev/null
+echo ">> analysis / diagrams"
 mkdir -p "$SHOW/attack-tree";     "$THREAGILE" attack-tree --model "$MODEL" $IGN --format dot > "$SHOW/attack-tree/attack-tree.dot" 2>/dev/null
 mkdir -p "$SHOW/attack-paths";    "$THREAGILE" paths --model "$MODEL" $IGN > "$SHOW/attack-paths/attack-paths.txt" 2>/dev/null
-mkdir -p "$SHOW/d3fend";          "$THREAGILE" d3fend --model "$MODEL" $IGN > "$SHOW/d3fend/d3fend.txt" 2>/dev/null
 mkdir -p "$SHOW/mermaid";         "$THREAGILE" mermaid --model "$MODEL" $IGN --format markdown > "$SHOW/mermaid/data-flow.mmd.md" 2>/dev/null
 mkdir -p "$SHOW/sbom";            "$THREAGILE" sbom --sbom threagile/imports/vaultnote-sbom.cdx.json > "$SHOW/sbom/sbom-report.txt" 2>/dev/null || true
 

@@ -26,16 +26,12 @@ at once). Outputs are deterministic — re-running yields byte-identical files.
 | [`policy/`](./policy) | `policy init --profile …` | Secure-by-default gate policies (prototype/balanced/strict/regulated) |
 | [`quantify/`](./quantify) | `quantify --estimates …` | FAIR Monte-Carlo ALE (financial risk) |
 
-## Exports / interoperability
+## Analysis / diagrams / interoperability
 
 | Dir | Command | What it shows |
 |-----|---------|---------------|
-| [`stix/`](./stix) | `stix` | STIX 2.1 bundle (with `x_threagile_version` / `x_model_sha256` provenance) |
-| [`oscal/`](./oscal) | `oscal` | NIST OSCAL assessment-results (compliance evidence, with provenance props) |
-| [`attack-navigator/`](./attack-navigator) | `attack-navigator` | MITRE ATT&CK Navigator layer |
 | [`attack-tree/`](./attack-tree) | `attack-tree --format dot` | Goal-oriented attack trees (Graphviz DOT) |
 | [`attack-paths/`](./attack-paths) | `paths` | Shortest attack paths from internet to crown-jewel data |
-| [`d3fend/`](./d3fend) | `d3fend` | MITRE D3FEND defensive countermeasures |
 | [`mermaid/`](./mermaid) | `mermaid` | Data-flow diagram that renders natively in GitHub/GitLab Markdown |
 | [`sbom/`](./sbom) | `sbom --sbom …` | CycloneDX SBOM correlated with KEV/EPSS threat intel |
 
