@@ -12,6 +12,12 @@ All commands run against `threagile/threagile.yaml` with
 `--ignore-orphaned-risk-tracking` (the model tracks risks for every methodology
 at once). Outputs are deterministic — re-running yields byte-identical files.
 
+## Core analysis
+
+| Dir | Command | What it shows |
+|-----|---------|---------------|
+| [`analyze/`](./analyze) | `analyze-model` | The core run: generated `risks.json`, `stats.json`, `technical-assets.json` for the whole model (STRIDE + all packs) |
+
 ## Developer workflow
 
 | Dir | Command | What it shows |

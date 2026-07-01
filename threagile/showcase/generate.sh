@@ -30,6 +30,17 @@ run() { echo "  - $1"; shift; "$@"; }   # label + command
 # data-emitting commands write to stdout; analysis commands need IGN.
 mkdir -p "$SHOW"
 
+echo ">> analyze-model (the core: full risk analysis of the model)"
+mkdir -p "$SHOW/analyze"
+TMPAN="$(mktemp -d)"
+"$THREAGILE" analyze-model --model "$MODEL" $IGN --output "$TMPAN" \
+  --skip-report-pdf --skip-report-adoc --skip-data-flow-diagram --skip-data-asset-diagram \
+  --skip-risks-excel --skip-tags-excel >/dev/null 2>&1 || true
+cp "$TMPAN/risks.json"             "$SHOW/analyze/risks.json"             2>/dev/null || true
+cp "$TMPAN/stats.json"             "$SHOW/analyze/stats.json"             2>/dev/null || true
+cp "$TMPAN/technical-assets.json"  "$SHOW/analyze/technical-assets.json"  2>/dev/null || true
+rm -rf "$TMPAN"
+
 echo ">> scoring & dev-workflow"
 mkdir -p "$SHOW/score"
 "$THREAGILE" score --model "$MODEL" $IGN > "$SHOW/score/score.md" 2>/dev/null
