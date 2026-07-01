@@ -25,6 +25,33 @@ at once). Outputs are deterministic — re-running yields byte-identical files.
 | [`gate/`](./gate) | `gate --policy …` | Policy-as-code CI gate verdict (exit 3 on violation); `gate-strict-result.md` shows a failing run that **lists the offending findings** per rule |
 | [`policy/`](./policy) | `policy init --profile …` | Secure-by-default gate policies (prototype/balanced/strict/regulated) |
 | [`quantify/`](./quantify) | `quantify --estimates …` | FAIR Monte-Carlo ALE (financial risk) |
+| [`fmt/`](./fmt) | `fmt` | Canonical, normalised model YAML (stdout) — keeps diffs clean |
+
+## Risk delta & drift (pull-request review)
+
+The `diff`/`drift` artifacts compare an "approved baseline" (the model **before**
+the AI feature was added) against the current model, so both surface the 7 new
+findings the AI services introduced.
+
+| Dir | Command | What it shows |
+|-----|---------|---------------|
+| [`diff/`](./diff) | `diff <old> <new> --format markdown` | Risk delta (+added / −resolved / ~changed) as a PR-ready table |
+| [`drift/`](./drift) | `drift --baseline … --current …` | New findings vs an approved baseline (`--fail-on-new-high` gates CI) |
+
+## Compliance & explainability
+
+| Dir | Command | What it shows |
+|-----|---------|---------------|
+| [`coverage/`](./coverage) | `coverage --framework …` | Which rules cover each control of OWASP Top 10 (2021) & NIST 800-53 |
+| [`explain/`](./explain) | `explain risk <id>` / `explain rules` | Why a specific risk fired (full detail) + the entire rule catalogue |
+| [`intel/`](./intel) | `intel status` | Age/size of the cached KEV/EPSS threat-intel feeds |
+
+## CI code-scanning outputs
+
+| Dir | Command | What it shows |
+|-----|---------|---------------|
+| [`code-scanning/`](./code-scanning) | `analyze-model` | `risks.sarif` (SARIF 2.1.0 for GitHub code scanning) + `risks.gl-sast.json` (GitLab SAST report) |
+| [`gate/gate-result.xml`](./gate) | `gate --format junit` | JUnit XML gate verdict for Jenkins/GitLab/CircleCI/Azure test reports |
 
 ## Analysis / diagrams / interoperability
 
@@ -41,6 +68,7 @@ at once). Outputs are deterministic — re-running yields byte-identical files.
 |-----|---------|--------|
 | [`import-compose/`](./import-compose) | `import compose` | `docker-compose.yml` |
 | [`import-kubernetes/`](./import-kubernetes) | `import kubernetes` | `threagile/imports/vaultnote-k8s.yaml` |
+| [`import-terraform/`](./import-terraform) | `import terraform` | `threagile/imports/vaultnote-terraform-plan.json` (`terraform show -json`) |
 | [`import-threat-dragon/`](./import-threat-dragon) | `import threat-dragon` | `threat-dragon/vaultnote-model.json` |
 
 ## Onboarding & CI

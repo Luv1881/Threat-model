@@ -1,0 +1,15 @@
+Risk drift: approved-baseline.yaml → threagile/threagile.yaml
+Methodology: stride
+
++ 7 NEW finding(s):
+  + [medium] container-baseimage-backdooring@rag-pipeline
+  + [medium] container-baseimage-backdooring@vector-store
+  + [medium] server-side-request-forgery@llm-summarizer@rag-pipeline@llm-summarizer>call-rag-pipeline
+  + [medium] server-side-request-forgery@llm-summarizer@vector-store@llm-summarizer>query-vector-store
+  + [medium] server-side-request-forgery@rag-pipeline@vector-store@rag-pipeline>retrieve-from-vector-store
+  + [medium] unguarded-access-from-internet@rag-pipeline@llm-summarizer@llm-summarizer>call-rag-pipeline
+  + [medium] unguarded-access-from-internet@vector-store@llm-summarizer@llm-summarizer>query-vector-store
+
+= 60 unchanged finding(s)
+
+Drift summary: +7 added, -0 resolved, ~0 changed, =60 unchanged

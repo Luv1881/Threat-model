@@ -1,0 +1,97 @@
+# threagile/threagile.yaml
+threagile_version: 1.0.0
+# Entry point — model metadata + one include per application feature/layer.
+# Each feature file owns its technical_assets, data_assets, trust_boundaries,
+# shared_runtimes, and risk_tracking for that part of the application.
+#
+# Binary: ../../better-threagile/bin/threagile  (built from better-threagile)
+# App-dir: ../../better-threagile               (for background.pdf + logo)
+#
+# Run analysis with (from this directory):
+#
+#   STRIDE (default — 40+ built-in rules):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --app-dir ../../better-threagile \
+#     --background report/template/background.pdf \
+#     --model threagile.yaml --output output/stride \
+#     --methodology stride --ignore-orphaned-risk-tracking
+#
+#   LINDDUN (privacy — 8 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --app-dir ../../better-threagile \
+#     --background report/template/background.pdf \
+#     --model threagile.yaml --output output/linddun \
+#     --methodology linddun --rule-pack linddun --ignore-orphaned-risk-tracking
+#
+#   PASTA (attack-centric — 9 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --app-dir ../../better-threagile \
+#     --background report/template/background.pdf \
+#     --model threagile.yaml --output output/pasta \
+#     --methodology pasta --rule-pack pasta --ignore-orphaned-risk-tracking
+#
+#   VAST (operational — 8 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --app-dir ../../better-threagile \
+#     --background report/template/background.pdf \
+#     --model threagile.yaml --output output/vast \
+#     --methodology vast --rule-pack vast --ignore-orphaned-risk-tracking
+#
+#   Cloud-Native (AWS infra — 17 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --model threagile.yaml --output output/cloud-native \
+#     --rule-pack cloud-native --ignore-orphaned-risk-tracking
+#
+#   Supply-Chain (CI/CD — 10 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --model threagile.yaml --output output/supply-chain \
+#     --rule-pack supply-chain --ignore-orphaned-risk-tracking
+#
+#   AI/ML (inference risks — 18 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --model threagile.yaml --output output/ai-ml \
+#     --rule-pack ai-ml --ignore-orphaned-risk-tracking
+#
+#   OCTAVE Allegro (asset-centric — 8 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --model threagile.yaml --output output/octave \
+#     --rule-pack octave --ignore-orphaned-risk-tracking
+#
+#   Trike (actor-centric — 8 rules, embedded pack):
+#   ../../better-threagile/bin/threagile analyze-model \
+#     --model threagile.yaml --output output/trike \
+#     --rule-pack trike --ignore-orphaned-risk-tracking
+#
+# IMPORTANT: --ignore-orphaned-risk-tracking is REQUIRED for all runs because
+# risk_tracking entries span all 9 methodologies. Each single-methodology run
+# sees the other packs' tracking entries as orphans — this is expected for a
+# multi-methodology reference model. The flag does NOT suppress risk findings;
+# it only suppresses the orphaned-tracking validation error.
+#
+#   FAIR Monte-Carlo quantification (estimates in fair-estimates.yaml):
+#   ../../better-threagile/bin/threagile quantify \
+#     --model threagile.yaml --ignore-orphaned-risk-tracking \
+#     --estimates fair-estimates.yaml --output-json output/quantify.json
+#   NOTE: root persistent flags (--model, --ignore-orphaned-risk-tracking)
+#   must come BEFORE command-local flags (--estimates) on the command line.
+#
+# Every analysis also writes risks.sarif (SARIF 2.1.0) for code-scanning
+# upload; suppressed results = mitigated/false-positive/accepted tracking.
+#
+# Acceptance expiry: all "accepted" entries carry accepted_until/accepted_by
+# (see feature_risk_review.yaml). Analysis FAILS once an acceptance expires;
+# renew the date or change the status. --ignore-expired-risk-acceptance
+# downgrades this to a warning.
+includes:
+    - meta.yaml # title, author, date, business_criticality
+    - overview.yaml # management summary, business/technical overview
+    - tags.yaml # tags_available registry
+    - feature_frontend.yaml # Browser SPA + Nginx | Internet/DMZ | network risk tracking
+    - feature_api.yaml # API Server | App Network | auth data assets
+    - feature_datastores.yaml # PostgreSQL + Redis + MinIO | Data Tier | Docker runtime | storage data assets + datastore risk tracking
+    - feature_cicd.yaml # GitHub + Actions + ECR | External CI/CD | supply-chain pack
+    - feature_cloud_services.yaml # AWS API GW + Lambda + RDS + S3 + ECS | AWS Cloud | cloud-native pack
+    - feature_ai.yaml # LLM Summarizer + Vector Store + RAG Pipeline | AI Services | ai-ml pack
+    - feature_threats.yaml # PASTA threat scenarios
+    - feature_business_processes.yaml # VAST business processes
+    - feature_risk_review.yaml # 2026-06-12 triage wave: tracking for all previously-unchecked findings (wildcards + acceptance expiry)

@@ -1,0 +1,47 @@
+Risk: accidental-secret-leak@source-repo
+Severity:   medium
+Status:     in-progress
+
+Category:   Accidental Secret Leak (accidental-secret-leak)
+Function:   operations
+STRIDE:     information-disclosure
+CWE:        CWE-200
+ASVS:       V14 - Configuration Verification Requirements
+
+Description:
+  Sourcecode repositories (including their histories) as well as artifact
+  registries can accidentally contain secrets like checked-in or packaged-in
+  passwords, API tokens, certificates, crypto keys, etc.
+
+Impact:
+  If this risk is unmitigated, attackers which have access to affected
+  sourcecode repositories or artifact registries might find secrets
+  accidentally checked-in.
+
+Mitigation:
+  Establish measures preventing accidental check-in or package-in of secrets
+  into sourcecode repositories and artifact registries. This starts by using
+  good .gitignore and .dockerignore files, but does not stop there. See for
+  example tools like <i>\"git-secrets\"</i> or <i>\"Talisman\"</i> to have
+  check-in preventive measures for secrets. Consider also to regularly scan
+  your repositories for secrets accidentally checked-in using scanning tools
+  like <i>"gitleaks"</i> or <i>"gitrob"</i>.
+
+False Positives:
+  Usually no false positives.
+
+Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Attack_Surface_Analysis_Cheat_Sheet.html
+
+Risk Tracking:
+  Status:     in-progress
+  Justification: gitleaks pre-commit hook plus GitHub push protection (secret scanning) to be enabled on the repository.
+
+  Ticket:     VAULT-145
+  Date:       2026-06-12
+  Checked by: Security Team
+
+Why it was flagged:
+  Risk 'Accidental Secret Leak' has been flagged for technical asset 'source-repo' because
+  out_of_scope of technical asset 'source-repo' is <nil>, and
+  attributes.sourcecode-repository of technologies of technical asset 'source-repo' is true
+

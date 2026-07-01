@@ -111,5 +111,52 @@ for pack in linddun pasta vast octave trike cloud-native supply-chain ai-ml; do
   find "$SHOW/methodologies/$pack" -type f ! -name 'risks.json' -delete 2>/dev/null || true
 done
 
+echo ">> compliance coverage (control-framework mapping)"
+mkdir -p "$SHOW/coverage"
+"$THREAGILE" coverage --model "$MODEL" $IGN --framework owasp_top10_2021 > "$SHOW/coverage/owasp-top10-2021.txt" 2>/dev/null || true
+"$THREAGILE" coverage --model "$MODEL" $IGN --framework nist_800_53 > "$SHOW/coverage/nist-800-53.txt" 2>/dev/null || true
+
+echo ">> explain (why a risk fired / all rules)"
+mkdir -p "$SHOW/explain"
+"$THREAGILE" explain risk "accidental-secret-leak@source-repo" --model "$MODEL" $IGN > "$SHOW/explain/explain-risk.txt" 2>/dev/null || true
+"$THREAGILE" explain rules > "$SHOW/explain/all-risk-rules.txt" 2>/dev/null || true
+
+echo ">> threat-intel cache status (KEV/EPSS)"
+mkdir -p "$SHOW/intel"
+"$THREAGILE" intel status > "$SHOW/intel/status.txt" 2>/dev/null || true
+
+echo ">> fmt (canonical model formatting, stdout)"
+mkdir -p "$SHOW/fmt"
+"$THREAGILE" fmt --model "$MODEL" > "$SHOW/fmt/formatted-model.yaml" 2>/dev/null || true
+
+echo ">> import terraform (terraform show -json plan -> model)"
+mkdir -p "$SHOW/import-terraform"
+"$THREAGILE" import terraform --plan threagile/imports/vaultnote-terraform-plan.json \
+  > "$SHOW/import-terraform/from-terraform.yaml" 2>/dev/null || true
+
+echo ">> CI code-scanning outputs (SARIF for GitHub, GitLab SAST report, JUnit gate)"
+mkdir -p "$SHOW/code-scanning"
+TMPA="$(mktemp -d)"
+"$THREAGILE" analyze-model --model "$MODEL" $IGN --output "$TMPA" \
+  --skip-report-pdf --skip-report-adoc --skip-data-flow-diagram --skip-data-asset-diagram \
+  --skip-risks-excel --skip-tags-excel >/dev/null 2>&1 || true
+cp "$TMPA/risks.sarif"        "$SHOW/code-scanning/risks.sarif"        2>/dev/null || true
+cp "$TMPA/risks.gl-sast.json" "$SHOW/code-scanning/risks.gl-sast.json" 2>/dev/null || true
+rm -rf "$TMPA"
+"$THREAGILE" gate --model "$MODEL" $IGN --policy threagile/gate-policy.yaml --format junit \
+  > "$SHOW/gate/gate-result.xml" 2>/dev/null || true
+
+echo ">> diff + drift (an added AI feature = 7 new findings vs an approved baseline)"
+mkdir -p "$SHOW/diff" "$SHOW/drift"
+TMPD="$(mktemp -d)"; cp threagile/*.yaml "$TMPD/" 2>/dev/null
+# the "approved baseline" is the model BEFORE the AI feature was added
+sed -i '/- feature_ai.yaml/d' "$TMPD/threagile.yaml" 2>/dev/null || true
+# sanitise the throwaway temp path so the committed artifacts are reproducible
+"$THREAGILE" diff "$TMPD/threagile.yaml" "$MODEL" $IGN --format markdown 2>/dev/null \
+  | sed "s#${TMPD}/threagile.yaml#approved-baseline.yaml#g" > "$SHOW/diff/risk-delta.md" || true
+"$THREAGILE" drift --baseline "$TMPD/threagile.yaml" --current "$MODEL" $IGN 2>/dev/null \
+  | sed "s#${TMPD}/threagile.yaml#approved-baseline.yaml#g" > "$SHOW/drift/drift-report.txt" || true
+rm -rf "$TMPD"
+
 echo ">> done. tree:"
 find "$SHOW" -maxdepth 2 -type f | sort

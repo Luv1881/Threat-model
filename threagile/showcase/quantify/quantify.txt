@@ -1,0 +1,18 @@
+FAIR Monte-Carlo ALE simulation (20000 iterations per risk)
+
+RISK                                                                   SEVERITY        ALE P10      ALE P50      ALE P90
+exposed-default-credentials@minio-storage                              high             138402       450350      1202945
+accidental-secret-leak@source-repo                                     medium            20871        72368       197139
+unencrypted-communication@api-server>redis-session-store@api-server... elevated          14359        51305       144103
+unencrypted-communication@api-server>minio-file-storage@api-server@... elevated          14124        50907       143426
+unencrypted-communication@nginx-proxy>http-to-api-server@nginx-prox... elevated          14063        50110       141705
+unencrypted-communication@api-server>postgresql-connection@api-serv... elevated          14237        49659       140237
+missing-authentication@aws-api-gateway>route-to-ecs-api@aws-api-gat... elevated           9796        31471        86289
+missing-authentication@nginx-proxy>http-to-api-server@nginx-proxy@a... elevated           9616        31152        86066
+
+Portfolio (8 of 67 risks quantified, USD/year, sum of per-risk percentiles):
+  P10:         235468
+  P50:         787322
+  P90:        2141910
+
+Full result written to threagile/showcase/quantify/quantify.json

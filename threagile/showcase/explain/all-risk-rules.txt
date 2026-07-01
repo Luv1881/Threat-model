@@ -1,0 +1,74 @@
+  _____ _                          _ _      
+ |_   _| |__  _ __ ___  __ _  __ _(_) | ___ 
+   | | | '_ \| '__/ _ \/ _` |/ _` | | |/ _ \
+   | | | | | | | |  __/ (_| | (_| | | |  __/
+   |_| |_| |_|_|  \___|\__,_|\__, |_|_|\___|
+                             |___/        
+Threagile - Agile Threat Modeling
+
+Documentation: https://threagile.io
+Docker Images: https://hub.docker.com/r/threagile/threagile
+Sourcecode: https://github.com/threagile
+License: Open-Source (MIT License)
+Version: 1.0.0 ()
+Explanation for risk rules:
+
+----------------------
+Custom risk rules:
+----------------------
+
+--------------------
+Built-in risk rules:
+--------------------
+
+missing-authentication: Technical assets (especially multi-tenant systems) should authenticate incoming requests when the asset processes sensitive data. 
+missing-hardening: Technical assets with a Relative Attacker Attractiveness (RAA) value of 55 % or higher should be explicitly hardened taking best practices and vendor hardening guides into account.
+missing-identity-store: The modeled architecture does not contain an identity store, which might be the risk of a model missing critical assets (and thus not seeing their risks).
+missing-network-segmentation: Highly sensitive assets and/or data stores residing in the same network segment than other lower sensitive assets (like webservers or content management systems etc.) should be better protected by a network segmentation trust-boundary.
+unencrypted-asset: Due to the confidentiality rating of the technical asset itself and/or the stored data assets this technical asset must be encrypted. The risk rating depends on the sensitivity technical asset itself and of the data assets stored.
+unguarded-access-from-internet: Internet-exposed assets must be guarded by a protecting service, application, or reverse-proxy.
+unnecessary-data-asset: When a data asset is not processed by any data assets and also not transferred by any communication links, this is an indicator for an unnecessary data asset (or for an incomplete model).
+wrong-trust-boundary-content: When a trust boundary of type network-policy-namespace-isolation contains non-container assets it is likely to be a model failure.
+missing-identity-propagation: Technical assets (especially multi-tenant systems), which usually process data for end users should authorize every request based on the identity of the end user when the data flow is authenticated (i.e. non-public). For DevOps usages at least a technical-user authorization is required.
+missing-vault: In order to avoid the risk of secret leakage via config files (when attacked through vulnerabilities being able to read files like Path-Traversal and others), it is best practice to use a separate hardened process with proper authentication, authorization, and audit logging to access config secrets (like credentials, private keys, client certificates, etc.). This component is usually some kind of Vault.
+missing-vault-isolation: Highly sensitive vault assets and their data stores should be isolated from other assets by their own network segmentation trust-boundary (execution-environment boundaries do not count as network isolation).
+missing-waf: To have a first line of filtering defense, security architectures with web-services or web-applications should include a WAF in front of them. Even though a WAF is not a replacement for security (all components must be secure even without a WAF) it adds another layer of defense to the overall system by delaying some attacks and having easier attack alerting through it.
+unchecked-deployment: For each build-pipeline component Unchecked Deployment risks might arise when the build-pipeline does not include established DevSecOps best-practices. DevSecOps best-practices scan as part of CI/CD pipelines for vulnerabilities in source- or byte-code, dependencies, container layers, and dynamically against running test systems. There are several open-source and commercial tools existing in the categories DAST, SAST, and IAST.
+xml-external-entity: When a technical asset accepts data in XML format, XML External Entity (XXE) risks might arise.
+lateral-movement-transitive-access: An asset in a low-trust zone communicates to a bridging asset, which in turn communicates to an asset in a high-trust zone. The bridging asset creates a transitive path that can be abused for lateral movement without the attacker ever directly connecting to the high-trust target.
+missing-csp-header: Web entry points (reverse proxies and web applications) that serve browser-based clients and process authentication tokens without a Content-Security-Policy (CSP) header are vulnerable to XSS-facilitated token theft. An attacker who achieves XSS in the browser can read localStorage/sessionStorage tokens and replay them without any client-side protection if CSP is absent.
+
+service-registry-poisoning: When a service registry used for discovery of trusted service endpoints Service Registry Poisoning risks might arise.
+container-baseimage-backdooring: When a technical asset is built using container technologies, Base Image Backdooring risks might arise where base images and other layers used contain vulnerable components or backdoors.<br><br>See for example: <a href="https://techcrunch.com/2018/06/15/tainted-crypto-mining-containers-pulled-from-docker-hub/">https://techcrunch.com/2018/06/15/tainted-crypto-mining-containers-pulled-from-docker-hub/</a>
+cross-site-request-forgery: When a web application is accessed via web protocols Cross-Site Request Forgery (CSRF) risks might arise.
+missing-cloud-hardening: Cloud components should be hardened according to the cloud vendor best practices. This affects their configuration, auditing, and further areas.
+mixed-targets-on-shared-runtime: Different attacker targets (like frontend and backend/datastore components) should not be running on the same shared (underlying) runtime.
+search-query-injection: When a search engine server is accessed Search-Query Injection risks might arise.<br><br>See for example <a href="https://github.com/veracode-research/solr-injection">https://github.com/veracode-research/solr-injection</a> and <a href="https://github.com/veracode-research/solr-injection/blob/master/slides/DEFCON-27-Michael-Stepankin-Apache-Solr-Injection.pdf">https://github.com/veracode-research/solr-injection/blob/master/slides/DEFCON-27-Michael-Stepankin-Apache-Solr-Injection.pdf</a> for more details (here related to Solr, but in general showcasing the topic of search query injections).
+unguarded-direct-datastore-access: Data stores accessed across trust boundaries must be guarded by some protecting service or application.
+unnecessary-data-transfer: When a technical asset sends or receives data assets, which it neither processes or stores this is an indicator for unnecessarily transferred data (or for an incomplete model). When the unnecessarily transferred data assets are sensitive, this poses an unnecessary risk of an increased attack surface.
+container-platform-escape: Container platforms are especially interesting targets for attackers as they host big parts of a containerized runtime infrastructure. When not configured and operated with security best practices in mind, attackers might exploit a vulnerability inside an container and escape towards the platform as highly privileged users. These scenarios might give attackers capabilities to attack every other container as owning the container platform (via container escape attacks) equals to owning every container.
+incomplete-model: When the threat model contains unknown technologies or transfers data over unknown protocols, this is an indicator for an incomplete model.
+missing-build-infrastructure: The modeled architecture does not contain a build infrastructure (devops-client, sourcecode-repo, build-pipeline, etc.), which might be the risk of a model missing critical assets (and thus not seeing their risks). If the architecture contains custom-developed parts, the pipeline where code gets developed and built needs to be part of the model.
+unnecessary-technical-asset: When a technical asset does not process any data assets, this is an indicator for an unnecessary technical asset (or for an incomplete model). This is also the case if the asset has no communication links (either outgoing or incoming).
+untrusted-deserialization: When a technical asset accepts data in a specific serialized form (like Java or .NET serialization), Untrusted Deserialization risks might arise.<br><br>See <a href="https://christian-schneider.net/JavaDeserializationSecurityFAQ.html">https://christian-schneider.net/JavaDeserializationSecurityFAQ.html</a> for more details.
+lateral-movement-shared-runtime: Technical assets from different trust zones co-located on the same shared runtime (e.g. container platform, VM host, shared Kubernetes namespace) create a lateral movement path: a compromised low-trust asset on the runtime can escalate to high-trust neighbours without traversing a network boundary.
+lateral-movement-credential-reuse: Technical assets that authenticate via the same credential type (credentials, tokens) to targets in multiple distinct trust zones enable lateral movement: compromise of one credential grants access across zone boundaries without additional authentication.
+exposed-default-credentials: Technical assets tagged as intentional-misconfiguration that store confidential data represent an immediately exploitable attack vector. Default credentials (e.g. minioadmin/minioadmin, admin/admin, postgres/postgres) are published in vendor documentation and are the first credentials an attacker tries after reaching the service network.
+
+accidental-secret-leak: Sourcecode repositories (including their histories) as well as artifact registries can accidentally contain secrets like checked-in or packaged-in passwords, API tokens, certificates, crypto keys, etc.
+push-instead-of-pull-deployment: When comparing push-based vs. pull-based deployments from a security perspective, pull-based deployments improve the overall security of the deployment targets. Every exposed interface of a production system to accept a deployment increases the attack surface of the production system, thus a pull-based approach exposes less attack surface relevant interfaces.
+wrong-communication-link-content: When a communication link is defined as readonly, but does not receive any data asset, or when it is defined as not readonly, but does not send any data asset, it is likely to be a model failure.
+missing-identity-provider-isolation: Highly sensitive identity provider assets and their identity data stores should be isolated from other assets by their own network segmentation trust-boundary (execution-environment boundaries do not count as network isolation).
+missing-file-validation: When a technical asset accepts files, these input files should be strictly validated about filename and type.
+code-backdooring: For each build pipeline component Code Backdooring risks might arise where attackers compromise the build pipeline in order to let backdoored artifacts be shipped into production. Aside from direct code backdooring this includes backdooring of dependencies and even of more lower-level build infrastructure, like backdooring compilers (similar to what the XcodeGhost malware did) or dependencies.
+cross-site-scripting: For each web application Cross-Site Scripting (XSS) risks might arise. In terms of the overall risk level take other applications running on the same domain into account as well.
+dos-risky-access-across-trust-boundary: Assets accessed across trust boundaries with critical or mission-critical availability rating are more prone to Denial-of-Service (DoS) risks.
+path-traversal: When a filesystem is accessed Path-Traversal or Local-File-Inclusion (LFI) risks might arise. The risk rating depends on the sensitivity of the technical asset itself and of the data assets processed.
+server-side-request-forgery: When a server system (i.e. not a client) is accessing other server systems via typical web protocols Server-Side Request Forgery (SSRF) or Local-File-Inclusion (LFI) or Remote-File-Inclusion (RFI) risks might arise. 
+unencrypted-communication: Due to the confidentiality and/or integrity rating of the data assets transferred over the communication link this connection must be encrypted.
+unnecessary-communication-link: When a technical communication link does not send or receive any data assets, this is an indicator for an unnecessary communication link (or for an incomplete model).
+ldap-injection: When an LDAP server is accessed LDAP-Injection risks might arise. The risk rating depends on the sensitivity of the LDAP server itself and of the data assets processed.
+missing-authentication-second-factor: Technical assets (especially multi-tenant systems) should authenticate incoming requests with two-factor (2FA) authentication when the asset processes or stores highly sensitive data (in terms of confidentiality, integrity, and availability) and is accessed by humans.
+sql-nosql-injection: When a database is accessed via database access protocols SQL/NoSQL-Injection risks might arise. The risk rating depends on the sensitivity technical asset itself and of the data assets processed.
+lateral-movement-service-account-scope-creep: A vault, identity provider, or service-account issuer that serves assets in multiple distinct trust zones creates a high-value pivot: compromising the identity provider grants credentials that are valid across all served trust zones.
+

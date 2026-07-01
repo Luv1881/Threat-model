@@ -1,0 +1,828 @@
+{
+  "version": "15.0.6",
+  "scan": {
+    "scanner": {
+      "id": "threagile",
+      "name": "Threagile",
+      "version": "1.0.0",
+      "url": "https://threagile.io",
+      "vendor": {
+        "name": "Threagile"
+      }
+    },
+    "analyzer": {
+      "id": "threagile",
+      "name": "Threagile",
+      "version": "1.0.0",
+      "vendor": {
+        "name": "Threagile"
+      }
+    },
+    "type": "sast",
+    "start_time": "2026-04-18T00:00:00Z",
+    "end_time": "2026-04-18T00:00:00Z",
+    "status": "success"
+  },
+  "vulnerabilities": [
+    {
+      "id": "f9c3eefc6eee31c8742bbc0641134332cf6054a68eed79683163beb17a49eec2",
+      "name": "Accidental Secret Leak(Git) risk at VaultNote Source Repository: Git Leak Prevention",
+      "description": "Accidental Secret Leak(Git) risk at VaultNote Source Repository: Git Leak Prevention",
+      "severity": "Medium",
+      "solution": "Build Pipeline Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: accidental-secret-leak",
+          "value": "accidental-secret-leak"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-200",
+          "value": "200",
+          "url": "https://cwe.mitre.org/data/definitions/200.html"
+        }
+      ]
+    },
+    {
+      "id": "46fb77253a1afaabe78fe89b61a090e84f63b74df9e8ca2aa2aeec2067a36544",
+      "name": "Code Backdooring risk at GitHub Actions Build Pipeline",
+      "description": "Code Backdooring risk at GitHub Actions Build Pipeline",
+      "severity": "Medium",
+      "solution": "Build Pipeline Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: code-backdooring",
+          "value": "code-backdooring"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-912",
+          "value": "912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "id": "2bc4da08f87198dc8811d0bd9c0974b6d0204777d4a85c290024f90f7f61e8f9",
+      "name": "Code Backdooring risk at AWS ECR Container Registry",
+      "description": "Code Backdooring risk at AWS ECR Container Registry",
+      "severity": "Medium",
+      "solution": "Build Pipeline Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: code-backdooring",
+          "value": "code-backdooring"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-912",
+          "value": "912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "id": "ec5690aece3741055991b161e23b8167ecea2d6f02ff865d1d9d1e8c5542040e",
+      "name": "Code Backdooring risk at VaultNote Source Repository",
+      "description": "Code Backdooring risk at VaultNote Source Repository",
+      "severity": "Medium",
+      "solution": "Build Pipeline Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: code-backdooring",
+          "value": "code-backdooring"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-912",
+          "value": "912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "id": "20466cde2dfb6a8d3192cf480853cc1af23b018c47cf66d1666d27967d5e7ffe",
+      "name": "Container Base Image Backdooring risk at API Server",
+      "description": "Container Base Image Backdooring risk at API Server",
+      "severity": "Medium",
+      "solution": "Container Infrastructure Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: container-baseimage-backdooring",
+          "value": "container-baseimage-backdooring"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-912",
+          "value": "912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "id": "5e6fe495c5e267a9adb3e1213e862e69d306b5272d41dfdd8f3e08c5f39438da",
+      "name": "Container Base Image Backdooring risk at MinIO Object Storage",
+      "description": "Container Base Image Backdooring risk at MinIO Object Storage",
+      "severity": "Medium",
+      "solution": "Container Infrastructure Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: container-baseimage-backdooring",
+          "value": "container-baseimage-backdooring"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-912",
+          "value": "912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "id": "4346aa221430cfdb506bf30a5f2954a2167555227747d7b3d42e8f7925d9b817",
+      "name": "Container Base Image Backdooring risk at Nginx Reverse Proxy",
+      "description": "Container Base Image Backdooring risk at Nginx Reverse Proxy",
+      "severity": "Medium",
+      "solution": "Container Infrastructure Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: container-baseimage-backdooring",
+          "value": "container-baseimage-backdooring"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-912",
+          "value": "912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "id": "e1e44198078f10bce037cd306ec5a8dd78e4b6bcab4136051a30f167cb3aa3f4",
+      "name": "Container Base Image Backdooring risk at PostgreSQL Database",
+      "description": "Container Base Image Backdooring risk at PostgreSQL Database",
+      "severity": "Medium",
+      "solution": "Container Infrastructure Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: container-baseimage-backdooring",
+          "value": "container-baseimage-backdooring"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-912",
+          "value": "912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "id": "18b3a2523b94a2fa13ce8e2fdb28dd3b3dd63c6809f0a8b37072e7d38de00d41",
+      "name": "Container Base Image Backdooring risk at Note RAG Pipeline",
+      "description": "Container Base Image Backdooring risk at Note RAG Pipeline",
+      "severity": "Medium",
+      "solution": "Container Infrastructure Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: container-baseimage-backdooring",
+          "value": "container-baseimage-backdooring"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-912",
+          "value": "912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "id": "9b928b8253e953b9fb310eabf7872968ccb56a5a13770a6b1ea2e9eea9f52b4c",
+      "name": "Container Base Image Backdooring risk at Redis Cache",
+      "description": "Container Base Image Backdooring risk at Redis Cache",
+      "severity": "Medium",
+      "solution": "Container Infrastructure Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: container-baseimage-backdooring",
+          "value": "container-baseimage-backdooring"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-912",
+          "value": "912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "id": "9850f834ca35cb4c02a00ccbba760af31dcf0d41b19974189396d5098e94f22a",
+      "name": "Container Base Image Backdooring risk at VaultNote Vector Store",
+      "description": "Container Base Image Backdooring risk at VaultNote Vector Store",
+      "severity": "Medium",
+      "solution": "Container Infrastructure Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: container-baseimage-backdooring",
+          "value": "container-baseimage-backdooring"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-912",
+          "value": "912",
+          "url": "https://cwe.mitre.org/data/definitions/912.html"
+        }
+      ]
+    },
+    {
+      "id": "c05b9dc73244dce7a9d3a13e9ec7c24790809cbdb9c2e5a62fbfb218adaed915",
+      "name": "Exposed Default Credentials: MinIO Object Storage is tagged as intentional-misconfiguration and stores confidential data",
+      "description": "Exposed Default Credentials: MinIO Object Storage is tagged as intentional-misconfiguration and stores confidential data",
+      "severity": "High",
+      "solution": "Rotate all default credentials before deployment; store secrets in a secrets manager",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: exposed-default-credentials",
+          "value": "exposed-default-credentials"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-1392",
+          "value": "1392",
+          "url": "https://cwe.mitre.org/data/definitions/1392.html"
+        }
+      ]
+    },
+    {
+      "id": "12f51b43e453e85f7211894b6b88fa0df8c68b3fe6f73b553ea0497d4e075ee3",
+      "name": "Missing Cloud Hardening (AWS) risk at AWS Cloud: CIS Benchmark for AWS",
+      "description": "Missing Cloud Hardening (AWS) risk at AWS Cloud: CIS Benchmark for AWS",
+      "severity": "Medium",
+      "solution": "Cloud Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: missing-cloud-hardening",
+          "value": "missing-cloud-hardening"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-1008",
+          "value": "1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "id": "c2e26b2fefca0a3c56c097490902fdb4fe86ceaf936b54a5216b7236bfb17d0f",
+      "name": "Missing Cloud Hardening risk at Docker Host",
+      "description": "Missing Cloud Hardening risk at Docker Host",
+      "severity": "Medium",
+      "solution": "Cloud Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: missing-cloud-hardening",
+          "value": "missing-cloud-hardening"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-1008",
+          "value": "1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "id": "709cf148599ee2c64289ffc66c0f74b53c921299249b1b76e1a052d9d9833b01",
+      "name": "Missing Cloud Hardening risk at External CI/CD",
+      "description": "Missing Cloud Hardening risk at External CI/CD",
+      "severity": "Medium",
+      "solution": "Cloud Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: missing-cloud-hardening",
+          "value": "missing-cloud-hardening"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-1008",
+          "value": "1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "id": "3ebe5f94f8be85a699f2406066bf36b5972319770fdc153b98956c4deb44d146",
+      "name": "Missing Content-Security-Policy: Nginx Reverse Proxy serves browser clients handling auth tokens without a verified CSP header",
+      "description": "Missing Content-Security-Policy: Nginx Reverse Proxy serves browser clients handling auth tokens without a verified CSP header",
+      "severity": "Medium",
+      "solution": "Configure a Content-Security-Policy response header on the web entry point",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: missing-csp-header",
+          "value": "missing-csp-header"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-693",
+          "value": "693",
+          "url": "https://cwe.mitre.org/data/definitions/693.html"
+        }
+      ]
+    },
+    {
+      "id": "8ac350d3d02314ee354f89df1f2a6195b457c23efe3a7c41a0830a0cf239530c",
+      "name": "Missing Hardening risk at ECS Container Platform",
+      "description": "Missing Hardening risk at ECS Container Platform",
+      "severity": "Medium",
+      "solution": "System Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: missing-hardening",
+          "value": "missing-hardening"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-16",
+          "value": "16",
+          "url": "https://cwe.mitre.org/data/definitions/16.html"
+        }
+      ]
+    },
+    {
+      "id": "13df1ec672578ec24a6f30acf932df11467fb2c9abb24117d53bdb24f9f564b5",
+      "name": "Missing Hardening risk at PostgreSQL Database",
+      "description": "Missing Hardening risk at PostgreSQL Database",
+      "severity": "Medium",
+      "solution": "System Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: missing-hardening",
+          "value": "missing-hardening"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-16",
+          "value": "16",
+          "url": "https://cwe.mitre.org/data/definitions/16.html"
+        }
+      ]
+    },
+    {
+      "id": "dc70c45c7577da1e77c2c73c8402e303a5479c1d4fef8ba54b1dc112a850da35",
+      "name": "Missing Hardening risk at AWS RDS PostgreSQL",
+      "description": "Missing Hardening risk at AWS RDS PostgreSQL",
+      "severity": "Medium",
+      "solution": "System Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: missing-hardening",
+          "value": "missing-hardening"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-16",
+          "value": "16",
+          "url": "https://cwe.mitre.org/data/definitions/16.html"
+        }
+      ]
+    },
+    {
+      "id": "e43fa9608517ed7e1dca48e83565904b73a8f35b8b865afe1af4da9f6458a85d",
+      "name": "Missing Vault (Secret Storage) in the threat model (referencing asset API Server as an example)",
+      "description": "Missing Vault (Secret Storage) in the threat model (referencing asset API Server as an example)",
+      "severity": "Medium",
+      "solution": "Vault (Secret Storage)",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: missing-vault",
+          "value": "missing-vault"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-522",
+          "value": "522",
+          "url": "https://cwe.mitre.org/data/definitions/522.html"
+        }
+      ]
+    },
+    {
+      "id": "e1c79f34e863a606adb5af4e1d86d31b73e5705ba48f55709169d87c797de8d0",
+      "name": "Missing Web Application Firewall (WAF) risk at API Server",
+      "description": "Missing Web Application Firewall (WAF) risk at API Server",
+      "severity": "Medium",
+      "solution": "Web Application Firewall (WAF)",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: missing-waf",
+          "value": "missing-waf"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-1008",
+          "value": "1008",
+          "url": "https://cwe.mitre.org/data/definitions/1008.html"
+        }
+      ]
+    },
+    {
+      "id": "2620b5389398688a2dadc348888fbb8b4337d550608bd7bfb07c2f55ca8ee881",
+      "name": "Path-Traversal risk at API Server against filesystem MinIO Object Storage via MinIO File Storage",
+      "description": "Path-Traversal risk at API Server against filesystem MinIO Object Storage via MinIO File Storage",
+      "severity": "Medium",
+      "solution": "Path-Traversal Prevention",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: path-traversal",
+          "value": "path-traversal"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-22",
+          "value": "22",
+          "url": "https://cwe.mitre.org/data/definitions/22.html"
+        }
+      ]
+    },
+    {
+      "id": "8e34db0f31075a0ea4f5a1f163176c2d0e4a3864871d8eeeeea473bd9ebdb8b6",
+      "name": "Path-Traversal risk at GitHub Actions Build Pipeline against filesystem AWS ECR Container Registry via Push Image to Registry",
+      "description": "Path-Traversal risk at GitHub Actions Build Pipeline against filesystem AWS ECR Container Registry via Push Image to Registry",
+      "severity": "Medium",
+      "solution": "Path-Traversal Prevention",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: path-traversal",
+          "value": "path-traversal"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-22",
+          "value": "22",
+          "url": "https://cwe.mitre.org/data/definitions/22.html"
+        }
+      ]
+    },
+    {
+      "id": "b9e377136fb3201540c0cc0f0640cd1f3de1937556c35695fc3279601da68be7",
+      "name": "Path-Traversal risk at ECS Container Platform against filesystem AWS ECR Container Registry via Pull Images from ECR",
+      "description": "Path-Traversal risk at ECS Container Platform against filesystem AWS ECR Container Registry via Pull Images from ECR",
+      "severity": "Medium",
+      "solution": "Path-Traversal Prevention",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: path-traversal",
+          "value": "path-traversal"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-22",
+          "value": "22",
+          "url": "https://cwe.mitre.org/data/definitions/22.html"
+        }
+      ]
+    },
+    {
+      "id": "6a0cf702d70f5d88794589e8700853b3cc454fe486fe5b051521daf56ee87ad4",
+      "name": "Unchecked Deployment risk at GitHub Actions Build Pipeline",
+      "description": "Unchecked Deployment risk at GitHub Actions Build Pipeline",
+      "severity": "Medium",
+      "solution": "Build Pipeline Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: unchecked-deployment",
+          "value": "unchecked-deployment"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-1127",
+          "value": "1127",
+          "url": "https://cwe.mitre.org/data/definitions/1127.html"
+        }
+      ]
+    },
+    {
+      "id": "55ee286641c26686927737e3881e64f4fca30e263a478c87f2fd0b8bb31c379f",
+      "name": "Unchecked Deployment risk at AWS ECR Container Registry",
+      "description": "Unchecked Deployment risk at AWS ECR Container Registry",
+      "severity": "Low",
+      "solution": "Build Pipeline Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: unchecked-deployment",
+          "value": "unchecked-deployment"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-1127",
+          "value": "1127",
+          "url": "https://cwe.mitre.org/data/definitions/1127.html"
+        }
+      ]
+    },
+    {
+      "id": "1cdf3212b261f1549e8c010db0f2391e31f1416e6be1df0a48977b928e99a6b2",
+      "name": "Unchecked Deployment risk at VaultNote Source Repository",
+      "description": "Unchecked Deployment risk at VaultNote Source Repository",
+      "severity": "Medium",
+      "solution": "Build Pipeline Hardening",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: unchecked-deployment",
+          "value": "unchecked-deployment"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-1127",
+          "value": "1127",
+          "url": "https://cwe.mitre.org/data/definitions/1127.html"
+        }
+      ]
+    },
+    {
+      "id": "20559543d83024ea7e2673705644e02a7ff6e32a07646fb4a12a9a12db0134fa",
+      "name": "Unencrypted Technical Asset named MinIO Object Storage",
+      "description": "Unencrypted Technical Asset named MinIO Object Storage",
+      "severity": "Medium",
+      "solution": "Encryption of Technical Asset",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: unencrypted-asset",
+          "value": "unencrypted-asset"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-311",
+          "value": "311",
+          "url": "https://cwe.mitre.org/data/definitions/311.html"
+        }
+      ]
+    },
+    {
+      "id": "714023d3ae587e73d5ee9e3c4ba78d8a0631475dc00053deec9e27156157b22b",
+      "name": "Unencrypted Communication named MinIO File Storage between API Server and MinIO Object Storage transferring authentication data (like credentials, token, session-id, etc.)",
+      "description": "Unencrypted Communication named MinIO File Storage between API Server and MinIO Object Storage transferring authentication data (like credentials, token, session-id, etc.)",
+      "severity": "Medium",
+      "solution": "Encryption of Communication Links",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: unencrypted-communication",
+          "value": "unencrypted-communication"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-319",
+          "value": "319",
+          "url": "https://cwe.mitre.org/data/definitions/319.html"
+        }
+      ]
+    },
+    {
+      "id": "419a6a5296cace85588adddb718ae27f771b66d9207daf18e0e6a7b247e6082c",
+      "name": "Unencrypted Communication named PostgreSQL Connection between API Server and PostgreSQL Database transferring authentication data (like credentials, token, session-id, etc.)",
+      "description": "Unencrypted Communication named PostgreSQL Connection between API Server and PostgreSQL Database transferring authentication data (like credentials, token, session-id, etc.)",
+      "severity": "Medium",
+      "solution": "Encryption of Communication Links",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: unencrypted-communication",
+          "value": "unencrypted-communication"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-319",
+          "value": "319",
+          "url": "https://cwe.mitre.org/data/definitions/319.html"
+        }
+      ]
+    },
+    {
+      "id": "ad2750f4c5130f97e3cf87ee9c880cf3d93dc8d443f67069fec4e64f6700e370",
+      "name": "Unencrypted Communication named Redis Session Store between API Server and Redis Cache transferring authentication data (like credentials, token, session-id, etc.)",
+      "description": "Unencrypted Communication named Redis Session Store between API Server and Redis Cache transferring authentication data (like credentials, token, session-id, etc.)",
+      "severity": "Medium",
+      "solution": "Encryption of Communication Links",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: unencrypted-communication",
+          "value": "unencrypted-communication"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-319",
+          "value": "319",
+          "url": "https://cwe.mitre.org/data/definitions/319.html"
+        }
+      ]
+    },
+    {
+      "id": "2d7fdfe8c9e963fd0d31dd7bd11882183ded23a286cfe2dd7ca2565eba06b0fc",
+      "name": "Unencrypted Communication named HTTP to API Server between Nginx Reverse Proxy and API Server",
+      "description": "Unencrypted Communication named HTTP to API Server between Nginx Reverse Proxy and API Server",
+      "severity": "Medium",
+      "solution": "Encryption of Communication Links",
+      "location": {
+        "file": "threagile/threagile.yaml",
+        "start_line": 1,
+        "end_line": 1
+      },
+      "identifiers": [
+        {
+          "type": "threagile_risk_category",
+          "name": "Threagile: unencrypted-communication",
+          "value": "unencrypted-communication"
+        },
+        {
+          "type": "cwe",
+          "name": "CWE-319",
+          "value": "319",
+          "url": "https://cwe.mitre.org/data/definitions/319.html"
+        }
+      ]
+    }
+  ]
+}

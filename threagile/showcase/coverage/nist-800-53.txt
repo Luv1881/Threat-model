@@ -1,0 +1,67 @@
+Coverage report: NIST SP 800-53 Rev 5
+Rules analyzed: 88
+Controls covered: 61
+
+Control   Rules                                                                             Status
+--------  --------------------------------------------------------------------------------  -------
+AC-14     cloud-serverless-public-no-auth, ai-ml-inference-endpoint-no-auth                 COVERED
+AC-17     cloud-object-storage-public-access, cloud-managed-db-public-exposure, ai-ml-e...  COVERED
+AC-2      iam-long-lived-credentials, octave-insider-threat, trike-privilege-accumulati...  COVERED
+AC-24     ai-ml-vector-store-no-access-control, trike-matrix-unreviewed, trike-asset-no...  COVERED
+AC-3      cloud-object-storage-public-access, cloud-container-registry-public, cloud-se...  COVERED
+AC-4      ai-ml-shared-inference-multi-tenant, ai-ml-vector-store-no-access-control, ai...  COVERED
+AC-6      cloud-container-privileged-workloads, cloud-serverless-overpermissive-role, o...  COVERED
+AC-6(1)   cloud-serverless-overpermissive-role, trike-privilege-accumulation                COVERED
+AC-6(2)   cloud-serverless-overpermissive-role                                              COVERED
+AU-12     cloud-no-audit-logging-high-value, ai-ml-inference-endpoint-no-rate-limiting,...  COVERED
+AU-2      cloud-serverless-no-dlq, cloud-no-audit-logging-high-value, octave-insider-th...  COVERED
+AU-3      cloud-no-audit-logging-high-value, ai-ml-inference-logs-pii, octave-insuffici...  COVERED
+AU-9      cloud-serverless-no-dlq, cloud-no-audit-logging-high-value, ai-ml-inference-l...  COVERED
+CA-5      trike-residual-risk-unaccepted                                                    COVERED
+CM-14     cloud-container-registry-public, supply-chain-unpinned-base-images, ai-ml-ml-...  COVERED
+CM-3      supply-chain-no-branch-protection, supply-chain-no-build-provenance, ai-ml-tr...  COVERED
+CM-3(2)   supply-chain-no-code-review                                                       COVERED
+CM-4      supply-chain-no-branch-protection                                                 COVERED
+CM-5      trike-privilege-accumulation                                                      COVERED
+CM-7      cloud-container-privileged-workloads, ai-ml-no-output-validation-before-actio...  COVERED
+CP-10     cloud-managed-db-no-backup, cloud-object-storage-no-versioning, octave-no-backup  COVERED
+CP-2      octave-no-recovery-plan                                                           COVERED
+CP-4      octave-no-recovery-plan                                                           COVERED
+CP-6      octave-no-recovery-plan                                                           COVERED
+CP-9      cloud-managed-db-no-backup, cloud-object-storage-no-versioning, octave-no-bac...  COVERED
+IA-2      iam-internet-identity-no-mfa, cloud-serverless-public-no-auth, ai-ml-embeddin...  COVERED
+IA-2(1)   iam-internet-identity-no-mfa                                                      COVERED
+IA-2(2)   iam-internet-identity-no-mfa                                                      COVERED
+IA-5      iam-long-lived-credentials, supply-chain-build-secrets-exposure, ai-ml-llm-ap...  COVERED
+IA-5(1)   iam-long-lived-credentials                                                        COVERED
+PM-9      trike-residual-risk-unaccepted                                                    COVERED
+PS-7      octave-third-party-exposure                                                       COVERED
+PT-2      ai-ml-training-data-contains-pii, ai-ml-model-inversion-pii-risk                  COVERED
+PT-3      ai-ml-model-inversion-pii-risk                                                    COVERED
+RA-3      trike-residual-risk-unaccepted, trike-matrix-unreviewed                           COVERED
+RA-5      cloud-container-no-image-scanning, supply-chain-no-sast, supply-chain-no-depe...  COVERED
+RA-7      trike-residual-risk-unaccepted                                                    COVERED
+SA-10     cloud-container-no-image-scanning, cloud-container-registry-public, supply-ch...  COVERED
+SA-11     supply-chain-no-sast                                                              COVERED
+SA-12     octave-third-party-exposure                                                       COVERED
+SA-9      octave-third-party-exposure                                                       COVERED
+SC-12     supply-chain-build-secrets-exposure, ai-ml-llm-api-key-hardcoded                  COVERED
+SC-2      ai-ml-shared-inference-multi-tenant                                               COVERED
+SC-28     identifying-pii-stored-unencrypted, pii-client-side-storage, cloud-managed-db...  COVERED
+SC-28(1)  identifying-pii-stored-unencrypted, cloud-managed-db-no-encryption, cloud-obj...  COVERED
+SC-39     ai-ml-llm-output-to-code-execution                                                COVERED
+SC-5      cloud-api-gateway-no-rate-limiting, cloud-api-gateway-no-waf, ai-ml-inference...  COVERED
+SC-7      cloud-managed-db-public-exposure                                                  COVERED
+SC-7(5)   cloud-managed-db-public-exposure                                                  COVERED
+SC-8      pii-client-side-storage, octave-unencrypted-transport                             COVERED
+SC-8(1)   octave-unencrypted-transport                                                      COVERED
+SI-10     ai-ml-no-output-validation-before-action, ai-ml-rag-no-retrieval-filtering, a...  COVERED
+SI-12     cloud-object-storage-no-versioning, ai-ml-training-data-no-versioning, ai-ml-...  COVERED
+SI-15     ai-ml-no-output-validation-before-action, ai-ml-prompt-injection-rag-context,...  COVERED
+SI-2      cloud-serverless-no-dlq, cloud-container-no-image-scanning, supply-chain-no-d...  COVERED
+SI-3      cloud-api-gateway-no-waf                                                          COVERED
+SI-4      cloud-api-gateway-no-rate-limiting, cloud-api-gateway-no-waf, ai-ml-inference...  COVERED
+SI-7      cloud-container-privileged-workloads, supply-chain-unsigned-container-image, ...  COVERED
+SI-7(6)   supply-chain-unsigned-container-image                                             COVERED
+SR-3      supply-chain-artifact-registry-unauthenticated, supply-chain-no-sbom, ai-ml-m...  COVERED
+SR-4      supply-chain-no-sbom                                                              COVERED

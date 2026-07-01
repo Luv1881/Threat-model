@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="VaultNote security gate" tests="2" failures="0">
+  <testsuite name="VaultNote security gate" tests="2" failures="0">
+    <properties>
+      <property name="at_risk_total" value="46"></property>
+      <property name="at_risk_high" value="1"></property>
+      <property name="at_risk_elevated" value="17"></property>
+      <property name="at_risk_medium" value="24"></property>
+      <property name="at_risk_low" value="4"></property>
+    </properties>
+    <testcase name="require_tracking_at_or_above" classname="threagile.gate"></testcase>
+    <testcase name="fail_on_expired_acceptance" classname="threagile.gate"></testcase>
+  </testsuite>
+</testsuites>

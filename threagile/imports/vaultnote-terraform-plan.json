@@ -1,0 +1,42 @@
+{
+  "format_version": "1.1",
+  "terraform_version": "1.7.0",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_s3_bucket.vaultnote_assets",
+          "mode": "managed",
+          "type": "aws_s3_bucket",
+          "name": "vaultnote_assets",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "values": { "bucket": "vaultnote-assets", "acl": "private" }
+        },
+        {
+          "address": "aws_db_instance.vaultnote_pg",
+          "mode": "managed",
+          "type": "aws_db_instance",
+          "name": "vaultnote_pg",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "values": { "engine": "postgres", "publicly_accessible": false, "storage_encrypted": true }
+        },
+        {
+          "address": "aws_lb.vaultnote_alb",
+          "mode": "managed",
+          "type": "aws_lb",
+          "name": "vaultnote_alb",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "values": { "internal": false, "load_balancer_type": "application" }
+        },
+        {
+          "address": "aws_elasticache_cluster.vaultnote_redis",
+          "mode": "managed",
+          "type": "aws_elasticache_cluster",
+          "name": "vaultnote_redis",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "values": { "engine": "redis" }
+        }
+      ]
+    }
+  }
+}

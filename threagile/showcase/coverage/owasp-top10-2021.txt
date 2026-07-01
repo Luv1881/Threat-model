@@ -1,0 +1,15 @@
+Coverage report: OWASP Top 10 (2021)
+Rules analyzed: 88
+Controls covered: 9
+
+Control  Rules                                                                             Status
+-------  --------------------------------------------------------------------------------  -------
+A01      cloud-object-storage-public-access, cloud-serverless-public-no-auth, cloud-co...  COVERED
+A02      identifying-pii-stored-unencrypted, pii-client-side-storage, cloud-managed-db...  COVERED
+A03      cloud-api-gateway-no-waf, supply-chain-no-sast, ai-ml-no-output-validation-be...  COVERED
+A04      cloud-api-gateway-no-rate-limiting, ai-ml-inference-endpoint-no-rate-limiting...  COVERED
+A05      cloud-object-storage-public-access, cloud-container-privileged-workloads, clo...  COVERED
+A06      cloud-container-no-image-scanning, supply-chain-no-dependency-scanning, suppl...  COVERED
+A07      pii-client-side-storage, iam-internet-identity-no-mfa, iam-long-lived-credent...  COVERED
+A08      cloud-container-registry-public, cloud-object-storage-no-versioning, supply-c...  COVERED
+A09      cloud-no-audit-logging-high-value, ai-ml-training-data-no-versioning, ai-ml-i...  COVERED

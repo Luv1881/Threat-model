@@ -2,8 +2,8 @@
 # Managed by 'threagile hooks install' — threat-model guardrail (pre-commit).
 # Re-run 'threagile hooks install --force' to regenerate, or delete this file.
 set -e
-THREAGILE='/tmp/claude-1000/-home-coder221-Desktop-coding/d2527579-dfb2-4f02-92b4-22b62fe2a6a9/scratchpad/threagile'
-MODEL='/tmp/tmp.ekdUscIUbU/threagile.yaml'
+THREAGILE='/home/coder221/Desktop/coding/better-threagile/bin/threagile'
+MODEL='/tmp/tmp.YkVbpxfltI/threagile.yaml'
 # No model in this repo yet? Then there is nothing to check.
 [ -f "$MODEL" ] || exit 0
 echo "threagile: checking threat model $MODEL"
