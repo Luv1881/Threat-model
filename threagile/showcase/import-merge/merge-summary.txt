@@ -1,0 +1,2 @@
+Merge summary: 3 new, 11 updated (importer-owned), 1 conflict-flagged (user-owned), 0 flagged absent-from-diagram
+  threagile/showcase/import-merge/model-after-merge.yaml

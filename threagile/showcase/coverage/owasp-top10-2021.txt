@@ -5,11 +5,11 @@ Controls covered: 9
 Control  Rules                                                                             Status
 -------  --------------------------------------------------------------------------------  -------
 A01      cloud-serverless-public-no-auth, cloud-container-privileged-workloads, cloud-...  COVERED
-A02      pii-client-side-storage, identifying-pii-stored-unencrypted, cloud-managed-db...  COVERED
-A03      cloud-api-gateway-no-waf, supply-chain-no-sast, ai-ml-adversarial-input-no-sh...  COVERED
-A04      cloud-api-gateway-no-rate-limiting, ai-ml-model-inversion-pii-risk, ai-ml-tra...  COVERED
-A05      cloud-api-gateway-no-waf, cloud-container-registry-public, cloud-container-pr...  COVERED
-A06      cloud-container-no-image-scanning, supply-chain-no-dependency-scanning, suppl...  COVERED
+A02      identifying-pii-stored-unencrypted, pii-client-side-storage, cloud-managed-db...  COVERED
+A03      cloud-api-gateway-no-waf, supply-chain-no-sast, ai-ml-no-output-validation-be...  COVERED
+A04      cloud-api-gateway-no-rate-limiting, ai-ml-training-data-contains-pii, ai-ml-i...  COVERED
+A05      cloud-container-privileged-workloads, cloud-managed-db-public-exposure, cloud...  COVERED
+A06      cloud-container-no-image-scanning, supply-chain-no-sast, supply-chain-no-depe...  COVERED
 A07      pii-client-side-storage, cloud-serverless-public-no-auth, iam-long-lived-cred...  COVERED
-A08      cloud-container-registry-public, cloud-object-storage-no-versioning, supply-c...  COVERED
-A09      cloud-no-audit-logging-high-value, ai-ml-inference-logs-pii, ai-ml-training-d...  COVERED
+A08      cloud-object-storage-no-versioning, cloud-container-registry-public, supply-c...  COVERED
+A09      cloud-no-audit-logging-high-value, ai-ml-training-data-no-versioning, ai-ml-i...  COVERED

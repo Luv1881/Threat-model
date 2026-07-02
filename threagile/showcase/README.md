@@ -92,6 +92,33 @@ conventions instead of relying only on the built-in heuristics — see
 | [`import-drawio/`](./import-drawio) | `import drawio --mapping …` | `threagile/imports/vaultnote.drawio.xml` (mxGraph) |
 | [`import-otm/`](./import-otm) | `import otm --mapping …` | `threagile/imports/vaultnote.otm.json` (Open Threat Model) |
 | [`import-mermaid/`](./import-mermaid) | `import mermaid --mapping …` | `threagile/imports/vaultnote.mmd` (flowchart) — both the annotated scaffold (`from-mermaid.yaml`) and a plain `--scaffold=false` fragment (`from-mermaid-plain.yaml`) for comparison |
+| [`import-merge/`](./import-merge) | `import drawio --merge …` | Redrawn diagram reconciled onto a hand-edited model without clobbering confirmed fields — see below |
+| [`import-boundary/`](./import-boundary) | `import drawio --boundary "Application VPC"` | One trust boundary's subsystem scoped out of a larger diagram — see below |
+
+## Re-import without clobbering hand edits
+
+[`import-merge/`](./import-merge) simulates the full loop: `import drawio` produces
+`model-before-merge.yaml`; a human then confirms the "MinIO Bucket" datastore
+(drops its `review-drawio` tag, sets real `technology`/`encryption` values);
+the diagram is redrawn (bucket renamed to "Object Storage", a new "Session
+Cache" added — see `threagile/imports/vaultnote-v2.drawio.xml`) and re-imported
+with `--merge` onto the same file (`model-after-merge.yaml`). Result
+(`merge-summary.txt`): the new cache asset is appended, every still-importer-owned
+field refreshes from the redrawn diagram, and the confirmed bucket's fields are
+left untouched but gain a `merge-conflict:technology`/`merge-conflict:encryption`
+tag flagging that the diagram now disagrees — nothing a human confirmed is ever
+silently overwritten. See [docs/import-merge.md](../../../better-threagile/docs/import-merge.md).
+
+## Boundary scoping (one subsystem out of a larger diagram)
+
+[`import-boundary/`](./import-boundary) imports
+`threagile/imports/vaultnote-multi-boundary.drawio.xml` (two trust boundaries:
+"Application VPC" and a separate "Admin VPC" with its own admin console) two
+ways: `from-full-diagram.yaml` (everything) vs.
+`from-application-vpc-only.yaml` (`--boundary "Application VPC"`) — the latter
+contains only that boundary's subsystem, with the Admin VPC and its console
+entirely absent. Useful for importing one service at a time out of an
+enterprise-wide diagram instead of producing one unreviewable mega-fragment.
 
 ## Human-in-the-loop review
 

@@ -108,6 +108,77 @@ cp threagile/imports/vaultnote-mapping.yaml "$SHOW/import-mermaid/mapping-rules.
 "$THREAGILE" import mermaid --diagram threagile/imports/vaultnote.mmd --scaffold=false \
   > "$SHOW/import-mermaid/from-mermaid-plain.yaml" 2>/dev/null || true
 
+echo ">> merge (re-import without clobbering hand-edited fields)"
+mkdir -p "$SHOW/import-merge"
+"$THREAGILE" import drawio --diagram threagile/imports/vaultnote.drawio.xml \
+  --mapping threagile/imports/vaultnote-mapping.yaml \
+  --output "$SHOW/import-merge/model-before-merge.yaml" 2>/dev/null || true
+cp "$SHOW/import-merge/model-before-merge.yaml" "$SHOW/import-merge/model-after-merge.yaml"
+# Simulate a human confirming the "MinIO Bucket" datastore: drop its review-drawio
+# tag and set real values (technology/encryption) a reviewer would know but the
+# importer can only guess at.
+python3 - "$SHOW/import-merge/model-after-merge.yaml" <<'PYEOF'
+import sys
+path = sys.argv[1]
+old = """    MinIO Bucket:
+        id: db1-drawio
+        description: Imported from draw.io shape (review classification)
+        # TODO(review): asset type inferred from diagram shape/label — confirm this matches the real asset (external-entity/process/datastore)
+        type: datastore
+        usage: business
+        size: system
+        # TODO(review): technology guessed from the shape name/type keywords — set the actual technology
+        technology: file-server
+        tags:
+            - review-drawio
+        # TODO(review): machine defaulted to a conservative guess — confirm the actual deployment (physical/virtual/container/serverless)
+        machine: virtual
+        # TODO(review): encryption defaulted conservatively — set the actual encryption in use
+        encryption: none
+        # TODO(review): CIA rating defaulted conservatively — confirm against the real data classification
+        confidentiality: confidential
+        # TODO(review): CIA rating defaulted conservatively — confirm against the real data classification
+        integrity: critical
+        # TODO(review): CIA rating defaulted conservatively — confirm against the real data classification
+        availability: critical
+        data_assets_stored:
+            - db1-drawio-data"""
+new = """    MinIO Bucket:
+        id: db1-drawio
+        description: Confirmed by a human reviewer — this is the production MinIO object-storage bucket.
+        type: datastore
+        usage: business
+        size: system
+        technology: object-storage
+        machine: virtual
+        encryption: data-with-symmetric-shared-key
+        confidentiality: confidential
+        integrity: critical
+        availability: critical
+        data_assets_stored:
+            - db1-drawio-data"""
+with open(path) as f:
+    content = f.read()
+if old in content:
+    content = content.replace(old, new)
+    with open(path, "w") as f:
+        f.write(content)
+PYEOF
+# Re-import a redrawn diagram (bucket renamed + a new Session Cache asset added)
+# and merge it into the hand-edited model in place.
+"$THREAGILE" import drawio --diagram threagile/imports/vaultnote-v2.drawio.xml \
+  --mapping threagile/imports/vaultnote-mapping.yaml \
+  --merge "$SHOW/import-merge/model-after-merge.yaml" \
+  > "$SHOW/import-merge/merge-summary.txt" 2>&1 || true
+
+echo ">> boundary scoping (import one subsystem out of a larger diagram)"
+mkdir -p "$SHOW/import-boundary"
+"$THREAGILE" import drawio --diagram threagile/imports/vaultnote-multi-boundary.drawio.xml \
+  --boundary "Application VPC" \
+  > "$SHOW/import-boundary/from-application-vpc-only.yaml" 2>/dev/null || true
+"$THREAGILE" import drawio --diagram threagile/imports/vaultnote-multi-boundary.drawio.xml \
+  > "$SHOW/import-boundary/from-full-diagram.yaml" 2>/dev/null || true
+
 echo ">> review (human-in-the-loop: what still needs confirming after an import)"
 mkdir -p "$SHOW/review"
 "$THREAGILE" review --model "$SHOW/import-mermaid/from-mermaid.yaml" --format markdown \

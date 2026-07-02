@@ -1,0 +1,36 @@
+<mxGraphModel>
+  <root>
+    <mxCell id="0" />
+    <mxCell id="1" parent="0" />
+    <mxCell id="boundary1" value="Application VPC" style="rounded=0;dashed=1;" vertex="1" parent="1">
+      <mxGeometry x="80" y="40" width="480" height="240" as="geometry" />
+    </mxCell>
+    <mxCell id="user1" value="Customer Browser" style="shape=actor;" vertex="1" parent="1">
+      <mxGeometry x="-40" y="140" width="60" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="web1" value="Web Frontend" style="rounded=1;" vertex="1" parent="boundary1">
+      <mxGeometry x="40" y="40" width="120" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="api1" value="API Server" style="rounded=1;" vertex="1" parent="boundary1">
+      <mxGeometry x="200" y="40" width="120" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="db1" value="Object Storage" style="shape=cylinder3;fillColor=#00AA00;" vertex="1" parent="boundary1">
+      <mxGeometry x="40" y="150" width="80" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="cache1" value="Session Cache" style="shape=cylinder3;fillColor=#0066CC;" vertex="1" parent="boundary1">
+      <mxGeometry x="360" y="150" width="80" height="60" as="geometry" />
+    </mxCell>
+    <mxCell id="e1" style="strokeColor=#FF0000;dashed=1;" edge="1" parent="1" source="user1" target="web1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e2" edge="1" parent="1" source="web1" target="api1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e3" edge="1" parent="1" source="api1" target="db1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+    <mxCell id="e4" value="redis" edge="1" parent="1" source="api1" target="cache1">
+      <mxGeometry relative="1" as="geometry" />
+    </mxCell>
+  </root>
+</mxGraphModel>
