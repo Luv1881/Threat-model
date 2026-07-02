@@ -2,4 +2,4 @@ Cache directory: /home/coder221/.config/threagile/intel
 
 Feed          Cached At             Age         Status
 ------------  --------------------  ----------  -------
-kev           2026-06-25 08:44      169h        STALE 
+kev           2026-06-25 08:44      181h        STALE 

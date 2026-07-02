@@ -3,7 +3,7 @@
 # Re-run 'threagile hooks install --force' to regenerate, or delete this file.
 set -e
 THREAGILE='/home/coder221/Desktop/coding/better-threagile/bin/threagile'
-MODEL='/tmp/tmp.pGPWe1tHy4/threagile.yaml'
+MODEL='/tmp/tmp.kL5VVyc6kZ/threagile.yaml'
 # No model in this repo yet? Then there is nothing to check.
 [ -f "$MODEL" ] || exit 0
 echo "threagile: checking threat model $MODEL"

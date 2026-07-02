@@ -30,26 +30,25 @@ at once). Outputs are deterministic — re-running yields byte-identical files.
 | [`lint/`](./lint) | `lint --format json\|sarif` | Style / best-practice findings as JSON (`lint.json`, with stable rule IDs + file:line) and **SARIF** (`lint.sarif`) for code-scanning upload |
 | [`gate/`](./gate) | `gate --policy …` | Policy-as-code CI gate verdict (exit 3 on violation); `gate-strict-result.md` shows a failing run that **lists the offending findings** per rule |
 | [`policy/`](./policy) | `policy init --profile …` | Secure-by-default gate policies (prototype/balanced/strict/regulated) |
-| [`quantify/`](./quantify) | `quantify --estimates …` | FAIR Monte-Carlo ALE (financial risk) |
 | [`fmt/`](./fmt) | `fmt` | Canonical, normalised model YAML (stdout) — keeps diffs clean |
 
-## Risk delta & drift (pull-request review)
+## Risk delta & drift gate (pull-request review)
 
-The `diff`/`drift` artifacts compare an "approved baseline" (the model **before**
-the AI feature was added) against the current model, so both surface the 7 new
+The `diff/` artifacts compare an "approved baseline" (the model **before** the
+AI feature was added) against the current model, so both surface the 7 new
 findings the AI services introduced.
 
 | Dir | Command | What it shows |
 |-----|---------|---------------|
 | [`diff/`](./diff) | `diff <old> <new> --format markdown` | Risk delta (+added / −resolved / ~changed) as a PR-ready table |
-| [`drift/`](./drift) | `drift --baseline … --current …` | New findings vs an approved baseline (`--fail-on-new-high` gates CI) |
+| [`diff/drift-gate.txt`](./diff) | `diff <old> <new> --fail-on-new-high` | New findings vs an approved baseline, as a CI drift gate (exit 3 on new High/Critical) |
 
 ## Compliance & explainability
 
 | Dir | Command | What it shows |
 |-----|---------|---------------|
 | [`coverage/`](./coverage) | `coverage --framework …` | Which rules cover each control of OWASP Top 10 (2021) & NIST 800-53 |
-| [`explain/`](./explain) | `explain risk <id>` / `explain rules` | Why a specific risk fired (full detail) + the entire rule catalogue |
+| [`explain/`](./explain) | `explain risk <id>` / `list-risk-rules` | Why a specific risk fired (full detail) + the entire rule catalogue |
 | [`intel/`](./intel) | `intel status` | Age/size of the cached KEV/EPSS threat-intel feeds |
 
 ## CI code-scanning outputs
@@ -63,7 +62,6 @@ findings the AI services introduced.
 
 | Dir | Command | What it shows |
 |-----|---------|---------------|
-| [`attack-tree/`](./attack-tree) | `attack-tree --format dot` | Goal-oriented attack trees (Graphviz DOT) |
 | [`attack-paths/`](./attack-paths) | `paths` | Shortest attack paths from internet to crown-jewel data |
 | [`mermaid/`](./mermaid) | `mermaid` | Data-flow diagram that renders natively in GitHub/GitLab Markdown |
 | [`sbom/`](./sbom) | `sbom --sbom …` | CycloneDX SBOM correlated with KEV/EPSS threat intel |

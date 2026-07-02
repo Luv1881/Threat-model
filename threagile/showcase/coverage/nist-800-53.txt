@@ -5,18 +5,18 @@ Controls covered: 61
 Control   Rules                                                                             Status
 --------  --------------------------------------------------------------------------------  -------
 AC-14     cloud-serverless-public-no-auth, ai-ml-inference-endpoint-no-auth                 COVERED
-AC-17     cloud-managed-db-public-exposure, cloud-object-storage-public-access, ai-ml-e...  COVERED
+AC-17     cloud-object-storage-public-access, cloud-managed-db-public-exposure, ai-ml-e...  COVERED
 AC-2      iam-long-lived-credentials, octave-insider-threat, trike-privilege-accumulati...  COVERED
-AC-24     ai-ml-vector-store-no-access-control, trike-asset-no-action-matrix, trike-mat...  COVERED
-AC-3      cloud-serverless-public-no-auth, cloud-container-registry-public, cloud-objec...  COVERED
-AC-4      ai-ml-vector-store-no-access-control, ai-ml-rag-no-retrieval-filtering, ai-ml...  COVERED
-AC-6      cloud-serverless-overpermissive-role, cloud-container-privileged-workloads, o...  COVERED
+AC-24     ai-ml-vector-store-no-access-control, trike-matrix-unreviewed, trike-asset-no...  COVERED
+AC-3      cloud-object-storage-public-access, cloud-container-registry-public, cloud-se...  COVERED
+AC-4      ai-ml-shared-inference-multi-tenant, ai-ml-vector-store-no-access-control, ai...  COVERED
+AC-6      cloud-container-privileged-workloads, cloud-serverless-overpermissive-role, o...  COVERED
 AC-6(1)   cloud-serverless-overpermissive-role, trike-privilege-accumulation                COVERED
 AC-6(2)   cloud-serverless-overpermissive-role                                              COVERED
 AU-12     cloud-no-audit-logging-high-value, ai-ml-inference-endpoint-no-rate-limiting,...  COVERED
-AU-2      cloud-serverless-no-dlq, cloud-no-audit-logging-high-value, octave-insider-th...  COVERED
+AU-2      cloud-no-audit-logging-high-value, cloud-serverless-no-dlq, octave-insider-th...  COVERED
 AU-3      cloud-no-audit-logging-high-value, ai-ml-inference-logs-pii, octave-insuffici...  COVERED
-AU-9      cloud-serverless-no-dlq, cloud-no-audit-logging-high-value, ai-ml-inference-l...  COVERED
+AU-9      cloud-no-audit-logging-high-value, cloud-serverless-no-dlq, ai-ml-inference-l...  COVERED
 CA-5      trike-residual-risk-unaccepted                                                    COVERED
 CM-14     cloud-container-registry-public, supply-chain-unpinned-base-images, ai-ml-ml-...  COVERED
 CM-3      supply-chain-no-build-provenance, supply-chain-no-branch-protection, ai-ml-tr...  COVERED
@@ -39,7 +39,7 @@ PS-7      octave-third-party-exposure                                           
 PT-2      ai-ml-model-inversion-pii-risk, ai-ml-training-data-contains-pii                  COVERED
 PT-3      ai-ml-model-inversion-pii-risk                                                    COVERED
 RA-3      trike-residual-risk-unaccepted, trike-matrix-unreviewed                           COVERED
-RA-5      cloud-container-no-image-scanning, supply-chain-no-sast, supply-chain-no-depe...  COVERED
+RA-5      cloud-container-no-image-scanning, supply-chain-no-dependency-scanning, suppl...  COVERED
 RA-7      trike-residual-risk-unaccepted                                                    COVERED
 SA-10     cloud-container-no-image-scanning, cloud-container-registry-public, supply-ch...  COVERED
 SA-11     supply-chain-no-sast                                                              COVERED
@@ -47,18 +47,18 @@ SA-12     octave-third-party-exposure                                           
 SA-9      octave-third-party-exposure                                                       COVERED
 SC-12     supply-chain-build-secrets-exposure, ai-ml-llm-api-key-hardcoded                  COVERED
 SC-2      ai-ml-shared-inference-multi-tenant                                               COVERED
-SC-28     identifying-pii-stored-unencrypted, pii-client-side-storage, cloud-object-sto...  COVERED
-SC-28(1)  identifying-pii-stored-unencrypted, cloud-object-storage-no-encryption, cloud...  COVERED
+SC-28     identifying-pii-stored-unencrypted, pii-client-side-storage, cloud-managed-db...  COVERED
+SC-28(1)  identifying-pii-stored-unencrypted, cloud-managed-db-no-encryption, cloud-obj...  COVERED
 SC-39     ai-ml-llm-output-to-code-execution                                                COVERED
 SC-5      cloud-api-gateway-no-waf, cloud-api-gateway-no-rate-limiting, ai-ml-adversari...  COVERED
 SC-7      cloud-managed-db-public-exposure                                                  COVERED
 SC-7(5)   cloud-managed-db-public-exposure                                                  COVERED
 SC-8      pii-client-side-storage, octave-unencrypted-transport                             COVERED
 SC-8(1)   octave-unencrypted-transport                                                      COVERED
-SI-10     ai-ml-adversarial-input-no-shield, ai-ml-no-output-validation-before-action, ...  COVERED
-SI-12     cloud-object-storage-no-versioning, ai-ml-training-data-contains-pii, ai-ml-t...  COVERED
-SI-15     ai-ml-adversarial-input-no-shield, ai-ml-no-output-validation-before-action, ...  COVERED
-SI-2      cloud-container-no-image-scanning, cloud-serverless-no-dlq, supply-chain-no-d...  COVERED
+SI-10     ai-ml-prompt-injection-rag-context, ai-ml-adversarial-input-no-shield, ai-ml-...  COVERED
+SI-12     cloud-object-storage-no-versioning, ai-ml-training-data-no-versioning, ai-ml-...  COVERED
+SI-15     ai-ml-prompt-injection-rag-context, ai-ml-adversarial-input-no-shield, ai-ml-...  COVERED
+SI-2      cloud-serverless-no-dlq, cloud-container-no-image-scanning, supply-chain-no-d...  COVERED
 SI-3      cloud-api-gateway-no-waf                                                          COVERED
 SI-4      cloud-api-gateway-no-waf, cloud-api-gateway-no-rate-limiting, ai-ml-inference...  COVERED
 SI-7      cloud-container-privileged-workloads, supply-chain-no-build-provenance, suppl...  COVERED

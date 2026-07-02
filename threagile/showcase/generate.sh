@@ -72,12 +72,7 @@ for p in prototype balanced strict regulated; do
   "$THREAGILE" policy init --profile "$p" -o "$SHOW/policy/policy-$p.yaml" --force 2>/dev/null || true
 done
 
-mkdir -p "$SHOW/quantify"
-"$THREAGILE" quantify --model "$MODEL" $IGN --estimates threagile/fair-estimates.yaml \
-  --output-json "$SHOW/quantify/quantify.json" > "$SHOW/quantify/quantify.txt" 2>/dev/null || true
-
 echo ">> analysis / diagrams"
-mkdir -p "$SHOW/attack-tree";     "$THREAGILE" attack-tree --model "$MODEL" $IGN --format dot > "$SHOW/attack-tree/attack-tree.dot" 2>/dev/null
 mkdir -p "$SHOW/attack-paths";    "$THREAGILE" paths --model "$MODEL" $IGN > "$SHOW/attack-paths/attack-paths.txt" 2>/dev/null
 mkdir -p "$SHOW/mermaid";         "$THREAGILE" mermaid --model "$MODEL" $IGN --format markdown > "$SHOW/mermaid/data-flow.mmd.md" 2>/dev/null
 mkdir -p "$SHOW/sbom";            "$THREAGILE" sbom --sbom threagile/imports/vaultnote-sbom.cdx.json > "$SHOW/sbom/sbom-report.txt" 2>/dev/null || true
@@ -223,10 +218,10 @@ mkdir -p "$SHOW/coverage"
 "$THREAGILE" coverage --model "$MODEL" $IGN --framework owasp_top10_2021 > "$SHOW/coverage/owasp-top10-2021.txt" 2>/dev/null || true
 "$THREAGILE" coverage --model "$MODEL" $IGN --framework nist_800_53 > "$SHOW/coverage/nist-800-53.txt" 2>/dev/null || true
 
-echo ">> explain (why a risk fired / all rules)"
+echo ">> explain (why a risk fired) / list-risk-rules (all rules catalog)"
 mkdir -p "$SHOW/explain"
 "$THREAGILE" explain risk "accidental-secret-leak@source-repo" --model "$MODEL" $IGN > "$SHOW/explain/explain-risk.txt" 2>/dev/null || true
-"$THREAGILE" explain rules > "$SHOW/explain/all-risk-rules.txt" 2>/dev/null || true
+"$THREAGILE" list-risk-rules > "$SHOW/explain/all-risk-rules.txt" 2>/dev/null || true
 
 echo ">> threat-intel cache status (KEV/EPSS)"
 mkdir -p "$SHOW/intel"
@@ -253,16 +248,16 @@ rm -rf "$TMPA"
 "$THREAGILE" gate --model "$MODEL" $IGN --policy threagile/gate-policy.yaml --format junit \
   > "$SHOW/gate/gate-result.xml" 2>/dev/null || true
 
-echo ">> diff + drift (an added AI feature = 7 new findings vs an approved baseline)"
-mkdir -p "$SHOW/diff" "$SHOW/drift"
+echo ">> diff (an added AI feature = 7 new findings vs an approved baseline; --fail-on-new-high as a CI drift gate)"
+mkdir -p "$SHOW/diff"
 TMPD="$(mktemp -d)"; cp threagile/*.yaml "$TMPD/" 2>/dev/null
 # the "approved baseline" is the model BEFORE the AI feature was added
 sed -i '/- feature_ai.yaml/d' "$TMPD/threagile.yaml" 2>/dev/null || true
 # sanitise the throwaway temp path so the committed artifacts are reproducible
 "$THREAGILE" diff "$TMPD/threagile.yaml" "$MODEL" $IGN --format markdown 2>/dev/null \
   | sed "s#${TMPD}/threagile.yaml#approved-baseline.yaml#g" > "$SHOW/diff/risk-delta.md" || true
-"$THREAGILE" drift --baseline "$TMPD/threagile.yaml" --current "$MODEL" $IGN 2>/dev/null \
-  | sed "s#${TMPD}/threagile.yaml#approved-baseline.yaml#g" > "$SHOW/drift/drift-report.txt" || true
+"$THREAGILE" diff "$TMPD/threagile.yaml" "$MODEL" $IGN --fail-on-new-high 2>/dev/null \
+  | sed "s#${TMPD}/threagile.yaml#approved-baseline.yaml#g" > "$SHOW/diff/drift-gate.txt" || true
 rm -rf "$TMPD"
 
 echo ">> done. tree:"
