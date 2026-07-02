@@ -1,0 +1,28 @@
+{
+  "otmVersion": "0.2.0",
+  "project": {
+    "id": "vaultnote",
+    "name": "VaultNote",
+    "description": "OTM representation of the VaultNote architecture for the better-threagile OTM importer showcase"
+  },
+  "trustZones": [
+    {"id": "tz-internet", "name": "Internet", "risk": {"trustRating": 10}},
+    {"id": "tz-app", "name": "Application VPC", "risk": {"trustRating": 60}}
+  ],
+  "components": [
+    {"id": "c-browser", "name": "Customer Browser", "type": "browser-client", "parent": {"trustZone": "tz-internet"}},
+    {"id": "c-web", "name": "Web Frontend", "type": "web-application", "parent": {"trustZone": "tz-app"}},
+    {"id": "c-api", "name": "API Server", "type": "web-service", "parent": {"trustZone": "tz-app"}},
+    {"id": "c-db", "name": "Notes Database", "type": "database", "parent": {"trustZone": "tz-app"}},
+    {"id": "c-cache", "name": "Session Cache", "type": "cache", "parent": {"trustZone": "tz-app"}}
+  ],
+  "dataflows": [
+    {"id": "df-1", "name": "Browse", "source": "c-browser", "destination": "c-web", "bidirectional": false},
+    {"id": "df-2", "name": "API calls", "source": "c-web", "destination": "c-api", "bidirectional": false},
+    {"id": "df-3", "name": "Query notes", "source": "c-api", "destination": "c-db", "bidirectional": false},
+    {"id": "df-4", "name": "Session lookup", "source": "c-api", "destination": "c-cache", "bidirectional": false}
+  ],
+  "assets": [
+    {"id": "a-notes", "name": "Encrypted Notes", "risk": {"confidentiality": 90, "integrity": 80, "availability": 50}}
+  ]
+}

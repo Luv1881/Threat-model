@@ -1,0 +1,12 @@
+flowchart TD
+  User([Customer Browser])
+  subgraph "Application VPC"
+    Web[Web Frontend]
+    API[API Server]
+    DB[(Notes Database)]
+    Cache[(Session Cache)]
+  end
+  User -->|HTTPS| Web
+  Web -->|HTTPS| API
+  API -->|SQL/TLS| DB
+  API -->|Redis| Cache

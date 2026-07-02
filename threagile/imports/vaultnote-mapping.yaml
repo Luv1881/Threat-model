@@ -1,0 +1,11 @@
+rules:
+  - match:
+      label: '(?i)cache|redis'
+    set:
+      technology: in-memory-key-value-database
+      tags: [caching-layer]
+  - match:
+      label: '(?i)database|notes'
+    set:
+      technology: database
+      tags: [primary-datastore]

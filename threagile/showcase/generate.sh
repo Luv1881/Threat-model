@@ -88,7 +88,32 @@ mkdir -p "$SHOW/import-compose"
 mkdir -p "$SHOW/import-kubernetes"
 "$THREAGILE" import kubernetes --manifests threagile/imports/vaultnote-k8s.yaml > "$SHOW/import-kubernetes/from-k8s.yaml" 2>/dev/null || true
 mkdir -p "$SHOW/import-threat-dragon"
-"$THREAGILE" import threat-dragon --tdmodel threat-dragon/vaultnote-model.json > "$SHOW/import-threat-dragon/from-threat-dragon.yaml" 2>/dev/null || true
+"$THREAGILE" import threat-dragon --tdmodel threat-dragon/vaultnote-model.json --scaffold=false > "$SHOW/import-threat-dragon/from-threat-dragon.yaml" 2>/dev/null || true
+
+echo ">> importers (diagram -> mock model, no AI: drawio / otm / mermaid)"
+mkdir -p "$SHOW/import-drawio"
+"$THREAGILE" import drawio --diagram threagile/imports/vaultnote.drawio.xml \
+  --mapping threagile/imports/vaultnote-mapping.yaml \
+  > "$SHOW/import-drawio/from-drawio.yaml" 2>/dev/null || true
+mkdir -p "$SHOW/import-otm"
+"$THREAGILE" import otm --file threagile/imports/vaultnote.otm.json \
+  --mapping threagile/imports/vaultnote-mapping.yaml \
+  > "$SHOW/import-otm/from-otm.yaml" 2>/dev/null || true
+mkdir -p "$SHOW/import-mermaid"
+"$THREAGILE" import mermaid --diagram threagile/imports/vaultnote.mmd \
+  --mapping threagile/imports/vaultnote-mapping.yaml \
+  > "$SHOW/import-mermaid/from-mermaid.yaml" 2>/dev/null || true
+cp threagile/imports/vaultnote-mapping.yaml "$SHOW/import-mermaid/mapping-rules.yaml" 2>/dev/null || true
+# --scaffold=false: plain fragment, for comparison against the annotated one above
+"$THREAGILE" import mermaid --diagram threagile/imports/vaultnote.mmd --scaffold=false \
+  > "$SHOW/import-mermaid/from-mermaid-plain.yaml" 2>/dev/null || true
+
+echo ">> review (human-in-the-loop: what still needs confirming after an import)"
+mkdir -p "$SHOW/review"
+"$THREAGILE" review --model "$SHOW/import-mermaid/from-mermaid.yaml" --format markdown \
+  > "$SHOW/review/review-report.md" 2>/dev/null || true
+"$THREAGILE" review --model "$SHOW/import-mermaid/from-mermaid.yaml" --format json \
+  > "$SHOW/review/review-report.json" 2>/dev/null || true
 
 echo ">> CI scaffolding"
 mkdir -p "$SHOW/generate-ci"

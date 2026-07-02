@@ -75,7 +75,29 @@ findings the AI services introduced.
 | [`import-compose/`](./import-compose) | `import compose` | `docker-compose.yml` |
 | [`import-kubernetes/`](./import-kubernetes) | `import kubernetes` | `threagile/imports/vaultnote-k8s.yaml` |
 | [`import-terraform/`](./import-terraform) | `import terraform` | `threagile/imports/vaultnote-terraform-plan.json` (`terraform show -json`) |
-| [`import-threat-dragon/`](./import-threat-dragon) | `import threat-dragon` | `threat-dragon/vaultnote-model.json` |
+| [`import-threat-dragon/`](./import-threat-dragon) | `import threat-dragon --scaffold=false` | `threat-dragon/vaultnote-model.json` |
+
+## Diagram → mock model (no AI, editable scaffold)
+
+Every diagram importer is **deterministic** — no AI — and defaults to
+**scaffold output**: heuristically inferred fields get a `# TODO(review): …`
+comment, and every generated element is tagged `review-<importer>` until a
+human confirms it (see [`review/`](./review) below). `--mapping` (shown here)
+lets a team encode its own box-label nomenclature and diagram color/style
+conventions instead of relying only on the built-in heuristics — see
+`threagile/imports/vaultnote-mapping.yaml`.
+
+| Dir | Command | Source |
+|-----|---------|--------|
+| [`import-drawio/`](./import-drawio) | `import drawio --mapping …` | `threagile/imports/vaultnote.drawio.xml` (mxGraph) |
+| [`import-otm/`](./import-otm) | `import otm --mapping …` | `threagile/imports/vaultnote.otm.json` (Open Threat Model) |
+| [`import-mermaid/`](./import-mermaid) | `import mermaid --mapping …` | `threagile/imports/vaultnote.mmd` (flowchart) — both the annotated scaffold (`from-mermaid.yaml`) and a plain `--scaffold=false` fragment (`from-mermaid-plain.yaml`) for comparison |
+
+## Human-in-the-loop review
+
+| Dir | Command | What it shows |
+|-----|---------|---------------|
+| [`review/`](./review) | `review --format markdown\|json` | Every element still carrying a `review-<importer>`/`stub-data-asset` tag after the Mermaid import above — the checklist a human works through before trusting an imported model. `gate`'s `fail_on_unreviewed: true` policy key blocks CI on the same signal. |
 
 ## Onboarding & CI
 

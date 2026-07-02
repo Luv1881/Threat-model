@@ -1,0 +1,126 @@
+[
+  {
+    "kind": "communication_link",
+    "name": "Redis",
+    "parent": "API Server",
+    "tags": [
+      "review-mermaid"
+    ]
+  },
+  {
+    "kind": "communication_link",
+    "name": "SQL/TLS",
+    "parent": "API Server",
+    "tags": [
+      "review-mermaid"
+    ]
+  },
+  {
+    "kind": "communication_link",
+    "name": "HTTPS",
+    "parent": "Customer Browser",
+    "tags": [
+      "review-mermaid"
+    ]
+  },
+  {
+    "kind": "communication_link",
+    "name": "HTTPS",
+    "parent": "Web Frontend",
+    "tags": [
+      "review-mermaid"
+    ]
+  },
+  {
+    "kind": "data_asset",
+    "name": "HTTPS-payload",
+    "id": "link-user-to-web-mermaid-payload",
+    "tags": [
+      "review-mermaid",
+      "stub-data-asset"
+    ]
+  },
+  {
+    "kind": "data_asset",
+    "name": "HTTPS-payload (link-web-to-api-mermaid-payload)",
+    "id": "link-web-to-api-mermaid-payload",
+    "tags": [
+      "review-mermaid",
+      "stub-data-asset"
+    ]
+  },
+  {
+    "kind": "data_asset",
+    "name": "Imported Data (review and classify)",
+    "id": "data-imported-mermaid",
+    "tags": [
+      "review-mermaid"
+    ]
+  },
+  {
+    "kind": "data_asset",
+    "name": "Notes Database-data",
+    "id": "db-mermaid-data",
+    "tags": [
+      "review-mermaid",
+      "stub-data-asset"
+    ]
+  },
+  {
+    "kind": "data_asset",
+    "name": "Session Cache-data",
+    "id": "cache-mermaid-data",
+    "tags": [
+      "review-mermaid",
+      "stub-data-asset"
+    ]
+  },
+  {
+    "kind": "technical_asset",
+    "name": "API Server",
+    "id": "api-mermaid",
+    "tags": [
+      "review-mermaid"
+    ]
+  },
+  {
+    "kind": "technical_asset",
+    "name": "Customer Browser",
+    "id": "user-mermaid",
+    "tags": [
+      "review-mermaid"
+    ]
+  },
+  {
+    "kind": "technical_asset",
+    "name": "Notes Database",
+    "id": "db-mermaid",
+    "tags": [
+      "review-mermaid"
+    ]
+  },
+  {
+    "kind": "technical_asset",
+    "name": "Session Cache",
+    "id": "cache-mermaid",
+    "tags": [
+      "review-mermaid"
+    ]
+  },
+  {
+    "kind": "technical_asset",
+    "name": "Web Frontend",
+    "id": "web-mermaid",
+    "tags": [
+      "review-mermaid"
+    ]
+  },
+  {
+    "kind": "trust_boundary",
+    "name": "Application VPC",
+    "id": "boundary-application-vpc-mermaid",
+    "tags": [
+      "review-mermaid"
+    ]
+  }
+]
