@@ -84,11 +84,13 @@ jobs:
       - name: Run Threagile analysis
         run: |
           mkdir -p threagile/output
+          # No --background needed: the binary embeds the built-in PDF background
+          # template (pkg/report/template/background.pdf) and extracts it into the
+          # temp folder when the app dir has no copy.
           better-threagile/bin/threagile analyze-model \
             --model      threagile/threagile.yaml \
             --output     threagile/output \
             --app-dir    better-threagile \
-            --background report/template/background.pdf \
             --ignore-orphaned-risk-tracking
 
       # ── 3b. Code-scanning SARIF (risks + model hygiene) ──────────────────────
