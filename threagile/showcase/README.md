@@ -30,7 +30,7 @@ at once). Outputs are deterministic — re-running yields byte-identical files.
 | [`lint/`](./lint) | `lint --format json\|sarif` | Style / best-practice findings as JSON (`lint.json`, with stable rule IDs + file:line) and **SARIF** (`lint.sarif`) for code-scanning upload |
 | [`gate/`](./gate) | `gate --policy …` | Policy-as-code CI gate verdict (exit 3 on violation); `gate-strict-result.md` shows a failing run that **lists the offending findings** per rule |
 | [`policy/`](./policy) | `policy init --profile …` | Secure-by-default gate policies (prototype/balanced/strict/regulated) |
-| [`fmt/`](./fmt) | `fmt` | Canonical, normalised model YAML (stdout) — keeps diffs clean |
+| [`fmt/`](./fmt) | `fmt` | Canonical, normalised model YAML (stdout) — keeps diffs clean; `fmt-dry-run.diff` previews a reformat as a unified diff, `patch -p1`-applyable |
 
 ## Risk delta & drift gate (pull-request review)
 
@@ -128,8 +128,8 @@ enterprise-wide diagram instead of producing one unreviewable mega-fragment.
 
 | Dir | Command | What it shows |
 |-----|---------|---------------|
-| [`bootstrap/`](./bootstrap) | `bootstrap` | Zero-config: scan a repo → starter model + secure-by-default policy |
-| [`hooks/`](./hooks) | `hooks install` | Generated git pre-commit / pre-push guard scripts |
+| [`bootstrap/`](./bootstrap) | `bootstrap` | Zero-config: scan a repo → starter model + secure-by-default policy; `bootstrap-dry-run.txt` shows the write plan (nothing written) |
+| [`hooks/`](./hooks) | `hooks install` | Generated git pre-commit / pre-push guard scripts; `hooks-dry-run.txt` shows the write plan (skip existing / would install) |
 | [`generate-ci/`](./generate-ci) | `generate-ci --target gate-pr` | Ready-to-commit GitHub Actions gate-PR workflow |
 
 ## Methodology rule packs (fork-only)

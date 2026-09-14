@@ -1,0 +1,7 @@
+Scanned "."
+  compose     1 file(s): [docker-compose.yml]
+
+Would write starter model: threagile.yaml (6 assets, 1 data assets, 2 trust boundaries)
+Would write gate policy: policy.yaml (balanced profile)
+
+(dry run — nothing was written; re-run without --dry-run to apply)

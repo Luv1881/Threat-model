@@ -1,0 +1,9 @@
+--- a/messy.yaml
++++ b/messy.yaml
+@@ -1,5 +1,3 @@
+-title:   showcase
+-
+-
++title: showcase
+ technical_assets: {}
+ 

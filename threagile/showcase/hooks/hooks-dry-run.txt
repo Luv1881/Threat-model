@@ -1,0 +1,2 @@
+skip (exists): .git/hooks/pre-commit
+would install: .git/hooks/pre-push

@@ -193,6 +193,12 @@ cp "$TMPH/.git/hooks/pre-commit" "$SHOW/hooks/pre-commit" 2>/dev/null || true
 cp "$TMPH/.git/hooks/pre-push"   "$SHOW/hooks/pre-push"   2>/dev/null || true
 rm -rf "$TMPH"
 
+echo ">> hooks install --dry-run (write plan: one existing, one new)"
+TMPHD="$(mktemp -d)"; ( cd "$TMPHD" && git init -q && cp "$ROOT/$MODEL" threagile.yaml \
+  && printf '#!/bin/sh\necho hand-written hook\n' > .git/hooks/pre-commit )
+( cd "$TMPHD" && "$THREAGILE" hooks install --dry-run > "$SHOW/hooks/hooks-dry-run.txt" 2>&1 ) || true
+rm -rf "$TMPHD"
+
 echo ">> bootstrap (zero-config: scan a repo -> starter model + policy)"
 mkdir -p "$SHOW/bootstrap"
 TMPB="$(mktemp -d)"; cp "$ROOT/docker-compose.yml" "$TMPB/" 2>/dev/null
@@ -200,6 +206,11 @@ TMPB="$(mktemp -d)"; cp "$ROOT/docker-compose.yml" "$TMPB/" 2>/dev/null
 cp "$TMPB/threagile.yaml" "$SHOW/bootstrap/threagile.yaml" 2>/dev/null || true
 cp "$TMPB/policy.yaml"    "$SHOW/bootstrap/policy.yaml"    2>/dev/null || true
 rm -rf "$TMPB"
+
+echo ">> bootstrap --dry-run (plan + diffs, nothing written)"
+TMPBD="$(mktemp -d)"; cp "$ROOT/docker-compose.yml" "$TMPBD/" 2>/dev/null
+( cd "$TMPBD" && "$THREAGILE" bootstrap --dry-run > "$SHOW/bootstrap/bootstrap-dry-run.txt" 2>&1 ) || true
+rm -rf "$TMPBD"
 
 echo ">> methodology rule packs (fork-only)"
 mkdir -p "$SHOW/methodologies"
@@ -230,6 +241,11 @@ mkdir -p "$SHOW/intel"
 echo ">> fmt (canonical model formatting, stdout)"
 mkdir -p "$SHOW/fmt"
 "$THREAGILE" fmt --model "$MODEL" > "$SHOW/fmt/formatted-model.yaml" 2>/dev/null || true
+
+echo ">> fmt --dry-run (unified diff preview)"
+TMPF="$(mktemp -d)"; printf 'title:   showcase\n\n\ntechnical_assets: {}\n' > "$TMPF/messy.yaml"
+( cd "$TMPF" && "$THREAGILE" fmt --dry-run messy.yaml > "$SHOW/fmt/fmt-dry-run.diff" 2>&1 ) || true
+rm -rf "$TMPF"
 
 echo ">> import terraform (terraform show -json plan -> model)"
 mkdir -p "$SHOW/import-terraform"
