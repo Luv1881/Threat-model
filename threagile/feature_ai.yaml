@@ -258,13 +258,16 @@ trust_boundaries:
   AI Services:
     id: ai-services
     description: >
-      Internal network housing the AI/ML components (vector store, RAG pipeline).
-      The LLM inference endpoint is internet-accessible — it is in the Internet
-      trust boundary. AI components have outbound access to the vector store and
-      receive note content from the API server.
+      Internal network housing the AI/ML components (LLM summarizer, vector store,
+      RAG pipeline). The LLM inference endpoint is internet-accessible without
+      authentication (INTENTIONAL, tracked as ai-ml-inference-endpoint-no-auth) and
+      accepts traffic directly rather than through the Nginx TLS terminator. AI
+      components have outbound access to the vector store and receive note content
+      from the API server.
     type: network-on-prem
     tags: ["ai"]
     technical_assets_inside:
+      - llm-summarizer
       - vector-store
       - rag-pipeline
     trust_boundaries_nested: []

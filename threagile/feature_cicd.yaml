@@ -25,6 +25,9 @@ technical_assets:
     technology: sourcecode-repository
     tags: ["github", "git", "supply-chain"]
     internet: true
+    # PASTA — entry-point classification: push/PR webhooks drive the build
+    entry_point_type: webhook
+    attack_surface_exposure: internet
     machine: virtual
     encryption: transparent
     owner: VaultNote Team
@@ -85,6 +88,9 @@ technical_assets:
     technology: build-pipeline
     tags: ["github-actions", "ci", "supply-chain"]
     internet: true
+    # PASTA — entry-point classification: repository webhooks and manual dispatch
+    entry_point_type: webhook
+    attack_surface_exposure: internet
     machine: virtual
     encryption: transparent
     owner: VaultNote Team
@@ -146,6 +152,9 @@ technical_assets:
     technology: container-registry
     tags: ["ecr", "aws", "supply-chain"]
     internet: true
+    # PASTA — entry-point classification: registry API (push/pull)
+    entry_point_type: api
+    attack_surface_exposure: internet
     machine: virtual
     encryption: transparent
     owner: VaultNote Team
