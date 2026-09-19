@@ -8,9 +8,12 @@ glance. Regenerate everything with:
 THREAGILE=../better-threagile/bin/threagile ./threagile/showcase/generate.sh
 ```
 
-All commands run against `threagile/threagile.yaml` with
-`--ignore-orphaned-risk-tracking` (the model tracks risks for every methodology
-at once). Outputs are deterministic — re-running yields byte-identical files.
+All commands run against `threagile/threagile.yaml` without
+`--ignore-orphaned-risk-tracking`: the model tracks risks for every methodology,
+and entries for packs a run does not load are deferred automatically, so a stale
+or misspelled entry would fail the run loudly (intentionally — the showcase
+doubles as a model-hygiene check). Outputs are deterministic: re-running yields
+byte-identical files.
 
 ## Core analysis
 

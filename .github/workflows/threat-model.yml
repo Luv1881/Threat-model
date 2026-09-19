@@ -98,8 +98,7 @@ jobs:
           better-threagile/bin/threagile analyze-model \
             --model      threagile/threagile.yaml \
             --output     threagile/output \
-            --app-dir    better-threagile \
-            --ignore-orphaned-risk-tracking
+            --app-dir    better-threagile
 
       # ── 3b. Code-scanning SARIF (risks + model hygiene) ──────────────────────
       # analyze-model already wrote risks.sarif; also produce a model-hygiene
@@ -110,7 +109,6 @@ jobs:
         run: |
           better-threagile/bin/threagile lint \
             --model threagile/threagile.yaml \
-            --ignore-orphaned-risk-tracking \
             --format sarif > threagile/output/lint.sarif
 
       - name: Upload risk SARIF to code scanning
@@ -234,7 +232,6 @@ jobs:
               --output     "threagile/output/packs/$pack" \
               --app-dir    better-threagile \
               --rule-pack  "$pack" \
-              --ignore-orphaned-risk-tracking \
               --skip-report-pdf --skip-report-adoc \
               --skip-data-flow-diagram --skip-data-asset-diagram \
               --skip-risks-excel --skip-tags-excel

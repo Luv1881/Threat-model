@@ -23,7 +23,10 @@ fi
 THREAGILE="$(cd "$(dirname "$THREAGILE")" && pwd)/$(basename "$THREAGILE")"
 
 MODEL="threagile/threagile.yaml"
-IGN="--ignore-orphaned-risk-tracking"
+# Cross-methodology tracking entries defer automatically; no ignore flag needed,
+# so a stale or misspelled entry would fail these runs loudly (that is wanted:
+# the showcase doubles as a model-hygiene check).
+IGN=""
 SHOW="threagile/showcase"
 run() { echo "  - $1"; shift; "$@"; }   # label + command
 

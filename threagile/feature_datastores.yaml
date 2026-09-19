@@ -374,15 +374,12 @@ risk_tracking:
     date: 2026-04-25
     checked_by: Infrastructure Team
 
-  operational-unmonitored-critical-process@api-server:
-    status: in-progress
-    justification: >
-      Application-level metrics (request rate, error rate, p99 latency) are
-      exposed via /metrics endpoint but Prometheus scraping is not configured
-      in the demo environment. Production monitoring stack is tracked in VAULT-123.
-    ticket: VAULT-123
-    date: 2026-04-25
-    checked_by: Infrastructure Team
+  # VAULT-123 — production monitoring stack (in-progress). A note rather than
+  # risk_tracking: the VAST operational-unmonitored-critical-process rule checks
+  # for audit-logged ingress, and api-server has one (the AWS API Gateway link is
+  # audit_logged: true), so the rule does not fire. The gap is application-level
+  # metrics (request rate, error rate, p99 on /metrics) not being scraped in the
+  # demo environment.
 
   application-secrets-across-processes@api-server:
     status: in-progress

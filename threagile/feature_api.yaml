@@ -238,27 +238,15 @@ risk_tracking:
     date: 2026-04-25
     checked_by: Security Team
 
-  # PASTA findings on the API server
-  custom-development-no-sast@api-server:
-    status: in-progress
-    justification: >
-      SAST tooling (Semgrep with Node.js ruleset) is integrated into the
-      GitHub Actions pipeline but the full security rule set is not yet
-      enabled. Remaining rule categories (injection, secrets, SSRF) are being
-      evaluated for false-positive rates. Target: sprint 21.
-    ticket: VAULT-121
-    date: 2026-04-25
-    checked_by: Security Team
-
-  custom-development-no-sast@browser-spa:
-    status: in-progress
-    justification: >
-      Same Semgrep pipeline as api-server covers the React SPA source.
-      ESLint security plugin (eslint-plugin-security) is configured but
-      not yet enforced as a blocking check. Planned for sprint 21.
-    ticket: VAULT-121
-    date: 2026-04-25
-    checked_by: Security Team
+  # VAULT-121 — SAST rollout (in-progress, target sprint 21). Recorded as a note
+  # rather than risk_tracking because the pasta custom-development-no-sast rule is
+  # suppressed: the model contains the source-repo and build-pipeline assets it
+  # looks for. What remains is tooling enforcement:
+  #   - api-server:  Semgrep (Node.js ruleset) runs in CI; the full ruleset
+  #                  (injection, secrets, SSRF) is not yet enabled pending a
+  #                  false-positive review.
+  #   - browser-spa: the same Semgrep pipeline covers the React source;
+  #                  eslint-plugin-security is configured but not blocking.
 
   # ── Manually-identified findings from source code review (no engine rule) ──
   # These are documented as YAML comments because they have no corresponding

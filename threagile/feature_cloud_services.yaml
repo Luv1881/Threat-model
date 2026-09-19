@@ -419,17 +419,11 @@ risk_tracking:
     date: 2026-04-28
     checked_by: Infrastructure Team
 
-  cloud-managed-db-no-backup@rds-postgresql:
-    status: accepted
-    justification: >
-      Automated backups ARE enabled in Terraform (backup_retention_period = 7,
-      confirmed in terraform/rds.tf). The has-automated-backup tag suppresses this
-      finding. PITR is available for the 7-day window. Multi-AZ is not enabled
-      (multi_az = false in Terraform) — failover requires snapshot restore, not
-      standby promotion. Accepted: RPO = 24 h backup cadence for this demo tier.
-    ticket: VAULT-141
-    date: 2026-05-25
-    checked_by: Infrastructure Team
+  # VAULT-141 — accepted residual (not a finding). Automated backups ARE enabled
+  # (backup_retention_period = 7 in terraform/rds.tf) and the has-automated-backup
+  # tag suppresses the cloud-native cloud-managed-db-no-backup rule. Accepted
+  # residual risk: multi_az = false, so failover requires a snapshot restore, and
+  # the RPO equals the 24 h backup cadence.
 
   cloud-container-no-image-scanning@ecs-platform:
     status: in-progress

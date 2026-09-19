@@ -533,15 +533,11 @@ risk_tracking:
     date: 2026-06-12
     checked_by: Security Team
 
-  undocumented-entry-point@*:
-    status: in-progress
-    justification: >
-      Entry-point inventory: documenting the CI/CD webhooks, SES sending
-      endpoint, registry, and API Gateway as reviewed entry points with
-      owners in the architecture record.
-    ticket: VAULT-171
-    date: 2026-06-12
-    checked_by: Security Team
+  # VAULT-171 — completed. The pasta undocumented-entry-point finding no longer
+  # exists: every internet-exposed asset now declares entry_point_type
+  # (browser-spa, nginx-proxy, aws-api-gateway, aws-ses, build-pipeline,
+  # container-registry, source-repo, llm-summarizer). Resolved findings leave no
+  # risk_tracking entry behind.
 
   weak-auth-on-entry-point@llm-summarizer:
     status: in-progress
