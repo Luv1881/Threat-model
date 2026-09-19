@@ -1,8 +1,8 @@
-version: '3.8'
 
 services:
   nginx:
-    image: nginx:alpine
+    # Pinned by digest (VAULT-155): the tag stays readable, the digest is immutable.
+    image: nginx:1.27-alpine@sha256:65645c7bb6a0661892a8b03b89d0743208a18dd2f3f17a54ef4b76fb8e2f2a10
     ports:
       - "443:443"
       - "80:80"
@@ -39,7 +39,7 @@ services:
       - backend-net
 
   db:
-    image: postgres:16-alpine
+    image: postgres:16-alpine@sha256:3c5c8892d184f738f4fe282d14ddaa613a38f00f4189d2d94725ebe6f2909ddb
     environment:
       POSTGRES_USER: vaultnote
       POSTGRES_PASSWORD: secretpass
@@ -56,13 +56,16 @@ services:
       retries: 10
 
   redis:
-    image: redis:7-alpine
+    # 7.4-alpine: concrete minor, pinned by digest.
+    image: redis:7.4-alpine@sha256:e7723ff73d963f5cc6d9c4643ea3d989527a402a319239054e9472a7fb9219a2
     command: redis-server --requirepass redispass
     networks:
       - backend-net
 
   minio:
-    image: minio/minio
+    # minio/minio on Docker Hub no longer serves pulls (the project publishes to
+    # Quay now) — keep the maintained registry reference, pinned by digest.
+    image: quay.io/minio/minio:latest@sha256:14cea493d9a34af32f524e538b8346cf79f3321eff8e708c1e2960462bd8936e
     command: server /data --console-address ":9001"
     environment:
       MINIO_ROOT_USER: minioadmin
