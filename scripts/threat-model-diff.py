@@ -14,6 +14,7 @@ Sets GitHub Actions step outputs:
 import json
 import argparse
 import os
+import re
 import sys
 
 
@@ -37,8 +38,10 @@ def load_risks(filepath):
 def load_tracked_ids(model_path):
     """
     Return the set of risk IDs that already have a risk_tracking entry in the
-    Threagile model YAML. Returns an empty set if the file is unavailable or
-    PyYAML is not installed.
+    Threagile model YAML. The model is split across files via `includes:` (one
+    per feature), and the risk_tracking blocks live in those included files, so
+    includes are resolved recursively. Returns an empty set if the file is
+    unavailable or PyYAML is not installed.
     """
     if not model_path or not os.path.exists(model_path):
         return set()
@@ -48,11 +51,22 @@ def load_tracked_ids(model_path):
         print("Warning: PyYAML not installed — skipping risk_tracking check.", file=sys.stderr)
         return set()
 
-    with open(model_path) as f:
-        model = yaml.safe_load(f)
+    tracked = set()
+    seen = set()
 
-    tracking = model.get('risk_tracking') or {}
-    return set(tracking.keys())
+    def collect(path):
+        real = os.path.realpath(path)
+        if real in seen:
+            return
+        seen.add(real)
+        with open(path) as handle:
+            model = yaml.safe_load(handle) or {}
+        tracked.update((model.get('risk_tracking') or {}).keys())
+        for include in model.get('includes') or []:
+            collect(os.path.join(os.path.dirname(path), include))
+
+    collect(model_path)
+    return tracked
 
 
 # ── Diff ──────────────────────────────────────────────────────────────────────
@@ -113,16 +127,18 @@ def main():
     has_critical = len(new_critical) > 0
 
     # ── Tracking check ────────────────────────────────────────────────────────
-    # A new critical risk is "untracked" if it has no matching entry in the
-    # risk_tracking section of threagile.yaml. We match on synthetic_id prefix
-    # because Threagile's IDs can be long and the tracking key is often shorter.
+    # A new critical risk is "untracked" when no risk_tracking entry covers it.
+    # Matching mirrors the analyzer: a `*` in a tracking key matches one
+    # @-delimited part (at least one character) and the match is unanchored.
+    # The previous category-prefix heuristic marked every new risk in an already
+    # tracked category as tracked, so the gate only ever fired for categories
+    # with no entry at all.
     tracked_ids = load_tracked_ids(args.model)
     untracked = []
     for risk in new_critical:
         rid = risk.get('synthetic_id', risk.get('id', ''))
-        # Check exact match or prefix match (tracking keys are often prefixed)
         is_tracked = any(
-            rid == tid or rid.startswith(tid) or tid.startswith(rid.split('@')[0])
+            re.search(re.sub(r'\\\*', '[^@]+', re.escape(tid)), rid) is not None
             for tid in tracked_ids
         )
         if not is_tracked:
