@@ -44,3 +44,10 @@ terraform/*.tfplan
 
 # TLS certificates are generated locally by setup.sh (never commit keys)
 nginx/certs/
+
+# CI scratch outputs (uploaded as workflow artifacts, not committed)
+threagile/output/diff-report.json
+threagile/output/risks-previous.json
+threagile/output/all-risks.json
+threagile/output/packs/
+threagile/output/*.sarif
