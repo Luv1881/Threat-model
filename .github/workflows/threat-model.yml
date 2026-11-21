@@ -73,7 +73,7 @@ jobs:
           path: better-threagile
 
       - name: Set up Go
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version-file: better-threagile/go.mod
           cache-dependency-path: better-threagile/go.sum
@@ -114,7 +114,7 @@ jobs:
       - name: Upload risk SARIF to code scanning
         if: always()
         continue-on-error: true
-        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           sarif_file: threagile/output/risks.sarif
           category: threagile-risks
@@ -122,7 +122,7 @@ jobs:
       - name: Upload model-hygiene SARIF to code scanning
         if: always()
         continue-on-error: true
-        uses: github/codeql-action/upload-sarif@b96794f015dfd88f77b49b1c93e0fa7110f94c63 # v4.38.0
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with:
           sarif_file: threagile/output/lint.sarif
           category: threagile-lint
@@ -298,7 +298,7 @@ jobs:
 
       # ── 9. Upload artifacts ───────────────────────────────────────────────────
       - name: Upload threat model artifacts
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
           name: "threat-model-run-${{ github.run_number }}"
